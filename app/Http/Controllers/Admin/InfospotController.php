@@ -39,6 +39,9 @@ class InfospotController extends Controller
             $validated['model_path'] = $request->file('model_file')->store('infospots/models', 'public');
         }
 
+        // Remove file object from array before database insertion
+        unset($validated['model_file']);
+
         $scene->infospots()->create($validated);
 
         return redirect()->route('admin.scenes.show', $scene)->with('success', 'Infospot added successfully.');
@@ -78,6 +81,9 @@ class InfospotController extends Controller
             }
             $validated['model_path'] = $request->file('model_file')->store('infospots/models', 'public');
         }
+
+        // Remove file object from array before database update
+        unset($validated['model_file']);
 
         $infospot->update($validated);
 

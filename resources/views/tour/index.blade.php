@@ -119,7 +119,6 @@
 
                 <button id="toggle-fullscreen" class="btn-action bg-white/5 hover:bg-white/15 [&.btn-active]:bg-primary/35 border border-border-glass [&.btn-active]:border-primary/80 text-white/90 w-[42px] h-[42px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 pointer-events-auto m-0 hover:translate-x-[5px]" title="Full Screen"><i class="fas fa-expand text-primary"></i></button>
 
-                <button id="toggle-coord" class="btn-action bg-white/5 hover:bg-white/15 [&.btn-active]:bg-primary/35 border border-border-glass [&.btn-active]:border-primary/80 text-white/90 w-[42px] h-[42px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 pointer-events-auto m-0 hover:translate-x-[5px]" title="Coordinate Picker"><i class="fas fa-crosshairs text-primary"></i></button>
             </div>
         </div>
         
@@ -137,31 +136,31 @@
 
         async function createStyledIcon(iconString, color = '#6366f1', rotation = 0) {
             await document.fonts.ready;
-            await new Promise(r => setTimeout(r, 100));
             const canvas = document.createElement('canvas');
-            canvas.width = 128; canvas.height = 128;
+            canvas.width = 150; canvas.height = 150;
             const ctx = canvas.getContext('2d');
-
-            ctx.beginPath(); ctx.arc(64, 64, 55, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.98)'; ctx.fill();
-            ctx.strokeStyle = color; ctx.lineWidth = 5; ctx.stroke();
-
-            ctx.save();
-            ctx.translate(64, 64);
-            ctx.rotate(rotation * Math.PI / 180);
-            ctx.font = '70px "bootstrap-icons"';
-            ctx.fillStyle = color; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            ctx.fillText(iconString, 0, 0);
-            ctx.restore();
-
+            
+            if(rotation) {
+                ctx.translate(75, 75);
+                ctx.rotate(rotation * Math.PI / 180);
+                ctx.translate(-75, -75);
+            }
+            ctx.beginPath();
+            ctx.arc(75, 75, 60, 0, 2 * Math.PI);
+            ctx.fillStyle = color;
+            ctx.fill();
+            ctx.fillStyle = "white";
+            ctx.font = 'bold 80px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(iconString, 75, 80);
             return canvas.toDataURL();
         }
 
         async function initTour() {
-            const infoUrl = await createStyledIcon('\uF431', '#6366f1');
-            const arrowUrl = await createStyledIcon('\u2B9D', '#6366f1');
-            const arrowLeftUrl = await createStyledIcon('\u2B9D', '#6366f1', -90); // Rotasi ke kiri
-            const arrowRightUrl = await createStyledIcon('\u2B9D', '#6366f1', 90); // Rotasi ke kanan
+            const infoUrl = await createStyledIcon('i', '#2563eb');
+            const arrowUrl = await createStyledIcon('⮝', '#334155');
+            // Removed legacy arrow rotations as we use real 3D rotation now
 
             viewer = new PANOLENS.Viewer({
                 container: container,
@@ -242,12 +241,17 @@
                                 map: texture, 
                                 transparent: true, 
                                 side: THREE.DoubleSide,
-                                alphaTest: 0.1
+                                alphaTest: 0.1,
+                                depthTest: false,
+                                depthWrite: false
                             });
                             ispot = new THREE.Mesh(geometry, material);
+                            ispot.renderOrder = 999;
+                            ispot.rotation.order = 'YXZ';
                             ispot.position.set(spot.position_x, spot.position_y, spot.position_z);
                             ispot.rotation.set(spot.rotation_x || 0, spot.rotation_y || 0, spot.rotation_z || 0);
                             ispot.scale.set(spot.scale_x || 1, spot.scale_y || 1, 1);
+                            ispot.isPerspectiveMesh = true;
                             
                             // Interaction for Mesh
                             ispot.addEventListener('click', () => {
@@ -357,14 +361,11 @@
                 const pano = viewer.panorama;
                 const visible = !pano.children[0].visible;
                 this.classList.toggle('btn-active', visible);
-                pano.children.forEach(c => { if (c instanceof PANOLENS.Infospot) c.visible = visible; });
-            });
-
-            document.getElementById('toggle-coord').addEventListener('click', function () {
-                const el = document.getElementById('coord-display');
-                const show = !el.classList.contains('show');
-                el.classList.toggle('show', show);
-                this.classList.toggle('btn-active', show);
+                pano.children.forEach(c => { 
+                    if (c instanceof PANOLENS.Infospot || c.isPerspectiveMesh) {
+                        c.visible = visible;
+                    }
+                });
             });
 
             document.getElementById('ui-toggle').addEventListener('click', function () {
