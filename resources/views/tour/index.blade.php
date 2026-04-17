@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>360 Virtual Tour</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script>
+    <script src="https://code.responsivevoice.org/responsivevoice.js?key=QlpaIuG0"></script>
+    
+    <!-- Tailwind CSS v4 -->
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+
+    <style type="text/tailwindcss">
+        @theme {
+            --color-primary: #6366f1;
+            --color-accent: #f43f5e;
+            --color-bg-glass: rgba(15, 23, 42, 0.95);
+            --color-border-glass: rgba(255, 255, 255, 0.12);
+            --font-outfit: 'Outfit', sans-serif;
+            --animate-fade-in: fadeIn 0.4s ease-out;
+            --animate-spin-slow: spin 1s infinite linear;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Base element tweaks */
+        model-viewer {
+            width: 100%;
+            height: 100%;
+            --progress-bar-color: var(--color-primary);
+        }
+
+        /* Utilities */
+        .scrollbar-none::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-none {
+            -ms-overflow-style: none; /* IE and Edge */
+            scrollbar-width: none; /* Firefox */
+        }
+    </style>
+</head>
+
+<body class="m-0 p-0 w-full h-full overflow-hidden bg-black font-outfit">
+
+    <div id="loader" class="fixed top-0 left-0 w-full h-full bg-[#0f172a] flex flex-col items-center justify-center z-[50000] text-white transition-opacity duration-1000">
+        <div class="w-[50px] h-[50px] border-[5px] border-white/5 border-t-primary rounded-full animate-spin-slow mb-[25px]"></div>
+        <div class="font-[300] tracking-[6px] text-xs">CLEANING UI...</div>
+    </div>
+
+    <!-- Modal System -->
+    <div id="modal" class="group fixed top-0 left-0 w-full h-full bg-black/60 backdrop-blur-[15px] flex items-center justify-center z-[20000] opacity-0 invisible transition-all duration-400 [&.active]:opacity-100 [&.active]:visible">
+        <div class="bg-bg-glass border border-border-glass py-5 px-6 md:py-[30px] md:px-[45px] rounded-[35px] max-w-[1000px] w-[90%] max-h-[80vh] overflow-y-auto text-white transform scale-80 transition-transform duration-400 text-left relative scrollbar-none group-[.active]:scale-100">
+            
+            <div class="flex items-center justify-between mb-[25px]">
+                <h2 id="modal-title" class="m-0 text-2xl">Info</h2>
+                <div class="text-[1.2rem] text-white/40 cursor-pointer transition-all duration-300 z-10 w-[36px] h-[36px] flex items-center justify-center rounded-full bg-white/10 shrink-0 hover:text-white hover:bg-accent hover:rotate-90" onclick="closeModal()">
+                    <i class="fas fa-times"></i>
+                </div>
+            </div>
+            
+            <!-- Wrapper Layout: Vertical by default, JS toggles class -->
+            <div class="group/layout flex flex-col gap-5 [&.layout-horizontal]:md:flex-row [&.layout-horizontal]:md:gap-[30px] [&.layout-horizontal]:md:items-start" id="modal-layout-wrapper">
+                
+                <div class="flex-1 w-full hidden" id="modal-pane-3d">
+                    <div id="model-container" class="w-full bg-white/5 rounded-[20px] border border-border-glass overflow-hidden relative h-[350px] md:h-[450px] group-[.layout-horizontal]/layout:md:h-[400px]">
+                        <model-viewer id="obj-viewer" src="" auto-rotate camera-controls shadow-intensity="1" touch-action="pan-y" interaction-prompt="auto" interaction-prompt-style="wiggle" interaction-prompt-threshold="0" loading="lazy">
+                        </model-viewer>
+                        <button class="absolute bottom-[15px] right-[15px] bg-slate-900/60 border border-white/10 text-white/80 w-[40px] h-[40px] rounded-xl cursor-pointer z-[100] hidden md:flex items-center justify-center transition-all duration-300 backdrop-blur-md hover:text-white hover:bg-white/15 hover:scale-105 group-[.layout-vertical]/layout:md:hidden" onclick="toggleLayout()" title="Ubah Layout Mode"><i class="fas fa-columns"></i></button>
+                    </div>
+                </div>
+
+                <div class="flex-1 w-full" id="modal-pane-text">
+                    <div class="flex flex-col w-full">
+                        <div class="flex flex-wrap gap-[10px] mb-[15px] border-b border-white/10 pb-[10px]">
+                            <button id="btn-tab-id" class="tab-btn active bg-white/5 border border-transparent text-white/60 py-2 px-4 rounded-lg cursor-pointer transition-all duration-300 font-semibold hover:text-white hover:bg-white/10 hover:border-transparent [&.active]:bg-primary [&.active]:text-white [&.active]:border-white/20" onclick="switchTab('id')">Indonesia</button>
+                            <button id="btn-tab-en" class="tab-btn bg-white/5 border border-transparent text-white/60 py-2 px-4 rounded-lg cursor-pointer transition-all duration-300 font-semibold hover:text-white hover:bg-white/10 hover:border-transparent [&.active]:bg-primary [&.active]:text-white [&.active]:border-white/20" onclick="switchTab('en')">English</button>
+                            <div class="grow min-w-[20px]"></div>
+                            <button id="btn-play" class="tab-btn bg-white/5 border border-transparent text-white/60 py-2 px-4 rounded-lg cursor-pointer transition-all duration-300 font-semibold hover:text-white hover:bg-white/10" onclick="playNarration()"><i class="fas fa-volume-up mr-1.5"></i> Teks ke Suara</button>
+                            <button id="btn-stop" class="tab-btn bg-rose-500/20 border border-rose-500/50 text-rose-500 py-2 px-4 rounded-lg cursor-pointer transition-all duration-300 font-semibold hidden hover:bg-rose-500/30 hover:text-white hover:border-rose-500/70" onclick="stopNarration()"><i class="fas fa-stop mr-1.5"></i> Berhenti</button>
+                        </div>
+                        
+                        <div class="mt-5 leading-[1.6] text-white/80 text-justify hidden opacity-0 [&.active]:block [&.active]:animate-fade-in [&.active]:opacity-100 [&_p]:mt-0 [&_p]:mb-[1em]" id="tab-id"></div>
+                        <div class="mt-5 leading-[1.6] text-white/80 text-justify hidden opacity-0 [&.active]:block [&.active]:animate-fade-in [&.active]:opacity-100 [&_p]:mt-0 [&_p]:mb-[1em]" id="tab-en"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- 3D Canvas -->
+    <div id="viewer-container" class="w-full h-screen bg-black"></div>
+
+    <!-- UI Overlay -->
+    <div class="absolute top-0 left-0 w-full h-full pointer-events-none flex flex-col justify-between p-[30px] box-border z-[10000]">
+        <!-- UI Toggle Button -->
+        <div id="ui-toggle" class="absolute top-[30px] left-[30px] w-[48px] h-[48px] bg-bg-glass backdrop-blur-[25px] border border-border-glass rounded-[16px] text-white flex items-center justify-center cursor-pointer z-[11000] pointer-events-auto transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] shadow-[0_15px_30px_rgba(0,0,0,0.4)] hover:bg-primary hover:scale-110 hover:rotate-6 hover:border-white/30 text-[1.1rem]">
+            <i class="fas fa-bars"></i>
+        </div>
+
+        <!-- Main Header -->
+        <div class="bg-bg-glass backdrop-blur-[30px] border border-border-glass p-[22px_25px] rounded-[24px] text-white max-w-[280px] pointer-events-auto shadow-[0_40px_80px_rgba(0,0,0,0.8)] transition-all duration-600 ease-[cubic-bezier(0.16,1,0.3,1)] origin-[left_top] mt-[60px] [&.minimized]:opacity-0 [&.minimized]:-translate-y-[20px] [&.minimized]:scale-95 [&.minimized]:pointer-events-none [&.minimized]:blur-[10px]" id="main-header">
+            <h1 id="scene-title" class="m-0 text-[16px] font-semibold text-white tracking-[0.5px]">View Experience</h1>
+            <p id="scene-subtitle" class="mt-[4px] mb-[15px] mx-0 text-[9px] opacity-50 tracking-[2.5px] uppercase">LOBBY AREA</p>
+
+            <div class="flex flex-wrap gap-[10px] mt-[15px]">
+                <button id="toggle-rotate" class="btn-action btn-active bg-white/5 hover:bg-white/15 [&.btn-active]:bg-primary/35 border border-border-glass [&.btn-active]:border-primary/80 text-white/90 w-[42px] h-[42px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 pointer-events-auto m-0 hover:translate-x-[5px]" title="Auto Rotation"><i class="fas fa-sync-alt text-primary"></i></button>
+                
+                <button id="toggle-markers" class="btn-action btn-active bg-white/5 hover:bg-white/15 [&.btn-active]:bg-primary/35 border border-border-glass [&.btn-active]:border-primary/80 text-white/90 w-[42px] h-[42px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 pointer-events-auto m-0 hover:translate-x-[5px]" title="Show Markers"><i class="bi bi-eye-fill text-primary"></i></button>
+
+                <button id="toggle-fullscreen" class="btn-action bg-white/5 hover:bg-white/15 [&.btn-active]:bg-primary/35 border border-border-glass [&.btn-active]:border-primary/80 text-white/90 w-[42px] h-[42px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 pointer-events-auto m-0 hover:translate-x-[5px]" title="Full Screen"><i class="fas fa-expand text-primary"></i></button>
+
+                <button id="toggle-coord" class="btn-action bg-white/5 hover:bg-white/15 [&.btn-active]:bg-primary/35 border border-border-glass [&.btn-active]:border-primary/80 text-white/90 w-[42px] h-[42px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 pointer-events-auto m-0 hover:translate-x-[5px]" title="Coordinate Picker"><i class="fas fa-crosshairs text-primary"></i></button>
+            </div>
+        </div>
+        
+        <!-- Coord Pill -->
+        <div class="bg-bg-glass backdrop-blur-[20px] border border-border-glass px-[25px] py-[10px] rounded-[50px] text-white font-mono text-[13px] self-start pointer-events-auto opacity-0 invisible transition-all duration-400 shadow-[0_10px_30px_rgba(0,0,0,0.5)] [&.show]:opacity-100 [&.show]:visible" id="coord-display">Ambil kordinat dengan klik ruangan...</div>
+    </div>
+
+    <script src="https://pchen66.github.io/js/three/three.min.js"></script>
+    <script src="https://pchen66.github.io/js/panolens/panolens.min.js"></script>
+
+    <script>
+        const container = document.querySelector('#viewer-container');
+        const loader = document.getElementById('loader');
+        let viewer; // Global viewer instance
+
+        async function createStyledIcon(iconString, color = '#6366f1', rotation = 0) {
+            await document.fonts.ready;
+            await new Promise(r => setTimeout(r, 100));
+            const canvas = document.createElement('canvas');
+            canvas.width = 128; canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+
+            ctx.beginPath(); ctx.arc(64, 64, 55, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.98)'; ctx.fill();
+            ctx.strokeStyle = color; ctx.lineWidth = 5; ctx.stroke();
+
+            ctx.save();
+            ctx.translate(64, 64);
+            ctx.rotate(rotation * Math.PI / 180);
+            ctx.font = '70px "bootstrap-icons"';
+            ctx.fillStyle = color; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(iconString, 0, 0);
+            ctx.restore();
+
+            return canvas.toDataURL();
+        }
+
+        async function initTour() {
+            const infoUrl = await createStyledIcon('\uF431', '#6366f1');
+            const arrowUrl = await createStyledIcon('\u2B9D', '#6366f1');
+            const arrowLeftUrl = await createStyledIcon('\u2B9D', '#6366f1', -90); // Rotasi ke kiri
+            const arrowRightUrl = await createStyledIcon('\u2B9D', '#6366f1', 90); // Rotasi ke kanan
+
+            viewer = new PANOLENS.Viewer({
+                container: container,
+                autoRotate: true,
+                autoRotateSpeed: 0.5,
+                controlBar: false,
+                cameraFov: 100
+            });
+
+            // OPTIMASI: Batasi pixel ratio maksimal ke 1.5 (seperti engine 3DVista). 
+            // Layar HP modern sering memaksakan ratio 3x atau 4x yang membuat GPU kelebihan beban saat render 3D.
+            if (viewer.renderer) {
+                viewer.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+            }
+
+            // Invert scroll zoom direction
+            const controls = viewer.getControl();
+            const originalDollyIn = controls.dollyIn;
+            controls.dollyIn = controls.dollyOut;
+            controls.dollyOut = originalDollyIn;
+
+            function addBounce(infospot) {
+                const startY = infospot.position.y;
+                new TWEEN.Tween(infospot.position)
+                    .to({ y: startY + 200 }, 1000)
+                    .easing(TWEEN.Easing.Quadratic.InOut)
+                    .repeat(Infinity)
+                    .yoyo(true)
+                    .start();
+            }
+
+            function addPulse(infospot) {
+                infospot.material.transparent = true;
+                infospot.material.opacity = 1;
+                new TWEEN.Tween(infospot.material)
+                    .to({ opacity: 0.3 }, 1000)
+                    .easing(TWEEN.Easing.Quadratic.InOut)
+                    .repeat(Infinity)
+                    .yoyo(true)
+                    .start();
+            }
+
+            const tourData = {!! $tour->toJson() !!};
+            
+            const UNIFORM_SIZE = 500;
+            const panoramas = {};
+            let startScene = null;
+
+            // Load all scenes
+            tourData.scenes.forEach(sceneData => {
+                const imageUrl = '{{ Storage::url("") }}' + sceneData.image_path;
+                const pano = new PANOLENS.ImagePanorama(imageUrl);
+                panoramas[sceneData.id] = pano;
+                
+                if (sceneData.is_start_scene) {
+                    startScene = pano;
+                }
+            });
+
+            if (!startScene && tourData.scenes.length > 0) {
+                startScene = panoramas[tourData.scenes[0].id];
+            }
+
+            // Attach infospots to scenes
+            tourData.scenes.forEach(sceneData => {
+                const pano = panoramas[sceneData.id];
+                
+                if(sceneData.infospots) {
+                    sceneData.infospots.forEach(spot => {
+                        let ispot;
+                        if (spot.is_perspective) {
+                            // Render as 3D Mesh for perspective mode
+                            const iconUrl = (spot.type === 'info') ? infoUrl : arrowUrl;
+                            const geometry = new THREE.PlaneGeometry(600, 600);
+                            const loader = new THREE.TextureLoader();
+                            const texture = loader.load(iconUrl);
+                            const material = new THREE.MeshBasicMaterial({ 
+                                map: texture, 
+                                transparent: true, 
+                                side: THREE.DoubleSide,
+                                alphaTest: 0.1
+                            });
+                            ispot = new THREE.Mesh(geometry, material);
+                            ispot.position.set(spot.position_x, spot.position_y, spot.position_z);
+                            ispot.rotation.set(spot.rotation_x || 0, spot.rotation_y || 0, spot.rotation_z || 0);
+                            ispot.scale.set(spot.scale_x || 1, spot.scale_y || 1, 1);
+                            
+                            // Interaction for Mesh
+                            ispot.addEventListener('click', () => {
+                                handleSpotClick(spot);
+                            });
+                        } else {
+                            // Standard Billboard
+                            const iconUrl = (spot.type === 'info') ? infoUrl : arrowUrl;
+                            ispot = new PANOLENS.Infospot(UNIFORM_SIZE, iconUrl);
+                            ispot.position.set(spot.position_x, spot.position_y, spot.position_z);
+                            ispot.addEventListener('click', () => {
+                                handleSpotClick(spot);
+                            });
+                            
+                            // Animations for Billboards
+                            if (spot.type === 'info') addBounce(ispot);
+                            else addPulse(ispot);
+                        }
+                        pano.add(ispot);
+                    });
+                }
+            });
+
+            function handleSpotClick(spot) {
+                if (spot.type === 'info') {
+                    let modelUrl = spot.model_path ? ('{{ Storage::url("") }}' + spot.model_path) : null;
+                    let layout = spot.model_path ? "layout-horizontal" : "layout-vertical";
+                    openModal(spot.title || "Info", spot.content_id || "", spot.content_en || "", modelUrl, layout);
+                } else if (spot.type === 'nav') {
+                    if (spot.target_scene_id && panoramas[spot.target_scene_id]) {
+                        const targetSceneData = spot.target_scene || spot.targetScene;
+                        const targetSceneName = targetSceneData ? targetSceneData.name : "NEXT SCENE";
+                        walkToTarget(panoramas[spot.target_scene_id], new THREE.Vector3(spot.position_x, spot.position_y, spot.position_z), targetSceneName, "Navigasi");
+                    }
+                }
+            }
+
+            if (startScene) {
+                viewer.add(startScene);
+                startScene.addEventListener('load', () => {
+                    loader.style.opacity = '0';
+                    setTimeout(() => loader.style.display = 'none', 1000);
+                });
+            } else {
+                loader.style.opacity = '0';
+                setTimeout(() => loader.style.display = 'none', 1000);
+            }
+
+            function walkToTarget(pano, targetPosition, title, subtitle) {
+                viewer.tweenControlCenter(targetPosition, 500);
+                setTimeout(() => {
+                    let startFov = viewer.camera.fov;
+                    let targetFovIn = 40;
+                    let duration = 600;
+                    let startTime = Date.now();
+                    function zoomIn() {
+                        let elapsed = Date.now() - startTime;
+                        let progress = Math.min(elapsed / duration, 1);
+                        let eased = progress * progress * progress;
+                        viewer.camera.fov = startFov + (targetFovIn - startFov) * eased;
+                        viewer.camera.updateProjectionMatrix();
+
+                        if (progress < 1) requestAnimationFrame(zoomIn);
+                        else {
+                            if (!pano.parent) viewer.add(pano);
+                            viewer.setPanorama(pano);
+                            document.getElementById('scene-title').innerText = title;
+                            document.getElementById('scene-subtitle').innerText = subtitle;
+
+                            // Safeguard: re-apply autoRotate state from the internal flag
+                            viewer.getControl().autoRotate = viewer.autoRotate;
+
+                            startTime = Date.now();
+                            zoomOut();
+                        }
+                    }
+                    function zoomOut() {
+                        let elapsed = Date.now() - startTime;
+                        let progress = Math.min(elapsed / duration, 1);
+                        let eased = 1 - Math.pow(1 - progress, 3);
+                        viewer.camera.fov = targetFovIn + (startFov - targetFovIn) * eased;
+                        viewer.camera.updateProjectionMatrix();
+                        if (progress < 1) requestAnimationFrame(zoomOut);
+                    }
+                    zoomIn();
+                }, 500);
+            }
+
+            document.getElementById('toggle-rotate').addEventListener('click', function () {
+                const isAutoRotate = !viewer.getControl().autoRotate;
+                viewer.getControl().autoRotate = isAutoRotate;
+                viewer.autoRotate = isAutoRotate; // Sync Panolens internal flag
+                this.classList.toggle('btn-active', isAutoRotate);
+            });
+
+            document.getElementById('toggle-fullscreen').addEventListener('click', function () {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen();
+                    this.classList.add('btn-active');
+                } else {
+                    document.exitFullscreen();
+                    this.classList.remove('btn-active');
+                }
+            });
+
+            document.getElementById('toggle-markers').addEventListener('click', function () {
+                const pano = viewer.panorama;
+                const visible = !pano.children[0].visible;
+                this.classList.toggle('btn-active', visible);
+                pano.children.forEach(c => { if (c instanceof PANOLENS.Infospot) c.visible = visible; });
+            });
+
+            document.getElementById('toggle-coord').addEventListener('click', function () {
+                const el = document.getElementById('coord-display');
+                const show = !el.classList.contains('show');
+                el.classList.toggle('show', show);
+                this.classList.toggle('btn-active', show);
+            });
+
+            document.getElementById('ui-toggle').addEventListener('click', function () {
+                const header = document.getElementById('main-header');
+                const isMinimized = header.classList.toggle('minimized');
+                this.innerHTML = isMinimized ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-times"></i>';
+                this.style.background = isMinimized ? 'var(--color-bg-glass)' : 'var(--color-accent)';
+            });
+
+            viewer.container.addEventListener('click', (e) => {
+                if (!document.getElementById('coord-display').classList.contains('show')) return;
+                const rect = container.getBoundingClientRect();
+                const mouse = new THREE.Vector2(((e.clientX - rect.left) / rect.width) * 2 - 1, -((e.clientY - rect.top) / rect.height) * 2 + 1);
+                const raycaster = new THREE.Raycaster();
+                raycaster.setFromCamera(mouse, viewer.getCamera());
+                const intersects = raycaster.intersectObjects(viewer.getScene().children, true);
+                if (intersects.length > 0) {
+                    const p = intersects[0].point;
+                    document.getElementById('coord-display').innerHTML = `Position: <b>set(${Math.round(p.x)}, ${Math.round(p.y)}, ${Math.round(p.z)})</b>`;
+                }
+            });
+        }
+        
+        let currentModalLang = 'id';
+
+        function playNarration() {
+            if (!window.responsiveVoice) return;
+
+            let htmlText = document.getElementById('tab-' + currentModalLang).innerHTML;
+            let plainText = htmlText.replace(/<[^>]*>?/gm, ''); 
+            if (!plainText.trim()) return;
+
+            let voice = currentModalLang === 'id' ? "Indonesian Female" : "UK English Female";
+
+            document.getElementById('btn-play').style.display = 'none';
+            document.getElementById('btn-stop').style.display = 'inline-block';
+
+            responsiveVoice.speak(plainText, voice, {
+                onstart: () => {
+                    document.getElementById('btn-play').style.display = 'none';
+                    document.getElementById('btn-stop').style.display = 'inline-block';
+                },
+                onend: () => {
+                    document.getElementById('btn-play').style.display = 'inline-block';
+                    document.getElementById('btn-stop').style.display = 'none';
+                }
+            });
+        }
+
+        function stopNarration() {
+            if (window.responsiveVoice) {
+                responsiveVoice.cancel();
+            }
+            const btnPlay = document.getElementById('btn-play');
+            const btnStop = document.getElementById('btn-stop');
+            if (btnPlay) btnPlay.style.display = 'inline-block';
+            if (btnStop) btnStop.style.display = 'none';
+        }
+
+        function switchTab(lang) {
+            currentModalLang = lang;
+            stopNarration();
+
+            document.getElementById('btn-tab-id').classList.remove('active');
+            document.getElementById('btn-tab-en').classList.remove('active');
+            document.getElementById('tab-id').classList.remove('active');
+            document.getElementById('tab-en').classList.remove('active');
+
+            document.getElementById('btn-tab-' + lang).classList.add('active');
+            document.getElementById('tab-' + lang).classList.add('active');
+        }
+
+        function toggleLayout() {
+            const wrapper = document.getElementById('modal-layout-wrapper');
+            if (wrapper) {
+                if (wrapper.classList.contains('layout-horizontal')) {
+                    wrapper.classList.remove('layout-horizontal');
+                    wrapper.classList.add('layout-vertical');
+                } else {
+                    wrapper.classList.remove('layout-vertical');
+                    wrapper.classList.add('layout-horizontal');
+                }
+            }
+        }
+
+        function openModal(title, textId, textEn, modelSrc = null, layoutMode = 'layout-vertical') {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('tab-id').innerHTML = textId || '';
+            document.getElementById('tab-en').innerHTML = textEn || textId || '';
+
+            const wrapper = document.getElementById('modal-layout-wrapper');
+            if (wrapper) {
+                wrapper.className = 'group/layout flex flex-col gap-5 [&.layout-horizontal]:md:flex-row [&.layout-horizontal]:md:gap-[30px] [&.layout-horizontal]:md:items-start ' + layoutMode;
+            }
+
+            switchTab('id');
+
+            const modelContainer = document.getElementById('model-container');
+            const modelPane = document.getElementById('modal-pane-3d');
+            const modelViewer = document.getElementById('obj-viewer');
+
+            if (viewer) {
+                viewer.autoRotate = false;
+                if (viewer.getControl()) viewer.getControl().autoRotate = false;
+            }
+
+            if (modelSrc) {
+                if (modelPane) modelPane.style.display = 'block';
+                if (modelContainer) modelContainer.style.display = 'block';
+                setTimeout(() => {
+                    if (modelViewer && modelViewer.src !== modelSrc) {
+                        modelViewer.src = modelSrc;
+                    }
+                }, 50);
+            } else {
+                if (modelPane) modelPane.style.display = 'none';
+                if (modelContainer) modelContainer.style.display = 'none';
+            }
+
+            document.getElementById('modal').classList.add('active');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('modal');
+            modal.classList.remove('active');
+
+            stopNarration();
+
+            const isAutoRotateOn = document.getElementById('toggle-rotate').classList.contains('btn-active');
+            if (viewer) {
+                viewer.autoRotate = isAutoRotateOn;
+                if (viewer.getControl()) viewer.getControl().autoRotate = isAutoRotateOn;
+            }
+        }
+
+        initTour();
+    </script>
+</body>
+</html>
