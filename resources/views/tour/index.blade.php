@@ -216,7 +216,32 @@
 
                 const storageRoot = '{{ Storage::url("/") }}'.replace(/\/$/, "");
                 const imageUrl = storageRoot + "/" + viewData.image_path.replace(/^\//, "");
-                const pano = new PANOLENS.ImagePanorama(imageUrl);
+                
+                let pano;
+                const is360 = viewData.is_360 === undefined ? true : (viewData.is_360 == 1);
+                
+                if (is360) {
+                    pano = new PANOLENS.ImagePanorama(imageUrl);
+                } else {
+                    pano = new PANOLENS.Panorama();
+                    const loader = new THREE.TextureLoader();
+                    loader.load(imageUrl, (texture) => {
+                        let aspect = 1;
+                        if (texture.image) {
+                            aspect = texture.image.width / texture.image.height;
+                        }
+                        const width = 10000;
+                        const height = width / aspect;
+                        pano.geometry.dispose();
+                        pano.geometry = new THREE.PlaneGeometry(width, height);
+                        pano.geometry.translate(0, 0, -5000);
+                        texture.colorSpace = THREE.SRGBColorSpace || THREE.sRGBEncoding;
+                        texture.minFilter = THREE.LinearFilter;
+                        if (pano.material && pano.material.dispose) pano.material.dispose();
+                        pano.material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
+                        pano.dispatchEvent({ type: 'load' });
+                    });
+                }
                 pano.sceneData = sceneData; 
                 pano.viewData = viewData;
                 viewPanoramas[viewId] = pano;
@@ -314,6 +339,7 @@
                 if (pano) {
                     if (!pano.parent) viewer.add(pano);
                     viewer.setPanorama(pano);
+                    updateControlsState(view.is_360 === undefined ? true : (view.is_360 == 1));
                     
                     const markersBtn = document.getElementById('toggle-markers');
                     const isMarkersEnabled = markersBtn ? markersBtn.classList.contains('btn-active') : true;
@@ -345,9 +371,29 @@
                 }
             }
 
+            function updateControlsState(is360) {
+                const ctrl = viewer.getControl();
+                if (!ctrl) return;
+                
+                if (!is360) {
+                    ctrl.minAzimuthAngle = 0;
+                    ctrl.maxAzimuthAngle = 0;
+                    ctrl.minPolarAngle = Math.PI / 2;
+                    ctrl.maxPolarAngle = Math.PI / 2;
+                    viewer.camera.position.set(0, 0, 0);
+                    viewer.camera.lookAt(0, 0, -1);
+                } else {
+                    ctrl.minAzimuthAngle = -Infinity;
+                    ctrl.maxAzimuthAngle = Infinity;
+                    ctrl.minPolarAngle = 0;
+                    ctrl.maxPolarAngle = Math.PI;
+                }
+            }
+
             if (startPano) {
                 viewer.add(startPano);
                 viewer.setPanorama(startPano);
+                updateControlsState(startView.is_360 === undefined ? true : (startView.is_360 == 1));
                 startPano.addEventListener('load', () => {
                     loader.style.opacity = '0';
                     setTimeout(() => loader.style.display = 'none', 1000);
@@ -384,6 +430,7 @@
                             
                             // Update View Switcher UI
                             updateViewSwitcher(pano.sceneData);
+                            updateControlsState(pano.viewData.is_360 === undefined ? true : (pano.viewData.is_360 == 1));
 
                             // Pastikan visibilitas ikon di panorama baru sesuai dengan tombol toggle
                             const markersBtn = document.getElementById('toggle-markers');

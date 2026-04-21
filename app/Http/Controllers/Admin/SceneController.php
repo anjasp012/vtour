@@ -36,6 +36,7 @@ class SceneController extends Controller
             'name' => 'required|string|max:255',
             'images.*' => 'required|image|mimes:jpeg,png,jpg',
             'is_start_scene' => 'boolean',
+            'is_360' => 'boolean',
             'description_id' => 'nullable|string',
             'description_en' => 'nullable|string',
         ]);
@@ -60,6 +61,7 @@ class SceneController extends Controller
                     'name' => $index == 0 ? 'Main View' : 'View ' . ($index + 1),
                     'image_path' => $imagePath,
                     'is_primary' => $index == 0,
+                    'is_360' => $request->has('is_360') ? $request->is_360 : true,
                 ]);
             }
         }
@@ -128,7 +130,8 @@ class SceneController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'image' => 'required|image|mimes:jpeg,png,jpg'
+            'image' => 'required|image|mimes:jpeg,png,jpg',
+            'is_360' => 'boolean'
         ]);
 
         $imagePath = $request->file('image')->store('scenes/images', 'public');
@@ -136,10 +139,26 @@ class SceneController extends Controller
         $scene->views()->create([
             'name' => $request->name,
             'image_path' => $imagePath,
-            'is_primary' => false
+            'is_primary' => false,
+            'is_360' => $request->has('is_360') ? $request->is_360 : true
         ]);
 
         return back()->with('success', 'View added successfully.');
+    }
+
+    public function updateView(Request $request, \App\Models\SceneView $sceneView)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'is_360' => 'required|boolean'
+        ]);
+
+        $sceneView->update([
+            'name' => $request->name,
+            'is_360' => $request->is_360
+        ]);
+
+        return back()->with('success', 'View settings updated successfully.');
     }
 
     public function destroy(Scene $scene)

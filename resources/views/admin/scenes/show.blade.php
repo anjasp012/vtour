@@ -61,15 +61,20 @@
                     </div>
                     <div class="grid grid-cols-2 gap-2">
                         @foreach($scene->views as $view)
-                            <button onclick="switchView('{{ $view->id }}', '{{ str_replace('\\', '/', Storage::url($view->image_path)) }}', this)" class="view-card p-2 bg-slate-50 border {{ $view->is_primary ? 'border-blue-600 ring-1 ring-blue-600' : 'border-slate-100' }} rounded-lg hover:border-blue-400 transition-all text-left overflow-hidden group relative">
-                                <div class="aspect-video rounded bg-slate-200 overflow-hidden mb-1.5">
-                                    <img src="{{ Storage::url($view->image_path) }}" class="w-full h-full object-cover">
-                                </div>
-                                <span class="text-[8px] font-bold text-slate-700 uppercase truncate block">{{ $view->name }}</span>
-                                @if($view->is_primary)
-                                    <span class="absolute top-1 right-1 w-1.5 h-1.5 bg-blue-600 rounded-full"></span>
-                                @endif
-                            </button>
+                            <div class="relative group">
+                                <button onclick="switchView('{{ $view->id }}', '{{ str_replace('\\', '/', Storage::url($view->image_path)) }}', this)" class="view-card w-full p-2 bg-slate-50 border {{ $view->is_primary ? 'border-blue-600 ring-1 ring-blue-600' : 'border-slate-100' }} rounded-lg hover:border-blue-400 transition-all text-left overflow-hidden relative">
+                                    <div class="aspect-video rounded bg-slate-200 overflow-hidden mb-1.5">
+                                        <img src="{{ Storage::url($view->image_path) }}" class="w-full h-full object-cover">
+                                    </div>
+                                    <span class="text-[8px] font-bold text-slate-700 uppercase truncate block pr-6">{{ $view->name }}</span>
+                                    @if($view->is_primary)
+                                        <span class="absolute top-1 left-1 w-1.5 h-1.5 bg-blue-600 rounded-full"></span>
+                                    @endif
+                                </button>
+                                <button onclick="event.stopPropagation(); editViewSettings({{ $view->id }}, '{{ $view->name }}', {{ $view->is_360 == 1 ? '1' : '0' }})" class="absolute bottom-2 right-2 w-5 h-5 bg-white/90 backdrop-blur-sm border border-slate-200 rounded flex items-center justify-center text-slate-400 hover:text-blue-600 hover:border-blue-300 opacity-0 group-hover:opacity-100 transition-all shadow-sm z-10" title="Edit Pengaturan View">
+                                    <i class="fas fa-cog text-[10px]"></i>
+                                </button>
+                            </div>
                         @endforeach
                     </div>
                 </div>
@@ -307,11 +312,76 @@
                 <input type="text" name="name" required class="modern-input" placeholder="e.g. Night View">
             </div>
             <div class="space-y-1.5">
-                <label class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">360 Image (Equirectangular)</label>
+                <label class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Tipe Tampilan</label>
+                <div class="grid grid-cols-2 gap-3 mt-1 relative z-10">
+                    <label class="cursor-pointer">
+                        <input type="radio" name="is_360" value="1" class="peer sr-only" checked>
+                        <div class="p-3 border border-slate-200 rounded-lg peer-checked:border-blue-600 peer-checked:bg-blue-50/50 peer-checked:ring-1 peer-checked:ring-blue-600 transition-all text-center">
+                            <i class="fas fa-globe text-blue-500 mb-1 text-lg"></i>
+                            <div class="text-[10px] font-bold text-slate-700">360° Panorama</div>
+                            <div class="text-[8px] text-slate-400 mt-0.5">Bisa diputar 360 derajat</div>
+                        </div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="is_360" value="0" class="peer sr-only">
+                        <div class="p-3 border border-slate-200 rounded-lg peer-checked:border-blue-600 peer-checked:bg-blue-50/50 peer-checked:ring-1 peer-checked:ring-blue-600 transition-all text-center">
+                            <i class="fas fa-image text-emerald-500 mb-1 text-lg"></i>
+                            <div class="text-[10px] font-bold text-slate-700">Gambar Biasa (2D)</div>
+                            <div class="text-[8px] text-slate-400 mt-0.5">Denah Peta / Potret</div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+            <div class="space-y-1.5 relative z-10">
+                <label class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">File Gambar (Equirectangular / Datar)</label>
                 <input type="file" name="image" required accept="image/*" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-[10px] file:font-black file:bg-blue-600 file:text-white hover:file:bg-blue-700 transition-all cursor-pointer">
             </div>
             <div class="pt-2">
                 <button type="submit" class="w-full bg-blue-600 text-white font-black py-3 rounded text-[9px] uppercase tracking-widest shadow-lg hover:bg-blue-700 transition-all">Upload View</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Edit View Settings -->
+<div id="modal-edit-view" class="hidden fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in relative">
+        <div class="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+            <h3 class="text-xs font-bold text-slate-900 uppercase tracking-widest">Edit View Settings</h3>
+            <button onclick="document.getElementById('modal-edit-view').classList.add('hidden')" class="text-slate-400 hover:text-slate-900 transition-colors">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form id="form-edit-view" method="POST" class="p-6 space-y-5">
+            @csrf
+            @method('PUT')
+            <div class="space-y-1.5">
+                <label class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">View Title</label>
+                <input type="text" name="name" id="edit-view-name" required class="modern-input" placeholder="e.g. Night View">
+            </div>
+            <div class="space-y-1.5">
+                <label class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Tipe Tampilan</label>
+                <div class="grid grid-cols-2 gap-3 mt-1 relative z-10">
+                    <label class="cursor-pointer">
+                        <input type="radio" name="is_360" id="edit-view-360" value="1" class="peer sr-only">
+                        <div class="p-3 border border-slate-200 rounded-lg peer-checked:border-blue-600 peer-checked:bg-blue-50/50 peer-checked:ring-1 peer-checked:ring-blue-600 transition-all text-center">
+                            <i class="fas fa-globe text-blue-500 mb-1 text-lg"></i>
+                            <div class="text-[10px] font-bold text-slate-700">360° Panorama</div>
+                            <div class="text-[8px] text-slate-400 mt-0.5">Bisa diputar</div>
+                        </div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="is_360" id="edit-view-2d" value="0" class="peer sr-only">
+                        <div class="p-3 border border-slate-200 rounded-lg peer-checked:border-blue-600 peer-checked:bg-blue-50/50 peer-checked:ring-1 peer-checked:ring-blue-600 transition-all text-center">
+                            <i class="fas fa-image text-emerald-500 mb-1 text-lg"></i>
+                            <div class="text-[10px] font-bold text-slate-700">Gambar Biasa</div>
+                            <div class="text-[8px] text-slate-400 mt-0.5">Denah Peta / Datar</div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+            <div class="pt-2">
+                <button type="submit" class="w-full bg-blue-600 text-white font-black py-3 rounded text-[9px] uppercase tracking-widest shadow-lg hover:bg-blue-700 transition-all">Save Changes</button>
             </div>
         </form>
     </div>
@@ -378,6 +448,17 @@
     const viewsData = @json($scene->views);
     let currentViewId = {{ $scene->primaryView->id }};
 
+    function editViewSettings(id, name, is360) {
+        document.getElementById('edit-view-name').value = name;
+        if (is360 == 1) {
+            document.getElementById('edit-view-360').checked = true;
+        } else {
+            document.getElementById('edit-view-2d').checked = true;
+        }
+        document.getElementById('form-edit-view').action = `{{ url('admin/views') }}/${id}`;
+        document.getElementById('modal-edit-view').classList.remove('hidden');
+    }
+
     // View Switching logic
     function switchView(viewId, url, el) {
         currentViewId = viewId;
@@ -400,10 +481,14 @@
             delete renderedSpots[id];
         }
 
+        const viewData = viewsData.find(v => v.id == viewId);
+        const is360 = viewData ? (viewData.is_360 == 1) : true;
+        
         // Delegate texture swapping by creating a new Panorama
-        const pano = new PANOLENS.ImagePanorama(url);
+        const pano = createPanoramaObject(url, is360);
         viewer.add(pano);
         viewer.setPanorama(pano);
+        updateControlsState(is360);
         
         panorama = pano;
         window.panorama = pano;
@@ -436,13 +521,70 @@
         cameraFov: 90
     });
     
+    function createPanoramaObject(url, is360) {
+        if (is360 || typeof is360 === 'undefined') {
+            return new PANOLENS.ImagePanorama(url);
+        } else {
+            const pano = new PANOLENS.Panorama(); // Base Mesh class
+            const loader = new THREE.TextureLoader();
+            loader.load(url, (texture) => {
+                let aspect = 1;
+                if (texture.image) {
+                    aspect = texture.image.width / texture.image.height;
+                }
+                const width = 10000;
+                const height = width / aspect;
+                
+                pano.geometry.dispose();
+                pano.geometry = new THREE.PlaneGeometry(width, height);
+                pano.geometry.translate(0, 0, -5000); // Dorong ke belakang kamera sejauh radius panorama
+                
+                texture.colorSpace = THREE.SRGBColorSpace || THREE.sRGBEncoding;
+                texture.minFilter = THREE.LinearFilter;
+                
+                if (pano.material && pano.material.dispose) pano.material.dispose();
+                pano.material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
+                pano.dispatchEvent({ type: 'load' }); // Beritahu Panolens bahwa loading selesai
+            });
+            return pano;
+        }
+    }
+
     // Invert scroll zoom direction
     const controls = viewer.getControl();
     controls.dollyIn = controls.dollyOut;
 
-    window.panorama = new PANOLENS.ImagePanorama('{{ $scene->primaryView ? str_replace('\\', '/', Storage::url($scene->primaryView->image_path)) : "" }}');
+    const initialPrimaryUrl = '{{ $scene->primaryView ? str_replace('\\', '/', Storage::url($scene->primaryView->image_path)) : "" }}';
+    const initialIs360 = {{ $scene->primaryView && $scene->primaryView->is_360 == 0 ? 'false' : 'true' }};
+    
+    window.panorama = createPanoramaObject(initialPrimaryUrl, initialIs360);
     let panorama = window.panorama;
     viewer.add(panorama);
+
+    function updateControlsState(is360) {
+        const ctrl = viewer.getControl();
+        if (!ctrl) return;
+        
+        if (!is360) {
+            // Kunci total putaran kamera biar selalu menghadap lurus ke billboard 2D
+            ctrl.minAzimuthAngle = 0;
+            ctrl.maxAzimuthAngle = 0;
+            ctrl.minPolarAngle = Math.PI / 2;
+            ctrl.maxPolarAngle = Math.PI / 2;
+            // Pastikan menatap tepat di tengah (0,0,-1)
+            viewer.camera.position.set(0, 0, 0);
+            viewer.camera.lookAt(0, 0, -1);
+        } else {
+            // Buka kembali kendali bebas untuk panorama 360
+            ctrl.minAzimuthAngle = -Infinity;
+            ctrl.maxAzimuthAngle = Infinity;
+            ctrl.minPolarAngle = 0;
+            ctrl.maxPolarAngle = Math.PI;
+        }
+    }
+    
+    // Set initial control state
+    updateControlsState(initialIs360);
 
     // Initial state vars
     const renderedSpots = {};
