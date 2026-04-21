@@ -159,7 +159,7 @@
 
         async function initTour() {
             const infoUrl = await createStyledIcon('i', '#2563eb');
-            const arrowUrl = await createStyledIcon('⮝', '#334155');
+            const arrowUrl = await createStyledIcon('⮝', '#4f46e5'); // Warna lebih vibrant dan senada dengan info
             // Removed legacy arrow rotations as we use real 3D rotation now
 
             viewer = new PANOLENS.Viewer({
@@ -192,43 +192,26 @@
                     .start();
             }
 
-            function addPulse(infospot) {
-                infospot.material.transparent = true;
-                infospot.material.opacity = 1;
-                new TWEEN.Tween(infospot.material)
-                    .to({ opacity: 0.3 }, 1000)
-                    .easing(TWEEN.Easing.Quadratic.InOut)
-                    .repeat(Infinity)
-                    .yoyo(true)
-                    .start();
-            }
+
 
             const tourData = {!! $tour->toJson() !!};
             
             const UNIFORM_SIZE = 500;
             const panoramas = {};
-            let startScene = null;
+            let currentSceneData = null;
 
-            // Load all scenes
-            tourData.scenes.forEach(sceneData => {
+            function getOrCreatePanorama(sceneId) {
+                if (panoramas[sceneId]) return panoramas[sceneId];
+
+                const sceneData = tourData.scenes.find(s => s.id == sceneId);
+                if (!sceneData) return null;
+
                 const imageUrl = '{{ Storage::url("") }}' + sceneData.image_path;
                 const pano = new PANOLENS.ImagePanorama(imageUrl);
-                panoramas[sceneData.id] = pano;
-                
-                if (sceneData.is_start_scene) {
-                    startScene = pano;
-                }
-            });
+                panoramas[sceneId] = pano;
 
-            if (!startScene && tourData.scenes.length > 0) {
-                startScene = panoramas[tourData.scenes[0].id];
-            }
-
-            // Attach infospots to scenes
-            tourData.scenes.forEach(sceneData => {
-                const pano = panoramas[sceneData.id];
-                
-                if(sceneData.infospots) {
+                // Attach infospots to this new panorama
+                if (sceneData.infospots) {
                     sceneData.infospots.forEach(spot => {
                         let ispot;
                         if (spot.is_perspective) {
@@ -254,26 +237,56 @@
                             ispot.isPerspectiveMesh = true;
                             
                             // Interaction for Mesh
-                            ispot.addEventListener('click', () => {
-                                handleSpotClick(spot);
+                            ispot.addEventListener('click', () => { handleSpotClick(spot); });
+
+                            // Hover effect for Mesh
+                            ispot.addEventListener('hoverenter', () => {
+                                new TWEEN.Tween(ispot.scale).to({ x: (spot.scale_x || 1) * 1.2, y: (spot.scale_y || 1) * 1.2, z: 1.2 }, 300).easing(TWEEN.Easing.Back.Out).start();
                             });
+                            ispot.addEventListener('hoverleave', () => {
+                                new TWEEN.Tween(ispot.scale).to({ x: spot.scale_x || 1, y: spot.scale_y || 1, z: 1 }, 300).easing(TWEEN.Easing.Back.Out).start();
+                            });
+
+                            addBounce(ispot);
                         } else {
                             // Standard Billboard
                             const iconUrl = (spot.type === 'info') ? infoUrl : arrowUrl;
                             ispot = new PANOLENS.Infospot(UNIFORM_SIZE, iconUrl);
                             ispot.position.set(spot.position_x, spot.position_y, spot.position_z);
-                            ispot.addEventListener('click', () => {
-                                handleSpotClick(spot);
-                            });
+                            ispot.addEventListener('click', () => { handleSpotClick(spot); });
                             
-                            // Animations for Billboards
-                            if (spot.type === 'info') addBounce(ispot);
-                            else addPulse(ispot);
+                            // Hover effect for Billboard
+                            ispot.addEventListener('hoverenter', () => { ispot.scale.set(1.3, 1.3, 1.3); });
+                            ispot.addEventListener('hoverleave', () => { ispot.scale.set(1, 1, 1); });
+                            
+                            addBounce(ispot);
                         }
                         pano.add(ispot);
                     });
                 }
-            });
+
+                // Preload neighbors when this panorama loads
+                pano.addEventListener('load', () => {
+                    preloadNeighbors(sceneId);
+                });
+
+                return pano;
+            }
+
+            function preloadNeighbors(sceneId) {
+                const sceneData = tourData.scenes.find(s => s.id == sceneId);
+                if (sceneData && sceneData.infospots) {
+                    sceneData.infospots.forEach(spot => {
+                        if (spot.type === 'nav' && spot.target_scene_id) {
+                            getOrCreatePanorama(spot.target_scene_id);
+                        }
+                    });
+                }
+            }
+
+            // Inisialisasi awal hanya untuk scene pertama
+            let startSceneData = tourData.scenes.find(s => s.is_start_scene) || tourData.scenes[0];
+            let startScene = startSceneData ? getOrCreatePanorama(startSceneData.id) : null;
 
             function handleSpotClick(spot) {
                 if (spot.type === 'info') {
@@ -281,10 +294,13 @@
                     let layout = spot.model_path ? "layout-horizontal" : "layout-vertical";
                     openModal(spot.title || "Info", spot.content_id || "", spot.content_en || "", modelUrl, layout);
                 } else if (spot.type === 'nav') {
-                    if (spot.target_scene_id && panoramas[spot.target_scene_id]) {
-                        const targetSceneData = spot.target_scene || spot.targetScene;
-                        const targetSceneName = targetSceneData ? targetSceneData.name : "NEXT SCENE";
-                        walkToTarget(panoramas[spot.target_scene_id], new THREE.Vector3(spot.position_x, spot.position_y, spot.position_z), targetSceneName, "Navigasi");
+                    if (spot.target_scene_id) {
+                        const targetPano = getOrCreatePanorama(spot.target_scene_id);
+                        if (targetPano) {
+                            const targetSceneData = spot.target_scene || spot.targetScene || tourData.scenes.find(s => s.id == spot.target_scene_id);
+                            const targetSceneName = targetSceneData ? targetSceneData.name : "NEXT SCENE";
+                            walkToTarget(targetPano, new THREE.Vector3(spot.position_x, spot.position_y, spot.position_z), targetSceneName, "Navigasi");
+                        }
                     }
                 }
             }
@@ -301,6 +317,13 @@
             }
 
             function walkToTarget(pano, targetPosition, title, subtitle) {
+                // Sembunyikan ikon di panorama lama agar tidak "mengikuti" saat transisi
+                if(viewer.panorama) {
+                    viewer.panorama.children.forEach(c => {
+                        if (c instanceof PANOLENS.Infospot || c.isPerspectiveMesh) c.visible = false;
+                    });
+                }
+
                 viewer.tweenControlCenter(targetPosition, 500);
                 setTimeout(() => {
                     let startFov = viewer.camera.fov;
@@ -318,6 +341,14 @@
                         else {
                             if (!pano.parent) viewer.add(pano);
                             viewer.setPanorama(pano);
+                            
+                            // Pastikan visibilitas ikon di panorama baru sesuai dengan tombol toggle
+                            const markersBtn = document.getElementById('toggle-markers');
+                            const isMarkersEnabled = markersBtn ? markersBtn.classList.contains('btn-active') : true;
+                            pano.children.forEach(c => {
+                                if (c instanceof PANOLENS.Infospot || c.isPerspectiveMesh) c.visible = isMarkersEnabled;
+                            });
+
                             document.getElementById('scene-title').innerText = title;
                             document.getElementById('scene-subtitle').innerText = subtitle;
 
