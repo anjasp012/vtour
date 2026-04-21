@@ -5,17 +5,18 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Scene;
+use App\Models\SceneView;
 use App\Models\Infospot;
 
 class InfospotController extends Controller
 {
-    public function create(Scene $scene)
+    public function create(SceneView $view)
     {
-        $hasTargetScenes = $scene->tour->scenes()->where('id', '!=', $scene->id)->get();
-        return view('admin.infospots.create', compact('scene', 'hasTargetScenes'));
+        $hasTargetScenes = $view->scene->tour->scenes()->where('id', '!=', $view->scene_id)->get();
+        return view('admin.infospots.create', compact('view', 'hasTargetScenes'));
     }
 
-    public function store(Request $request, Scene $scene)
+    public function store(Request $request, SceneView $view)
     {
         $validated = $request->validate([
             'type' => 'required|in:info,nav',
@@ -42,16 +43,17 @@ class InfospotController extends Controller
         // Remove file object from array before database insertion
         unset($validated['model_file']);
 
-        $scene->infospots()->create($validated);
+        $view->infospots()->create($validated);
 
-        return redirect()->route('admin.scenes.show', $scene)->with('success', 'Infospot added successfully.');
+        return redirect()->route('admin.scenes.show', $view->scene_id)->with('success', 'Infospot added successfully.');
     }
 
     public function edit(Infospot $infospot)
     {
-        $scene = $infospot->scene;
+        $view = $infospot->view;
+        $scene = $view->scene;
         $hasTargetScenes = $scene->tour->scenes()->where('id', '!=', $scene->id)->get();
-        return view('admin.infospots.edit', compact('infospot', 'scene', 'hasTargetScenes'));
+        return view('admin.infospots.edit', compact('infospot', 'view', 'scene', 'hasTargetScenes'));
     }
 
     public function update(Request $request, Infospot $infospot)
@@ -87,12 +89,12 @@ class InfospotController extends Controller
 
         $infospot->update($validated);
 
-        return redirect()->route('admin.scenes.show', $infospot->scene_id)->with('success', 'Infospot updated successfully.');
+        return redirect()->route('admin.scenes.show', $infospot->view->scene_id)->with('success', 'Infospot updated successfully.');
     }
 
     public function destroy(Infospot $infospot)
     {
-        $sceneId = $infospot->scene_id;
+        $sceneId = $infospot->view->scene_id;
         $infospot->delete();
 
         return redirect()->route('admin.scenes.show', $sceneId)->with('success', 'Infospot deleted successfully.');

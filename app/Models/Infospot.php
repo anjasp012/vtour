@@ -8,9 +8,9 @@ class Infospot extends Model
 {
     protected $guarded = [];
 
-    public function scene()
+    public function view()
     {
-        return $this->belongsTo(Scene::class);
+        return $this->belongsTo(SceneView::class, 'scene_view_id');
     }
 
     public function targetScene()

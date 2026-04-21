@@ -13,8 +13,18 @@ class Scene extends Model
         return $this->belongsTo(Tour::class);
     }
 
+    public function views()
+    {
+        return $this->hasMany(SceneView::class);
+    }
+
+    public function primaryView()
+    {
+        return $this->hasOne(SceneView::class)->where('is_primary', true);
+    }
+
     public function infospots()
     {
-        return $this->hasMany(Infospot::class);
+        return $this->hasManyThrough(Infospot::class, SceneView::class, 'scene_id', 'scene_view_id');
     }
 }

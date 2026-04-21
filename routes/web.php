@@ -19,6 +19,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     // Admin Scene CRUD
     Route::resource('scenes', AdminSceneController::class);
-    // Nested resources for infospots within a scene
-    Route::resource('scenes.infospots', AdminInfospotController::class)->shallow();
+    Route::post('scenes/{scene}/add-view', [AdminSceneController::class, 'addView'])->name('scenes.add-view');
+    // Nested resources for infospots within a scene view
+    Route::resource('views.infospots', AdminInfospotController::class)->shallow();
 });

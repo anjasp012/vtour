@@ -9,7 +9,7 @@ class TourController extends Controller
 {
     public function index()
     {
-        $tour = Tour::with(['scenes.infospots.targetScene'])->first();
+        $tour = Tour::with(['scenes.views.infospots.targetScene'])->first();
         
         if (!$tour) {
             return view('welcome');

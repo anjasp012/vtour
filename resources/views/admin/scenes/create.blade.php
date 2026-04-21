@@ -40,13 +40,13 @@
                     </div>
                     
                     <div class="space-y-1.5">
-                        <label class="text-[9px] font-bold text-slate-500 uppercase tracking-widest ml-0.5">Equirectangular Buffer (JPG/PNG)</label>
+                        <label class="text-[9px] font-bold text-slate-500 uppercase tracking-widest ml-0.5">Equirectangular Buffer Collection (JPG/PNG)</label>
                         <div class="relative py-8 border border-dashed border-slate-300 rounded bg-slate-50/30 hover:bg-white hover:border-blue-400 transition-all flex flex-col items-center justify-center text-center group cursor-pointer">
-                            <i class="fas fa-upload text-slate-300 group-hover:text-blue-500 transition-colors mb-2"></i>
-                            <p class="text-[10px] font-bold text-slate-400">Click to select source file</p>
-                            <input type="file" name="image" accept="image/jpeg,image/png" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="this.parentElement.querySelector('p').innerText = this.files[0].name">
+                            <i class="fas fa-images text-slate-300 group-hover:text-blue-500 transition-colors mb-2"></i>
+                            <p class="text-[10px] font-bold text-slate-400">Click to select one or multiple source files</p>
+                            <input type="file" name="images[]" accept="image/jpeg,image/png" multiple required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="this.parentElement.querySelector('p').innerText = this.files.length + ' files selected'">
                         </div>
-                        @error('image') <p class="text-rose-500 text-[8px] font-bold mt-1 uppercase">{{ $message }}</p> @enderror
+                        @error('images') <p class="text-rose-500 text-[8px] font-bold mt-1 uppercase">{{ $message }}</p> @enderror
                     </div>
 
                     <div class="p-4 bg-slate-50 rounded border border-slate-200 flex items-center justify-between">

@@ -46,14 +46,14 @@
                     <div class="space-y-2">
                         <label class="text-[9px] font-bold text-slate-500 uppercase tracking-widest ml-0.5">Current Visual Feed</label>
                         <div class="relative group aspect-video rounded-lg overflow-hidden border border-slate-200 bg-slate-100">
-                            <img src="{{ Storage::url($scene->image_path) }}" class="w-full h-full object-cover group-hover:opacity-40 transition-opacity" alt="Current">
+                            <img src="{{ $scene->primaryView ? Storage::url($scene->primaryView->image_path) : '' }}" class="w-full h-full object-cover group-hover:opacity-40 transition-opacity" alt="Current">
                             <div class="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900/40">
                                 <i class="fas fa-sync text-white text-xl mb-2"></i>
                                 <span class="text-white text-[9px] font-bold uppercase tracking-widest">Replace Visual Buffer</span>
                             </div>
                             <input type="file" name="image" accept="image/jpeg,image/png" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="this.closest('.group').querySelector('.text-white').innerText = 'NEW BUFFER READY'">
                         </div>
-                        <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest text-center">{{ basename($scene->image_path) }}</p>
+                        <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest text-center">{{ $scene->primaryView ? basename($scene->primaryView->image_path) : 'No image' }}</p>
                         @error('image') <p class="text-rose-500 text-[8px] font-bold mt-1 uppercase">{{ $message }}</p> @enderror
                     </div>
 

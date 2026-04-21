@@ -26,7 +26,7 @@
             <div class="bg-white border border-slate-200 rounded overflow-hidden flex flex-col shadow-sm hover:shadow transition-all group">
                 <!-- Compact Thumbnail -->
                 <div class="relative aspect-video overflow-hidden border-b border-slate-100">
-                    <img src="{{ Storage::url($scene->image_path) }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="{{ $scene->name }}">
+                    <img src="{{ $scene->primaryView ? Storage::url($scene->primaryView->image_path) : '' }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="{{ $scene->name }}">
                     
                     @if($scene->is_start_scene)
                         <div class="absolute top-1.5 left-1.5 bg-blue-600 text-white text-[7px] font-bold px-1.5 py-0.5 rounded-sm shadow uppercase tracking-widest">

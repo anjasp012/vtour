@@ -1,6 +1,6 @@
 @extends('components.admin-layout')
 
-@section('header', 'Add Infospot to ' . $scene->name)
+@section('header', 'Add Infospot to ' . $view->scene->name . ' (' . $view->name . ')')
 
 @section('content')
 <div class="bg-white rounded-lg shadow-sm max-w-2xl">
@@ -9,7 +9,7 @@
     </div>
     
     <div class="p-6">
-        <form action="{{ route('admin.scenes.infospots.store', $scene) }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('admin.views.infospots.store', $view) }}" method="POST" enctype="multipart/form-data">
             @csrf
             
             <div class="mb-4">
@@ -73,7 +73,7 @@
                 <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow-sm text-sm font-medium transition-colors">
                     Add Point
                 </button>
-                <a href="{{ route('admin.scenes.show', $scene) }}" class="text-gray-500 hover:underline text-sm">Cancel</a>
+                <a href="{{ route('admin.scenes.show', $view->scene_id) }}" class="text-gray-500 hover:underline text-sm">Cancel</a>
             </div>
         </form>
     </div>

@@ -51,6 +51,31 @@
         <div class="flex-1 overflow-y-auto p-5 scrollbar-thin">
             <!-- List Mode -->
             <div id="state-list" class="space-y-6">
+                <!-- Views Management -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Ruangan Views</span>
+                        <button onclick="document.getElementById('modal-add-view').classList.remove('hidden')" class="text-[8px] font-bold text-blue-600 hover:underline uppercase tracking-widest">
+                            + Add View
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        @foreach($scene->views as $view)
+                            <button onclick="switchView('{{ $view->id }}', '{{ str_replace('\\', '/', Storage::url($view->image_path)) }}', this)" class="view-card p-2 bg-slate-50 border {{ $view->is_primary ? 'border-blue-600 ring-1 ring-blue-600' : 'border-slate-100' }} rounded-lg hover:border-blue-400 transition-all text-left overflow-hidden group relative">
+                                <div class="aspect-video rounded bg-slate-200 overflow-hidden mb-1.5">
+                                    <img src="{{ Storage::url($view->image_path) }}" class="w-full h-full object-cover">
+                                </div>
+                                <span class="text-[8px] font-bold text-slate-700 uppercase truncate block">{{ $view->name }}</span>
+                                @if($view->is_primary)
+                                    <span class="absolute top-1 right-1 w-1.5 h-1.5 bg-blue-600 rounded-full"></span>
+                                @endif
+                            </button>
+                        @endforeach
+                    </div>
+                </div>
+
+                <div class="w-full h-px bg-slate-100"></div>
+
                 <div class="flex items-center justify-between">
                     <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Scene Nodes</span>
                     <span class="bg-blue-600 text-white text-[9px] font-bold px-2 py-0.5 rounded" id="point-count-badge">{{ count($scene->infospots) }}</span>
@@ -266,6 +291,32 @@
     </aside>
 </div>
 
+<!-- Modal Add View -->
+<div id="modal-add-view" class="hidden fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in">
+        <div class="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+            <h3 class="text-xs font-bold text-slate-900 uppercase tracking-widest">Add Alternative View</h3>
+            <button onclick="document.getElementById('modal-add-view').classList.add('hidden')" class="text-slate-400 hover:text-slate-900 transition-colors">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form action="{{ route('admin.scenes.add-view', $scene) }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-5">
+            @csrf
+            <div class="space-y-1.5">
+                <label class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">View Title</label>
+                <input type="text" name="name" required class="modern-input" placeholder="e.g. Night View">
+            </div>
+            <div class="space-y-1.5">
+                <label class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">360 Image (Equirectangular)</label>
+                <input type="file" name="image" required accept="image/*" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-[10px] file:font-black file:bg-blue-600 file:text-white hover:file:bg-blue-700 transition-all cursor-pointer">
+            </div>
+            <div class="pt-2">
+                <button type="submit" class="w-full bg-blue-600 text-white font-black py-3 rounded text-[9px] uppercase tracking-widest shadow-lg hover:bg-blue-700 transition-all">Upload View</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- Pro Context Menu (Dark) -->
 <div id="context-menu" class="hidden fixed z-[999] bg-[#1a1a1a] border border-white/5 rounded shadow-2xl py-2 w-48 text-white font-bold text-[9px] uppercase tracking-widest">
     <div id="menu-add-info">
@@ -324,6 +375,58 @@
 <script src="https://pchen66.github.io/js/three/three.min.js"></script>
 <script src="https://pchen66.github.io/js/panolens/panolens.min.js"></script>
 <script>
+    const viewsData = @json($scene->views);
+    let currentViewId = {{ $scene->primaryView->id }};
+
+    // View Switching logic
+    function switchView(viewId, url, el) {
+        currentViewId = viewId;
+
+        // Update UI
+        document.querySelectorAll('.view-card').forEach(c => c.classList.remove('border-blue-600', 'ring-1', 'ring-blue-600'));
+        if (el) el.classList.add('border-blue-600', 'ring-1', 'ring-blue-600');
+
+        console.log("Admin: Switching view to ID", viewId, "URL:", url);
+
+        // Update Form Action URL for adding new hotspots
+        const form = document.querySelector('form[action*="infospots"]');
+        if (form) {
+            form.action = `{{ url('admin/views') }}/${viewId}/infospots`;
+        }
+
+        // Clear existing spots from panorama and internal trackers
+        for (let id in renderedSpots) {
+            panorama.remove(renderedSpots[id]);
+            delete renderedSpots[id];
+        }
+
+        // Delegate texture swapping by creating a new Panorama
+        const pano = new PANOLENS.ImagePanorama(url);
+        viewer.add(pano);
+        viewer.setPanorama(pano);
+        
+        panorama = pano;
+        window.panorama = pano;
+        
+        // Render spots for this specific view
+        pano.addEventListener('load', () => {
+             renderSpotsForView(viewId);
+        });
+        // Render immediate fallback just in case it's cached
+        renderSpotsForView(viewId);
+        
+        console.log("Admin: View switched using new panorama object");
+    }
+
+    function renderSpotsForView(viewId) {
+        const view = viewsData.find(v => v.id == viewId);
+        if (!view || !view.infospots) return;
+
+        view.infospots.forEach(spot => {
+            renderMarker(spot);
+        });
+    }
+
     const container = document.getElementById('panolens-container');
     const viewer = new PANOLENS.Viewer({ 
         container: container, 
@@ -337,11 +440,11 @@
     const controls = viewer.getControl();
     controls.dollyIn = controls.dollyOut;
 
-    const panorama = new PANOLENS.ImagePanorama('{{ Storage::url($scene->image_path) }}');
+    window.panorama = new PANOLENS.ImagePanorama('{{ $scene->primaryView ? str_replace('\\', '/', Storage::url($scene->primaryView->image_path)) : "" }}');
+    let panorama = window.panorama;
     viewer.add(panorama);
 
     // Initial state vars
-    const existingSpots = @json($scene->infospots);
     const renderedSpots = {};
     let isAdding = false;
     let editingId = null; 
@@ -370,20 +473,34 @@
         });
     }
 
+    function addBounce(infospot) {
+        // Hentikan tween lama jika ada
+        if (infospot.bounceTween) {
+            infospot.bounceTween.stop();
+        }
+
+        const startY = infospot.position.y;
+        infospot.bounceTween = new TWEEN.Tween(infospot.position)
+            .to({ y: startY + 200 }, 1000)
+            .easing(TWEEN.Easing.Quadratic.InOut)
+            .repeat(Infinity)
+            .yoyo(true)
+            .start();
+    }
+
     let ghostMarker = null;
     let iconTextures = {};
 
     // Render existing spots
     Promise.all([
         createStyledIcon('i', '#2563eb'), // info
-        createStyledIcon('⮝', '#334155') // nav
+        createStyledIcon('⮝', '#4f46e5') // nav (Updated to vibrant indigo)
     ]).then(([infoUrl, navUrl]) => {
         iconTextures.info = infoUrl;
         iconTextures.nav = navUrl;
         
-        existingSpots.forEach(spot => {
-            renderMarker(spot);
-        });
+        // Render initial spots after icons are ready
+        renderSpotsForView(currentViewId);
         
         ghostMarker = new PANOLENS.Infospot(600, infoUrl);
         ghostMarker.material.opacity = 0.5;
@@ -391,7 +508,9 @@
 
     function renderMarker(spotData) {
         if (renderedSpots[spotData.id]) {
-            panorama.remove(renderedSpots[spotData.id]);
+            const oldMarker = renderedSpots[spotData.id];
+            if (oldMarker.bounceTween) oldMarker.bounceTween.stop();
+            panorama.remove(oldMarker);
             delete renderedSpots[spotData.id];
         }
 
@@ -431,6 +550,25 @@
             }
             editInfospot(spotData.id, spotData);
         });
+
+        // Hover Effect
+        marker.addEventListener('hoverenter', () => {
+            if (marker.isPerspectiveMesh) {
+                new TWEEN.Tween(marker.scale).to({ x: (spotData.scale_x || 1) * 1.2, y: (spotData.scale_y || 1) * 1.2, z: 1.2 }, 300).easing(TWEEN.Easing.Back.Out).start();
+            } else {
+                marker.scale.set(1.3, 1.3, 1.3);
+            }
+        });
+        marker.addEventListener('hoverleave', () => {
+            if (marker.isPerspectiveMesh) {
+                new TWEEN.Tween(marker.scale).to({ x: spotData.scale_x || 1, y: spotData.scale_y || 1, z: 1 }, 300).easing(TWEEN.Easing.Back.Out).start();
+            } else {
+                marker.scale.set(1, 1, 1);
+            }
+        });
+
+        // Bounce Animation
+        addBounce(marker);
 
         panorama.add(marker);
         renderedSpots[spotData.id] = marker;
@@ -484,7 +622,11 @@
 
     function updateRealtimePreview() {
         if (!editingId || !renderedSpots[editingId]) return;
-        const currentData = existingSpots.find(s => s.id == editingId);
+        let currentData = null;
+        viewsData.forEach(v => {
+            const s = v.infospots.find(is => is.id == editingId);
+            if (s) currentData = s;
+        });
         if (currentData) {
             const needsRebuild = (!!currentData.is_perspective !== inputPerspective.checked);
             currentData.is_perspective = inputPerspective.checked;
@@ -538,7 +680,13 @@
                 curr = curr.parent;
             }
             if (foundId) {
-                lastRightClickSpot = { id: foundId, data: existingSpots.find(s => s.id == foundId) };
+                // Find spot data from viewsData
+                let spotData = null;
+                viewsData.forEach(v => {
+                    const s = v.infospots.find(is => is.id == foundId);
+                    if (s) spotData = s;
+                });
+                lastRightClickSpot = { id: foundId, data: spotData };
                 showContextMenu(e.clientX, e.clientY, 'spot');
                 return;
             }
@@ -583,8 +731,17 @@
                 inputType.dispatchEvent(new Event('change'));
                 pos_x.value = lastRightClickCoords.x; pos_y.value = lastRightClickCoords.y; pos_z.value = lastRightClickCoords.z;
                 updatePosDisplay(lastRightClickCoords.x, lastRightClickCoords.y, lastRightClickCoords.z);
-                if (!ghostMarker.parent) panorama.add(ghostMarker);
-                ghostMarker.position.set(lastRightClickCoords.x, lastRightClickCoords.y, lastRightClickCoords.z);
+                
+                // Update ghost marker texture to match type
+                if (ghostMarker) {
+                    const textureUrl = (type === 'info') ? iconTextures.info : iconTextures.nav;
+                    const loader = new THREE.TextureLoader();
+                    ghostMarker.material.map = loader.load(textureUrl);
+                    ghostMarker.material.needsUpdate = true;
+                    
+                    if (!ghostMarker.parent) panorama.add(ghostMarker);
+                    ghostMarker.position.set(lastRightClickCoords.x, lastRightClickCoords.y, lastRightClickCoords.z);
+                }
             }
         } else if (action === 'edit') {
             if (lastRightClickSpot) editInfospot(lastRightClickSpot.id, lastRightClickSpot.data);
@@ -617,7 +774,7 @@
             document.getElementById('input-desc-id').value = '';
             document.getElementById('input-desc-en').value = '';
             methodPut.innerHTML = '';
-            formEl.action = "{{ route('admin.scenes.infospots.store', $scene) }}";
+            formEl.action = `{{ url('admin/views') }}/${currentViewId}/infospots`;
             formDelete.classList.add('hidden');
             inputPerspective.checked = false;
             inputPerspective.dispatchEvent(new Event('change'));
@@ -725,12 +882,22 @@
             if (found) {
                 isDragging = true; windowWasDragging = false; dragMarker = found;
                 if (viewer.getControl()) viewer.getControl().enabled = false;
+                
+                // Hentikan bounce saat sedang di-drag agar tidak "melawan"
+                if (dragMarker.bounceTween) {
+                    dragMarker.bounceTween.stop();
+                }
             }
         }
     });
 
     window.addEventListener('pointerup', () => {
         if (isDragging) {
+            // Jalankan kembali bounce setelah drag selesai dengan titik Y yang baru
+            if (dragMarker) {
+                addBounce(dragMarker);
+            }
+
             isDragging = false; dragMarker = null;
             if (viewer.getControl()) viewer.getControl().enabled = true;
             showInstruction("POSITION FIXED.");

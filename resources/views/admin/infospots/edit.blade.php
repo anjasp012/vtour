@@ -1,6 +1,6 @@
 @extends('components.admin-layout')
 
-@section('header', 'Edit Infospot in ' . $scene->name)
+@section('header', 'Edit Infospot in ' . $scene->name . ' (' . $view->name . ')')
 
 @section('content')
 <div class="bg-white rounded-lg shadow-sm max-w-2xl">
