@@ -21,7 +21,7 @@ class SceneController extends Controller
     public function index()
     {
         $tour = $this->getTour();
-        $tour->load('scenes.primaryView');
+        $tour->load('scenes');
         return view('admin.scenes.index', compact('tour'));
     }
 
@@ -34,14 +34,14 @@ class SceneController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'images.*' => 'required|image|mimes:jpeg,png,jpg',
+            'image' => 'required|image|mimes:jpeg,png,jpg', // 10MB max
             'is_start_scene' => 'boolean',
-            'is_360' => 'boolean',
             'description_id' => 'nullable|string',
             'description_en' => 'nullable|string',
         ]);
 
         $tour = $this->getTour();
+        $imagePath = $request->file('image')->store('scenes/images', 'public');
 
         if ($request->has('is_start_scene') && $request->is_start_scene) {
             $tour->scenes()->update(['is_start_scene' => false]);
@@ -49,28 +49,17 @@ class SceneController extends Controller
 
         $newScene = $tour->scenes()->create([
             'name' => $validated['name'],
+            'image_path' => $imagePath,
             'is_start_scene' => $request->has('is_start_scene') ? true : false,
             'description_id' => $request->description_id,
             'description_en' => $request->description_en,
         ]);
 
-        if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $index => $file) {
-                $imagePath = $file->store('scenes/images', 'public');
-                $newScene->views()->create([
-                    'name' => $index == 0 ? 'Main View' : 'View ' . ($index + 1),
-                    'image_path' => $imagePath,
-                    'is_primary' => $index == 0,
-                    'is_360' => $request->has('is_360') ? $request->is_360 : true,
-                ]);
-            }
-        }
-
         if ($request->wantsJson()) {
             return response()->json([
                 'success' => true,
                 'message' => 'Scene created successfully.',
-                'scene' => $newScene->load('primaryView')
+                'scene' => $newScene
             ]);
         }
 
@@ -79,14 +68,13 @@ class SceneController extends Controller
 
     public function show(Scene $scene)
     {
-        $scene->load(['views.infospots.targetScene', 'primaryView']);
+        $scene->load('infospots.targetScene');
         $hasTargetScenes = Scene::where('id', '!=', $scene->id)->get();
         return view('admin.scenes.show', compact('scene', 'hasTargetScenes'));
     }
 
     public function edit(Scene $scene)
     {
-        $scene->load('primaryView');
         return view('admin.scenes.edit', compact('scene'));
     }
 
@@ -111,62 +99,22 @@ class SceneController extends Controller
             'description_en' => $request->description_en,
         ];
 
-        $scene->update($data);
-
         if ($request->hasFile('image')) {
-            $primaryView = $scene->primaryView;
-            if ($primaryView) {
-                if (Storage::disk('public')->exists($primaryView->image_path)) {
-                    Storage::disk('public')->delete($primaryView->image_path);
-                }
-                $primaryView->update(['image_path' => $request->file('image')->store('scenes/images', 'public')]);
+            if (Storage::disk('public')->exists($scene->image_path)) {
+                Storage::disk('public')->delete($scene->image_path);
             }
+            $data['image_path'] = $request->file('image')->store('scenes/images', 'public');
         }
+
+        $scene->update($data);
 
         return redirect()->route('admin.scenes.index')->with('success', 'Scene updated successfully.');
     }
 
-    public function addView(Request $request, Scene $scene)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'image' => 'required|image|mimes:jpeg,png,jpg',
-            'is_360' => 'boolean'
-        ]);
-
-        $imagePath = $request->file('image')->store('scenes/images', 'public');
-
-        $scene->views()->create([
-            'name' => $request->name,
-            'image_path' => $imagePath,
-            'is_primary' => false,
-            'is_360' => $request->has('is_360') ? $request->is_360 : true
-        ]);
-
-        return back()->with('success', 'View added successfully.');
-    }
-
-    public function updateView(Request $request, \App\Models\SceneView $sceneView)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'is_360' => 'required|boolean'
-        ]);
-
-        $sceneView->update([
-            'name' => $request->name,
-            'is_360' => $request->is_360
-        ]);
-
-        return back()->with('success', 'View settings updated successfully.');
-    }
-
     public function destroy(Scene $scene)
     {
-        foreach ($scene->views as $view) {
-            if (Storage::disk('public')->exists($view->image_path)) {
-                Storage::disk('public')->delete($view->image_path);
-            }
+        if (Storage::disk('public')->exists($scene->image_path)) {
+            Storage::disk('public')->delete($scene->image_path);
         }
         
         $scene->delete();

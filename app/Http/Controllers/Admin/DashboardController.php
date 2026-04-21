@@ -21,9 +21,7 @@ class DashboardController extends Controller
     {
         $tour = $this->getTour();
         $totalScenes = $tour->scenes()->count();
-        $sceneIds = $tour->scenes()->pluck('id');
-        $viewIds = \App\Models\SceneView::whereIn('scene_id', $sceneIds)->pluck('id');
-        $totalHotspots = Infospot::whereIn('scene_view_id', $viewIds)->count();
+        $totalHotspots = Infospot::whereIn('scene_id', $tour->scenes()->pluck('id'))->count();
         
         $recentScenes = $tour->scenes()->latest()->take(5)->get();
 

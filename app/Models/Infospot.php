@@ -8,13 +8,18 @@ class Infospot extends Model
 {
     protected $guarded = [];
 
-    public function view()
+    public function scene()
     {
-        return $this->belongsTo(SceneView::class, 'scene_view_id');
+        return $this->belongsTo(Scene::class);
     }
 
     public function targetScene()
     {
         return $this->belongsTo(Scene::class, 'target_scene_id');
+    }
+
+    public function assets()
+    {
+        return $this->hasMany(InfospotAsset::class)->orderBy('sort_order');
     }
 }

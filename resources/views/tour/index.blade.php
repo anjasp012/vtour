@@ -124,13 +124,6 @@
         
         <!-- Coord Pill -->
         <div class="bg-bg-glass backdrop-blur-[20px] border border-border-glass px-[25px] py-[10px] rounded-[50px] text-white font-mono text-[13px] self-start pointer-events-auto opacity-0 invisible transition-all duration-400 shadow-[0_10px_30px_rgba(0,0,0,0.5)] [&.show]:opacity-100 [&.show]:visible" id="coord-display">Ambil kordinat dengan klik ruangan...</div>
-
-        <!-- View Switcher (Bottom Center) -->
-        <div id="view-switcher" class="hidden absolute bottom-10 left-1/2 -translate-x-1/2 z-40">
-            <div id="view-list" class="flex items-center gap-2 p-1.5 bg-black/40 backdrop-blur-md rounded-full border border-white/10 shadow-2xl pointer-events-auto">
-                <!-- Views will be injected here -->
-            </div>
-        </div>
     </div>
 
     <script src="https://pchen66.github.io/js/three/three.min.js"></script>
@@ -204,51 +197,22 @@
             const tourData = {!! $tour->toJson() !!};
             
             const UNIFORM_SIZE = 500;
-            const viewPanoramas = {}; // Cache panoramas by view ID
+            const panoramas = {};
             let currentSceneData = null;
 
-            function getOrCreatePanorama(viewId, sceneId) {
-                if (viewPanoramas[viewId]) return viewPanoramas[viewId];
+            function getOrCreatePanorama(sceneId) {
+                if (panoramas[sceneId]) return panoramas[sceneId];
 
                 const sceneData = tourData.scenes.find(s => s.id == sceneId);
-                const viewData = sceneData.views.find(v => v.id == viewId);
-                if (!viewData) return null;
+                if (!sceneData) return null;
 
-                const storageRoot = '{{ Storage::url("/") }}'.replace(/\/$/, "");
-                const imageUrl = storageRoot + "/" + viewData.image_path.replace(/^\//, "");
-                
-                let pano;
-                const is360 = viewData.is_360 === undefined ? true : (viewData.is_360 == 1);
-                
-                if (is360) {
-                    pano = new PANOLENS.ImagePanorama(imageUrl);
-                } else {
-                    pano = new PANOLENS.Panorama();
-                    const loader = new THREE.TextureLoader();
-                    loader.load(imageUrl, (texture) => {
-                        let aspect = 1;
-                        if (texture.image) {
-                            aspect = texture.image.width / texture.image.height;
-                        }
-                        const width = 10000;
-                        const height = width / aspect;
-                        pano.geometry.dispose();
-                        pano.geometry = new THREE.PlaneGeometry(width, height);
-                        pano.geometry.translate(0, 0, -5000);
-                        texture.colorSpace = THREE.SRGBColorSpace || THREE.sRGBEncoding;
-                        texture.minFilter = THREE.LinearFilter;
-                        if (pano.material && pano.material.dispose) pano.material.dispose();
-                        pano.material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
-                        pano.dispatchEvent({ type: 'load' });
-                    });
-                }
-                pano.sceneData = sceneData; 
-                pano.viewData = viewData;
-                viewPanoramas[viewId] = pano;
+                const imageUrl = '{{ Storage::url("") }}' + sceneData.image_path;
+                const pano = new PANOLENS.ImagePanorama(imageUrl);
+                panoramas[sceneId] = pano;
 
-                // Attach infospots to this specific view's panorama
-                if (viewData.infospots) {
-                    viewData.infospots.forEach(spot => {
+                // Attach infospots to this new panorama
+                if (sceneData.infospots) {
+                    sceneData.infospots.forEach(spot => {
                         let ispot;
                         if (spot.is_perspective) {
                             // Render as 3D Mesh for perspective mode
@@ -272,8 +236,10 @@
                             ispot.scale.set(spot.scale_x || 1, spot.scale_y || 1, 1);
                             ispot.isPerspectiveMesh = true;
                             
+                            // Interaction for Mesh
                             ispot.addEventListener('click', () => { handleSpotClick(spot); });
 
+                            // Hover effect for Mesh
                             ispot.addEventListener('hoverenter', () => {
                                 new TWEEN.Tween(ispot.scale).to({ x: (spot.scale_x || 1) * 1.2, y: (spot.scale_y || 1) * 1.2, z: 1.2 }, 300).easing(TWEEN.Easing.Back.Out).start();
                             });
@@ -283,11 +249,13 @@
 
                             addBounce(ispot);
                         } else {
+                            // Standard Billboard
                             const iconUrl = (spot.type === 'info') ? infoUrl : arrowUrl;
                             ispot = new PANOLENS.Infospot(UNIFORM_SIZE, iconUrl);
                             ispot.position.set(spot.position_x, spot.position_y, spot.position_z);
                             ispot.addEventListener('click', () => { handleSpotClick(spot); });
                             
+                            // Hover effect for Billboard
                             ispot.addEventListener('hoverenter', () => { ispot.scale.set(1.3, 1.3, 1.3); });
                             ispot.addEventListener('hoverleave', () => { ispot.scale.set(1, 1, 1); });
                             
@@ -297,104 +265,49 @@
                     });
                 }
 
+                // Preload neighbors when this panorama loads
                 pano.addEventListener('load', () => {
-                    preloadNeighbors(pano);
+                    preloadNeighbors(sceneId);
                 });
 
                 return pano;
             }
 
-            function preloadNeighbors(pano) {
-                const viewData = pano.viewData;
-                if (viewData && viewData.infospots) {
-                    viewData.infospots.forEach(spot => {
+            function preloadNeighbors(sceneId) {
+                const sceneData = tourData.scenes.find(s => s.id == sceneId);
+                if (sceneData && sceneData.infospots) {
+                    sceneData.infospots.forEach(spot => {
                         if (spot.type === 'nav' && spot.target_scene_id) {
-                            const targetScene = tourData.scenes.find(s => s.id == spot.target_scene_id);
-                            if (targetScene && targetScene.views && targetScene.views.length > 0) {
-                                const targetView = targetScene.views.find(v => v.is_primary) || targetScene.views[0];
-                                getOrCreatePanorama(targetView.id, targetScene.id);
-                            }
+                            getOrCreatePanorama(spot.target_scene_id);
                         }
                     });
                 }
             }
 
+            // Inisialisasi awal hanya untuk scene pertama
             let startSceneData = tourData.scenes.find(s => s.is_start_scene) || tourData.scenes[0];
-            let startView = (startSceneData.views && startSceneData.views.length > 0) 
-                 ? (startSceneData.views.find(v => v.is_primary) || startSceneData.views[0])
-                 : null;
-
-            let startPano = startView ? getOrCreatePanorama(startView.id, startSceneData.id) : null;
-
-            window.switchSceneView = function(view, activeBtn) {
-                // Update UI State
-                viewList.querySelectorAll('button').forEach(b => {
-                    b.className = 'px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-300 bg-white/10 text-white/50 hover:bg-white/20';
-                });
-                activeBtn.className = 'px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-300 bg-blue-600 text-white shadow-lg';
-
-                console.log("Frontend: Switching to View ID", view.id);
-
-                const pano = getOrCreatePanorama(view.id, view.scene_id);
-                if (pano) {
-                    if (!pano.parent) viewer.add(pano);
-                    viewer.setPanorama(pano);
-                    updateControlsState(view.is_360 === undefined ? true : (view.is_360 == 1));
-                    
-                    const markersBtn = document.getElementById('toggle-markers');
-                    const isMarkersEnabled = markersBtn ? markersBtn.classList.contains('btn-active') : true;
-                    pano.children.forEach(c => {
-                        if (c instanceof PANOLENS.Infospot || c.isPerspectiveMesh) c.visible = isMarkersEnabled;
-                    });
-                }
-            };
-            
-            if (startSceneData) {
-                updateViewSwitcher(startSceneData);
-            }
+            let startScene = startSceneData ? getOrCreatePanorama(startSceneData.id) : null;
 
             function handleSpotClick(spot) {
                 if (spot.type === 'info') {
-                    const storageRoot = '{{ Storage::url("/") }}'.replace(/\/$/, "");
-                    let modelUrl = spot.model_path ? (storageRoot + "/" + spot.model_path.replace(/^\//, "")) : null;
+                    let modelUrl = spot.model_path ? ('{{ Storage::url("") }}' + spot.model_path) : null;
                     let layout = spot.model_path ? "layout-horizontal" : "layout-vertical";
                     openModal(spot.title || "Info", spot.content_id || "", spot.content_en || "", modelUrl, layout);
                 } else if (spot.type === 'nav') {
                     if (spot.target_scene_id) {
-                        const targetSceneData = tourData.scenes.find(s => s.id == spot.target_scene_id);
-                        const targetView = targetSceneData.views.find(v => v.is_primary) || targetSceneData.views[0];
-                        const targetPano = getOrCreatePanorama(targetView.id, targetSceneData.id);
+                        const targetPano = getOrCreatePanorama(spot.target_scene_id);
                         if (targetPano) {
-                            walkToTarget(targetPano, new THREE.Vector3(spot.position_x, spot.position_y, spot.position_z), targetSceneData.name, "Navigasi");
+                            const targetSceneData = spot.target_scene || spot.targetScene || tourData.scenes.find(s => s.id == spot.target_scene_id);
+                            const targetSceneName = targetSceneData ? targetSceneData.name : "NEXT SCENE";
+                            walkToTarget(targetPano, new THREE.Vector3(spot.position_x, spot.position_y, spot.position_z), targetSceneName, "Navigasi");
                         }
                     }
                 }
             }
 
-            function updateControlsState(is360) {
-                const ctrl = viewer.getControl();
-                if (!ctrl) return;
-                
-                if (!is360) {
-                    ctrl.minAzimuthAngle = 0;
-                    ctrl.maxAzimuthAngle = 0;
-                    ctrl.minPolarAngle = Math.PI / 2;
-                    ctrl.maxPolarAngle = Math.PI / 2;
-                    viewer.camera.position.set(0, 0, 0);
-                    viewer.camera.lookAt(0, 0, -1);
-                } else {
-                    ctrl.minAzimuthAngle = -Infinity;
-                    ctrl.maxAzimuthAngle = Infinity;
-                    ctrl.minPolarAngle = 0;
-                    ctrl.maxPolarAngle = Math.PI;
-                }
-            }
-
-            if (startPano) {
-                viewer.add(startPano);
-                viewer.setPanorama(startPano);
-                updateControlsState(startView.is_360 === undefined ? true : (startView.is_360 == 1));
-                startPano.addEventListener('load', () => {
+            if (startScene) {
+                viewer.add(startScene);
+                startScene.addEventListener('load', () => {
                     loader.style.opacity = '0';
                     setTimeout(() => loader.style.display = 'none', 1000);
                 });
@@ -404,6 +317,7 @@
             }
 
             function walkToTarget(pano, targetPosition, title, subtitle) {
+                // Sembunyikan ikon di panorama lama agar tidak "mengikuti" saat transisi
                 if(viewer.panorama) {
                     viewer.panorama.children.forEach(c => {
                         if (c instanceof PANOLENS.Infospot || c.isPerspectiveMesh) c.visible = false;
@@ -428,10 +342,6 @@
                             if (!pano.parent) viewer.add(pano);
                             viewer.setPanorama(pano);
                             
-                            // Update View Switcher UI
-                            updateViewSwitcher(pano.sceneData);
-                            updateControlsState(pano.viewData.is_360 === undefined ? true : (pano.viewData.is_360 == 1));
-
                             // Pastikan visibilitas ikon di panorama baru sesuai dengan tombol toggle
                             const markersBtn = document.getElementById('toggle-markers');
                             const isMarkersEnabled = markersBtn ? markersBtn.classList.contains('btn-active') : true;
@@ -621,30 +531,6 @@
                 if (viewer.getControl()) viewer.getControl().autoRotate = isAutoRotateOn;
             }
         }
-
-        // View Switcher Logic
-        const viewSwitcher = document.getElementById('view-switcher');
-        const viewList = document.getElementById('view-list');
-
-        function updateViewSwitcher(sceneData) {
-            if (!sceneData.views || sceneData.views.length <= 1) {
-                viewSwitcher.classList.add('hidden');
-                return;
-            }
-
-            viewSwitcher.classList.remove('hidden');
-            viewList.innerHTML = '';
-
-            sceneData.views.forEach(view => {
-                const btn = document.createElement('button');
-                btn.className = `px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${view.is_primary ? 'bg-blue-600 text-white shadow-lg' : 'bg-white/10 text-white/50 hover:bg-white/20'}`;
-                btn.innerText = view.name;
-                btn.onclick = () => window.switchSceneView(view, btn);
-                viewList.appendChild(btn);
-            });
-        }
-
-        // switchSceneView moved inside initTour or window scope
 
         initTour();
     </script>

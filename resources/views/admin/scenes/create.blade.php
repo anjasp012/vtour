@@ -38,36 +38,15 @@
                             <textarea name="description_en" rows="3" class="modern-input text-xs font-normal" placeholder="Tell the story of this room...">{{ old('description_en') }}</textarea>
                         </div>
                     </div>
-                    <div class="space-y-1.5 mt-2">
-                        <label class="text-[9px] font-bold text-slate-500 uppercase tracking-widest ml-0.5">Tipe Tampilan Pertama (Main View)</label>
-                        <div class="grid grid-cols-2 gap-3 mt-1 relative z-10 w-full mb-4">
-                            <label class="cursor-pointer">
-                                <input type="radio" name="is_360" value="1" class="peer sr-only" checked>
-                                <div class="p-3 border border-slate-200 rounded-lg peer-checked:border-blue-600 peer-checked:bg-blue-50/50 peer-checked:ring-1 peer-checked:ring-blue-600 transition-all text-center">
-                                    <i class="fas fa-globe text-blue-500 mb-1 text-lg"></i>
-                                    <div class="text-[10px] font-bold text-slate-700">360° Panorama</div>
-                                    <div class="text-[8px] text-slate-400 mt-0.5">Bisa diputar 360 derajat</div>
-                                </div>
-                            </label>
-                            <label class="cursor-pointer">
-                                <input type="radio" name="is_360" value="0" class="peer sr-only">
-                                <div class="p-3 border border-slate-200 rounded-lg peer-checked:border-blue-600 peer-checked:bg-blue-50/50 peer-checked:ring-1 peer-checked:ring-blue-600 transition-all text-center">
-                                    <i class="fas fa-image text-emerald-500 mb-1 text-lg"></i>
-                                    <div class="text-[10px] font-bold text-slate-700">Gambar Biasa (2D)</div>
-                                    <div class="text-[8px] text-slate-400 mt-0.5">Denah Peta / Potret</div>
-                                </div>
-                            </label>
-                        </div>
-                    </div>
                     
                     <div class="space-y-1.5">
-                        <label class="text-[9px] font-bold text-slate-500 uppercase tracking-widest ml-0.5">Media Assets (JPG/PNG)</label>
+                        <label class="text-[9px] font-bold text-slate-500 uppercase tracking-widest ml-0.5">Equirectangular Buffer (JPG/PNG)</label>
                         <div class="relative py-8 border border-dashed border-slate-300 rounded bg-slate-50/30 hover:bg-white hover:border-blue-400 transition-all flex flex-col items-center justify-center text-center group cursor-pointer">
-                            <i class="fas fa-images text-slate-300 group-hover:text-blue-500 transition-colors mb-2"></i>
-                            <p class="text-[10px] font-bold text-slate-400">Click to select one or multiple source files</p>
-                            <input type="file" name="images[]" accept="image/jpeg,image/png" multiple required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="this.parentElement.querySelector('p').innerText = this.files.length + ' files selected'">
+                            <i class="fas fa-upload text-slate-300 group-hover:text-blue-500 transition-colors mb-2"></i>
+                            <p class="text-[10px] font-bold text-slate-400">Click to select source file</p>
+                            <input type="file" name="image" accept="image/jpeg,image/png" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="this.parentElement.querySelector('p').innerText = this.files[0].name">
                         </div>
-                        @error('images') <p class="text-rose-500 text-[8px] font-bold mt-1 uppercase">{{ $message }}</p> @enderror
+                        @error('image') <p class="text-rose-500 text-[8px] font-bold mt-1 uppercase">{{ $message }}</p> @enderror
                     </div>
 
                     <div class="p-4 bg-slate-50 rounded border border-slate-200 flex items-center justify-between">

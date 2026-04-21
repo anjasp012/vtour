@@ -5,6 +5,7 @@ use App\Http\Controllers\TourController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\SceneController as AdminSceneController;
 use App\Http\Controllers\Admin\InfospotController as AdminInfospotController;
+use App\Http\Controllers\Admin\InfospotAssetController as AdminInfospotAssetController;
 
 // Frontend route for Virtual Tour
 Route::get('/', [TourController::class, 'index'])->name('tour.show');
@@ -19,8 +20,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     // Admin Scene CRUD
     Route::resource('scenes', AdminSceneController::class);
-    Route::post('scenes/{scene}/add-view', [AdminSceneController::class, 'addView'])->name('scenes.add-view');
-    // Nested resources for infospots within a scene view
-    Route::put('views/{sceneView}', [AdminSceneController::class, 'updateView'])->name('views.update');
-    Route::resource('views.infospots', AdminInfospotController::class)->shallow();
+    // Nested resources for infospots within a scene
+    Route::resource('scenes.infospots', AdminInfospotController::class)->shallow();
+
+    // Infospot multi-file assets
+    Route::post('infospots/{infospot}/assets', [AdminInfospotAssetController::class, 'store'])
+        ->name('infospots.assets.store');
+    Route::delete('infospot-assets/{asset}', [AdminInfospotAssetController::class, 'destroy'])
+        ->name('infospot-assets.destroy');
 });
