@@ -144,14 +144,34 @@
                         <label class="text-[9px] font-bold text-slate-400 uppercase tracking-[2px] block border-b border-slate-100 pb-2">Content</label>
                         
                         <div class="space-y-4">
-                            <!-- 3D Model Attachment -->
+                            <!-- Media Assets Panel -->
                             <div class="space-y-2 p-3 bg-slate-900 rounded border border-slate-800 shadow-inner">
-                                <label class="text-[8px] font-bold text-slate-500 uppercase tracking-widest flex items-center justify-between">
-                                    <span>3D Model Asset (GLB)</span>
-                                    <span id="model-status" class="text-emerald-500 hidden"><i class="fas fa-check-circle"></i> Loaded</span>
-                                </label>
-                                <input type="file" name="model_file" accept=".glb" class="w-full text-[9px] text-slate-400 file:mr-3 file:py-1 file:px-2 file:rounded file:border-0 file:text-[8px] file:font-bold file:bg-slate-800 file:text-slate-300 hover:file:bg-slate-700 transition-all cursor-pointer">
-                                <p id="model-link" class="hidden text-[8px] text-blue-400 font-bold hover:underline cursor-pointer truncate">Current: <span id="model-name">None</span></p>
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="text-[8px] font-bold text-slate-500 uppercase tracking-widest">Media Assets</label>
+                                    <button type="button" id="btn-add-asset-row"
+                                        class="text-[7px] font-bold bg-slate-700 hover:bg-slate-600 text-slate-300 px-2 py-1 rounded tracking-widest uppercase transition-colors flex items-center gap-1">
+                                        <i class="fas fa-plus"></i> Add File
+                                    </button>
+                                </div>
+
+                                <!-- Existing assets list (shown in edit mode) -->
+                                <div id="existing-assets-list" class="space-y-1.5 hidden"></div>
+
+                                <!-- New file rows -->
+                                <div id="new-asset-rows" class="space-y-2"></div>
+                                <p id="no-asset-hint" class="text-[8px] text-slate-600 italic text-center py-2">Klik &quot;+ Add File&quot; untuk upload.</p>
+
+                                <!-- Upload action (only visible when there are new rows) -->
+                                <div id="asset-upload-wrap" class="hidden pt-2 border-t border-slate-800">
+                                    <button type="button" id="btn-upload-assets"
+                                        class="w-full py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[8px] font-bold uppercase tracking-widest rounded transition-colors flex items-center justify-center gap-1.5">
+                                        <i class="fas fa-cloud-upload-alt"></i> Upload Files
+                                    </button>
+                                    <div id="asset-upload-loading" class="hidden items-center justify-center gap-2 py-1">
+                                        <div class="w-3 h-3 border-2 border-slate-600 border-t-indigo-500 rounded-full animate-spin"></div>
+                                        <span class="text-[8px] text-slate-400 uppercase tracking-widest">Uploading...</span>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="space-y-1.5">
@@ -653,6 +673,170 @@
         coordDisplay.querySelector('.text-blue-400').innerText = `X: ${x} | Y: ${y} | Z: ${z}`;
     }
 
+    // Track infospot id for asset uploads
+    let currentUploadInfospotId = null;
+    let assetRowIndex = 0;
+
+    // ---- Asset row management ----
+    document.getElementById('btn-add-asset-row').addEventListener('click', () => {
+        addNewAssetRow();
+    });
+
+    function addNewAssetRow() {
+        const idx = assetRowIndex++;
+        const row = document.createElement('div');
+        row.className = 'flex flex-col gap-1.5 p-2 bg-slate-800 rounded border border-slate-700';
+        row.dataset.index = idx;
+        row.innerHTML = `
+            <div class="flex items-center gap-1.5">
+                <select class="flex-1 bg-slate-700 border border-slate-600 text-slate-300 text-[8px] font-bold uppercase tracking-widest rounded px-2 py-1 focus:outline-none asset-type-select">
+                    <option value="2d">🖼 2D Image</option>
+                    <option value="3d">🧊 3D GLB</option>
+                </select>
+                <button type="button" class="remove-asset-row text-slate-500 hover:text-rose-400 transition-colors">
+                    <i class="fas fa-times text-[10px]"></i>
+                </button>
+            </div>
+            <input type="text" placeholder="Label (opsional)" class="asset-label bg-slate-700 border border-slate-600 text-slate-300 text-[8px] rounded px-2 py-1 placeholder-slate-600 focus:outline-none focus:border-slate-500">
+            <input type="file" accept="image/*" class="asset-file w-full text-[8px] text-slate-400 file:mr-2 file:py-0.5 file:px-2 file:rounded file:border-0 file:text-[8px] file:font-bold file:bg-slate-700 file:text-slate-300 hover:file:bg-slate-600 cursor-pointer">
+        `;
+
+        const typeSelect = row.querySelector('.asset-type-select');
+        const fileInput  = row.querySelector('.asset-file');
+        typeSelect.addEventListener('change', () => {
+            fileInput.accept = typeSelect.value === '3d' ? '.glb' : 'image/*';
+            fileInput.value = '';
+        });
+        row.querySelector('.remove-asset-row').addEventListener('click', () => {
+            row.remove();
+            updateAssetUploadVisibility();
+        });
+
+        document.getElementById('new-asset-rows').appendChild(row);
+        updateAssetUploadVisibility();
+    }
+
+    function updateAssetUploadVisibility() {
+        const hasRows = document.getElementById('new-asset-rows').children.length > 0;
+        document.getElementById('asset-upload-wrap').classList.toggle('hidden', !hasRows);
+        document.getElementById('no-asset-hint').classList.toggle('hidden', hasRows);
+    }
+
+    // ---- Load existing assets via AJAX ----
+    async function loadExistingAssets(infospotId) {
+        const container = document.getElementById('existing-assets-list');
+        container.innerHTML = '<p class="text-[8px] text-slate-500 italic text-center py-2">Loading...</p>';
+        container.classList.remove('hidden');
+
+        try {
+            const res = await fetch(`{{ url('admin/infospots') }}/${infospotId}/assets`, {
+                headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            const data = await res.json();
+
+            if (!data.assets || data.assets.length === 0) {
+                container.innerHTML = '<p class="text-[8px] text-slate-600 italic text-center py-1">Belum ada asset.</p>';
+                return;
+            }
+
+            container.innerHTML = data.assets.map(a => `
+                <div class="flex items-center justify-between gap-1.5 p-1.5 bg-slate-800 rounded border border-slate-700" id="asset-row-${a.id}">
+                    <div class="flex items-center gap-1.5 min-w-0">
+                        <span class="shrink-0 text-[7px] font-bold px-1.5 py-0.5 rounded ${
+                            a.file_type === '3d'
+                            ? 'bg-purple-900 text-purple-300'
+                            : 'bg-blue-900 text-blue-300'
+                        } uppercase tracking-widest">${a.file_type === '3d' ? '3D' : '2D'}</span>
+                        <span class="text-[8px] text-slate-300 truncate">${a.label || a.filename}</span>
+                    </div>
+                    <button type="button" onclick="deleteAsset(${a.id})" title="Hapus"
+                        class="shrink-0 text-slate-500 hover:text-rose-400 transition-colors">
+                        <i class="fas fa-trash-alt text-[9px]"></i>
+                    </button>
+                </div>
+            `).join('');
+        } catch(e) {
+            container.innerHTML = '<p class="text-[8px] text-rose-400 italic text-center py-1">Gagal memuat asset.</p>';
+        }
+    }
+
+    // ---- Delete asset ----
+    window.deleteAsset = async function(assetId) {
+        if (!confirm('Hapus asset ini?')) return;
+        try {
+            const res = await fetch(`{{ url('admin/infospot-assets') }}/${assetId}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById(`asset-row-${assetId}`)?.remove();
+                const list = document.getElementById('existing-assets-list');
+                if (!list.querySelector('[id^="asset-row-"]')) {
+                    list.innerHTML = '<p class="text-[8px] text-slate-600 italic text-center py-1">Belum ada asset.</p>';
+                }
+            }
+        } catch(e) { alert('Gagal menghapus asset.'); }
+    };
+
+    // ---- Upload new assets ----
+    document.getElementById('btn-upload-assets').addEventListener('click', async () => {
+        if (!currentUploadInfospotId) { alert('Simpan node dahulu sebelum upload asset.'); return; }
+
+        const rows = document.getElementById('new-asset-rows').querySelectorAll('[data-index]');
+        if (rows.length === 0) return;
+
+        const formData = new FormData();
+        formData.append('_token', '{{ csrf_token() }}');
+
+        let hasFile = false;
+        rows.forEach((row, i) => {
+            const fileInput = row.querySelector('.asset-file');
+            const typeSelect = row.querySelector('.asset-type-select');
+            const label = row.querySelector('.asset-label');
+            if (fileInput.files.length > 0) {
+                formData.append(`assets[${i}][file]`, fileInput.files[0]);
+                formData.append(`assets[${i}][file_type]`, typeSelect.value);
+                formData.append(`assets[${i}][label]`, label.value);
+                hasFile = true;
+            }
+        });
+
+        if (!hasFile) { alert('Pilih minimal satu file.'); return; }
+
+        const btn = document.getElementById('btn-upload-assets');
+        const loading = document.getElementById('asset-upload-loading');
+        btn.classList.add('hidden');
+        loading.classList.remove('hidden');
+        loading.style.display = 'flex';
+
+        try {
+            const res = await fetch(`{{ url('admin/infospots') }}/${currentUploadInfospotId}/assets`, {
+                method: 'POST',
+                body: formData,
+                headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById('new-asset-rows').innerHTML = '';
+                updateAssetUploadVisibility();
+                loadExistingAssets(currentUploadInfospotId);
+                showInstruction('ASSETS UPLOADED.');
+            } else {
+                alert('Upload gagal: ' + (data.message || 'Unknown error'));
+            }
+        } catch(e) { alert('Upload error: ' + e.message); }
+        finally {
+            btn.classList.remove('hidden');
+            loading.classList.add('hidden');
+            loading.style.display = '';
+        }
+    });
+
     function openForm(mode, spot = null) {
         listState.classList.add('hidden');
         createForm.classList.remove('hidden');
@@ -661,6 +845,13 @@
             formEl.reset();
             document.getElementById('input-desc-id').value = '';
             document.getElementById('input-desc-en').value = '';
+            // Reset asset panel
+            document.getElementById('existing-assets-list').innerHTML = '';
+            document.getElementById('existing-assets-list').classList.add('hidden');
+            document.getElementById('new-asset-rows').innerHTML = '';
+            document.getElementById('asset-upload-wrap').classList.add('hidden');
+            document.getElementById('no-asset-hint').classList.remove('hidden');
+            currentUploadInfospotId = null;
             methodPut.innerHTML = '';
             formEl.action = "{{ route('admin.scenes.infospots.store', $scene) }}";
             formDelete.classList.add('hidden');
@@ -682,19 +873,15 @@
             document.getElementById('input-target').value = spot.target_scene_id || '';
             document.getElementById('input-desc-id').value = spot.content_id || '';
             document.getElementById('input-desc-en').value = spot.content_en || '';
-            
-            // Model Status
-            const modelStatus = document.getElementById('model-status');
-            const modelLink = document.getElementById('model-link');
-            const modelName = document.getElementById('model-name');
-            if (spot.model_path) {
-                modelStatus.classList.remove('hidden');
-                modelLink.classList.remove('hidden');
-                modelName.innerText = spot.model_path.split('/').pop();
-            } else {
-                modelStatus.classList.add('hidden');
-                modelLink.classList.add('hidden');
-            }
+
+            // Load existing assets
+            loadExistingAssets(spot.id);
+
+            // Reset new-file rows
+            document.getElementById('new-asset-rows').innerHTML = '';
+            document.getElementById('asset-upload-wrap').classList.add('hidden');
+            document.getElementById('no-asset-hint').classList.remove('hidden');
+            currentUploadInfospotId = spot.id;
 
             methodPut.innerHTML = '<input type="hidden" name="_method" value="PUT">';
             formEl.action = `{{ url('admin/infospots') }}/${spot.id}`; 

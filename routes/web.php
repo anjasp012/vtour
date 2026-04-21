@@ -24,6 +24,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::resource('scenes.infospots', AdminInfospotController::class)->shallow();
 
     // Infospot multi-file assets
+    Route::get('infospots/{infospot}/assets', [AdminInfospotAssetController::class, 'index'])
+        ->name('infospots.assets.index');
     Route::post('infospots/{infospot}/assets', [AdminInfospotAssetController::class, 'store'])
         ->name('infospots.assets.store');
     Route::delete('infospot-assets/{asset}', [AdminInfospotAssetController::class, 'destroy'])
