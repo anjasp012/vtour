@@ -9,6 +9,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <!-- Owl Carousel -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.min.css">
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script>
     <script src="https://code.responsivevoice.org/responsivevoice.js?key=QlpaIuG0"></script>
     
@@ -39,13 +42,91 @@
         }
 
         /* Utilities */
-        .scrollbar-none::-webkit-scrollbar {
-            display: none;
+        .scrollbar-none::-webkit-scrollbar { display: none; }
+        .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* ---- Owl Carousel custom skin (dark glass) ---- */
+        #asset-carousel { width: 100%; }
+        .asset-slide {
+            width: 100%;
+            border-radius: 16px;
+            overflow: hidden;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.1);
         }
-        .scrollbar-none {
-            -ms-overflow-style: none; /* IE and Edge */
-            scrollbar-width: none; /* Firefox */
+        .asset-slide img {
+            width: 100%;
+            height: 320px;
+            object-fit: cover;
+            display: block;
         }
+        .asset-slide .model-wrap {
+            width: 100%;
+            height: 320px;
+        }
+        .asset-slide .asset-label {
+            font-size: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.45);
+            text-align: center;
+            padding: 8px 12px;
+            background: rgba(0,0,0,0.3);
+        }
+        /* Owl nav buttons */
+        #asset-carousel.owl-carousel .owl-nav button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(15,23,42,0.75) !important;
+            border: 1px solid rgba(255,255,255,0.15) !important;
+            color: #fff !important;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            transition: background 0.2s;
+        }
+        #asset-carousel.owl-carousel .owl-nav button:hover {
+            background: rgba(99,102,241,0.7) !important;
+        }
+        #asset-carousel.owl-carousel .owl-nav .owl-prev { left: 8px; }
+        #asset-carousel.owl-carousel .owl-nav .owl-next { right: 8px; }
+        #asset-carousel.owl-carousel .owl-dots {
+            text-align: center;
+            padding-top: 10px;
+        }
+        #asset-carousel.owl-carousel .owl-dots .owl-dot span {
+            background: rgba(255,255,255,0.25);
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            margin: 0 3px;
+            display: block;
+            transition: background 0.2s, transform 0.2s;
+        }
+        #asset-carousel.owl-carousel .owl-dots .owl-dot.active span {
+            background: #6366f1;
+            transform: scale(1.4);
+        }
+        .asset-type-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 8px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 3px 8px;
+            border-radius: 6px;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+        .badge-3d { background: rgba(124,58,237,0.6); color: #ddd6fe; }
+        .badge-2d { background: rgba(37,99,235,0.6); color: #bfdbfe; }
     </style>
 </head>
 
@@ -67,17 +148,18 @@
                 </div>
             </div>
             
-            <!-- Wrapper Layout: Vertical by default, JS toggles class -->
-            <div class="group/layout flex flex-col gap-5 [&.layout-horizontal]:md:flex-row [&.layout-horizontal]:md:gap-[30px] [&.layout-horizontal]:md:items-start" id="modal-layout-wrapper">
-                
-                <div class="flex-1 w-full hidden" id="modal-pane-3d">
-                    <div id="model-container" class="w-full bg-white/5 rounded-[20px] border border-border-glass overflow-hidden relative h-[350px] md:h-[450px] group-[.layout-horizontal]/layout:md:h-[400px]">
-                        <model-viewer id="obj-viewer" src="" auto-rotate camera-controls shadow-intensity="1" touch-action="pan-y" interaction-prompt="auto" interaction-prompt-style="wiggle" interaction-prompt-threshold="0" loading="lazy">
-                        </model-viewer>
-                        <button class="absolute bottom-[15px] right-[15px] bg-slate-900/60 border border-white/10 text-white/80 w-[40px] h-[40px] rounded-xl cursor-pointer z-[100] hidden md:flex items-center justify-center transition-all duration-300 backdrop-blur-md hover:text-white hover:bg-white/15 hover:scale-105 group-[.layout-vertical]/layout:md:hidden" onclick="toggleLayout()" title="Ubah Layout Mode"><i class="fas fa-columns"></i></button>
+            <!-- Wrapper Layout -->
+            <div class="flex flex-col gap-5 md:flex-row md:gap-[30px] md:items-start" id="modal-layout-wrapper">
+
+                <!-- Asset Carousel Pane -->
+                <div class="flex-1 w-full hidden" id="modal-pane-assets">
+                    <div class="relative">
+                        <div id="asset-carousel" class="owl-carousel"></div>
                     </div>
+                    <p id="asset-counter" class="text-[9px] text-white/30 text-center mt-2 tracking-widest uppercase"></p>
                 </div>
 
+                <!-- Text Pane -->
                 <div class="flex-1 w-full" id="modal-pane-text">
                     <div class="flex flex-col w-full">
                         <div class="flex flex-wrap gap-[10px] mb-[15px] border-b border-white/10 pb-[10px]">
@@ -128,6 +210,10 @@
 
     <script src="https://pchen66.github.io/js/three/three.min.js"></script>
     <script src="https://pchen66.github.io/js/panolens/panolens.min.js"></script>
+    <!-- jQuery (required by Owl Carousel) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- Owl Carousel JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
 
     <script>
         const container = document.querySelector('#viewer-container');
@@ -290,9 +376,18 @@
 
             function handleSpotClick(spot) {
                 if (spot.type === 'info') {
-                    let modelUrl = spot.model_path ? ('{{ Storage::url("") }}' + spot.model_path) : null;
-                    let layout = spot.model_path ? "layout-horizontal" : "layout-vertical";
-                    openModal(spot.title || "Info", spot.content_id || "", spot.content_en || "", modelUrl, layout);
+                    // Build assets array — prefer assets relation, fallback to legacy model_path
+                    let assets = [];
+                    if (spot.assets && spot.assets.length > 0) {
+                        assets = spot.assets.map(a => ({
+                            file_type: a.file_type,
+                            url: '{{ Storage::url("") }}' + a.file_path,
+                            label: a.label || null
+                        }));
+                    } else if (spot.model_path) {
+                        assets = [{ file_type: '3d', url: '{{ Storage::url("") }}' + spot.model_path, label: null }];
+                    }
+                    openModal(spot.title || "Info", spot.content_id || "", spot.content_en || "", assets);
                 } else if (spot.type === 'nav') {
                     if (spot.target_scene_id) {
                         const targetPano = getOrCreatePanorama(spot.target_scene_id);
@@ -482,38 +577,75 @@
             }
         }
 
-        function openModal(title, textId, textEn, modelSrc = null, layoutMode = 'layout-vertical') {
+        function openModal(title, textId, textEn, assets = []) {
             document.getElementById('modal-title').innerText = title;
-            document.getElementById('tab-id').innerHTML = textId || '';
-            document.getElementById('tab-en').innerHTML = textEn || textId || '';
-
-            const wrapper = document.getElementById('modal-layout-wrapper');
-            if (wrapper) {
-                wrapper.className = 'group/layout flex flex-col gap-5 [&.layout-horizontal]:md:flex-row [&.layout-horizontal]:md:gap-[30px] [&.layout-horizontal]:md:items-start ' + layoutMode;
-            }
+            document.getElementById('tab-id').innerHTML  = textId || '';
+            document.getElementById('tab-en').innerHTML  = textEn || textId || '';
 
             switchTab('id');
-
-            const modelContainer = document.getElementById('model-container');
-            const modelPane = document.getElementById('modal-pane-3d');
-            const modelViewer = document.getElementById('obj-viewer');
 
             if (viewer) {
                 viewer.autoRotate = false;
                 if (viewer.getControl()) viewer.getControl().autoRotate = false;
             }
 
-            if (modelSrc) {
-                if (modelPane) modelPane.style.display = 'block';
-                if (modelContainer) modelContainer.style.display = 'block';
-                setTimeout(() => {
-                    if (modelViewer && modelViewer.src !== modelSrc) {
-                        modelViewer.src = modelSrc;
+            const assetPane  = document.getElementById('modal-pane-assets');
+            const carouselEl = document.getElementById('asset-carousel');
+            const counterEl  = document.getElementById('asset-counter');
+
+            // Destroy old Owl instance to prevent leaks
+            if ($(carouselEl).hasClass('owl-loaded')) {
+                $(carouselEl).trigger('destroy.owl.carousel');
+                $(carouselEl).removeClass('owl-carousel owl-loaded owl-drag');
+            }
+            carouselEl.innerHTML = '';
+
+            if (assets && assets.length > 0) {
+                assetPane.style.display = 'block';
+
+                assets.forEach(asset => {
+                    const slide = document.createElement('div');
+                    slide.className = 'asset-slide relative';
+
+                    if (asset.file_type === '2d') {
+                        slide.innerHTML = `
+                            <span class="asset-type-badge badge-2d">🖼 Photo</span>
+                            <img src="${asset.url}" alt="${asset.label || 'Image'}" loading="lazy">
+                            ${asset.label ? `<div class="asset-label">${asset.label}</div>` : ''}
+                        `;
+                    } else {
+                        slide.innerHTML = `
+                            <span class="asset-type-badge badge-3d">🧊 3D Model</span>
+                            <div class="model-wrap">
+                                <model-viewer src="${asset.url}"
+                                    auto-rotate camera-controls shadow-intensity="1"
+                                    touch-action="pan-y" loading="eager"
+                                    style="width:100%;height:100%;">
+                                </model-viewer>
+                            </div>
+                            ${asset.label ? `<div class="asset-label">${asset.label}</div>` : ''}
+                        `;
                     }
-                }, 50);
+                    carouselEl.appendChild(slide);
+                });
+
+                const isSingle = assets.length === 1;
+                $(carouselEl).addClass('owl-carousel').owlCarousel({
+                    items: 1,
+                    loop: !isSingle,
+                    nav: !isSingle,
+                    dots: !isSingle,
+                    navText: ['<i class="fas fa-chevron-left text-xs"></i>','<i class="fas fa-chevron-right text-xs"></i>'],
+                    autoplay: false,
+                    smartSpeed: 400,
+                    touchDrag: !isSingle,
+                    mouseDrag: !isSingle,
+                });
+
+                counterEl.innerText = isSingle ? '' : `${assets.length} media`;
             } else {
-                if (modelPane) modelPane.style.display = 'none';
-                if (modelContainer) modelContainer.style.display = 'none';
+                assetPane.style.display = 'none';
+                counterEl.innerText = '';
             }
 
             document.getElementById('modal').classList.add('active');
