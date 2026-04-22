@@ -221,14 +221,14 @@
         
         <div class="flex items-start justify-between w-full" id="overlay-top-wrapper">
             <!-- Left Group: Toggle + Controls -->
-            <div class="flex items-center gap-[12px] pointer-events-auto" id="left-controls">
+            <div class="flex sm:flex-row flex-col items-center sm:items-start gap-[12px] pointer-events-auto" id="left-controls">
                 <!-- UI Toggle Button (Always Visible) -->
-                <div id="ui-toggle" class="w-[48px] h-[48px] bg-bg-glass backdrop-blur-[25px] border border-border-glass rounded-[16px] text-white flex items-center justify-center cursor-pointer transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] shadow-[0_15px_30px_rgba(0,0,0,0.4)] hover:bg-primary hover:scale-110 hover:rotate-6 text-[1.1rem]">
+                <div id="ui-toggle" class="w-[48px] h-[48px] bg-bg-glass backdrop-blur-[25px] border border-border-glass rounded-md text-white flex items-center justify-center cursor-pointer transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] shadow-[0_15px_30px_rgba(0,0,0,0.4)] hover:bg-primary hover:scale-110 hover:rotate-6 text-[1.1rem]">
                     <i class="fas fa-times"></i>
                 </div>
 
                 <!-- Control Buttons (Toggleable) -->
-                <div id="control-buttons-panel" class="bg-bg-glass backdrop-blur-[30px] border border-border-glass p-[6px] rounded-[18px] flex gap-[6px] shadow-[0_20px_40px_rgba(0,0,0,0.4)] transition-all duration-500 ease-in-out [&.minimized]:opacity-0 [&.minimized]:-translate-x-[20px] [&.minimized]:pointer-events-none [&.minimized]:blur-[10px]">
+                <div id="control-buttons-panel" class="bg-bg-glass backdrop-blur-[30px] border border-border-glass p-[6px] rounded-md flex sm:flex-row flex-col gap-[6px] shadow-[0_20px_40px_rgba(0,0,0,0.4)] transition-all duration-500 ease-in-out [&.minimized]:opacity-0 [&.minimized]:-translate-x-[20px] sm:[&.minimized]:-translate-x-[20px] [&.minimized]:-translate-y-[10px] [&.minimized]:pointer-events-none [&.minimized]:blur-[10px]">
                     <button id="toggle-rotate" class="btn-action btn-active bg-white/5 hover:bg-white/15 [&.btn-active]:bg-primary/35 border border-border-glass [&.btn-active]:border-primary/80 text-white/90 w-[38px] h-[38px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95" title="Auto Rotation"><i class="fas fa-sync-alt text-[14px] text-primary"></i></button>
                     
                     <button id="toggle-markers" class="btn-action btn-active bg-white/5 hover:bg-white/15 [&.btn-active]:bg-primary/35 border border-border-glass [&.btn-active]:border-primary/80 text-white/90 w-[38px] h-[38px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95" title="Show Markers"><i class="bi bi-eye-fill text-[14px] text-primary"></i></button>
@@ -238,7 +238,7 @@
             </div>
 
             <!-- Right Panel: Scene Title (Always Visible) -->
-            <div class="bg-bg-glass backdrop-blur-[30px] border border-border-glass p-[15px_22px] rounded-[20px] pointer-events-auto shadow-[0_30px_60px_rgba(0,0,0,0.5)] origin-right text-right">
+            <div class="bg-bg-glass backdrop-blur-[30px] border border-border-glass p-[10px_22px] rounded-md pointer-events-auto shadow-[0_30px_60px_rgba(0,0,0,0.5)] origin-right text-right">
                 @php
                     $startScene = $tour->scenes->where('is_start_scene', true)->first() ?? $tour->scenes->first();
                 @endphp
