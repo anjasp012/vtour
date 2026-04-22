@@ -158,6 +158,70 @@
         }
         .vc-badge-2d { background: rgba(37,99,235,0.65); color: #bfdbfe; }
         .vc-badge-3d { background: rgba(124,58,237,0.65); color: #ddd6fe; }
+
+        /* =============================================
+           SCENE LIST — Sidebar Thumbnails
+           ============================================= */
+        #scene-list-panel {
+            scrollbar-width: none;
+        }
+        #scene-list-panel::-webkit-scrollbar {
+            display: none;
+        }
+        .scene-card {
+            position: relative;
+            width: 100px;
+            height: 65px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(0,0,0,0.5);
+            flex-shrink: 0;
+        }
+        /* Mobile adjustment for scene-card */
+        @media (max-width: 640px) {
+            .scene-card {
+                width: 80px;
+                height: 55px;
+            }
+        }
+        .scene-card:hover {
+            transform: translateX(8px);
+            border-color: rgba(255,255,255,0.3);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+        }
+        .scene-card.active {
+            border-color: #6366f1;
+            box-shadow: 0 0 15px rgba(99,102,241,0.6);
+            transform: translateX(12px);
+        }
+        .scene-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        .scene-card:hover img {
+            transform: scale(1.1);
+        }
+        .scene-card-label {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 6px 8px;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            color: white;
+            font-size: 8px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
     </style>
 </head>
 
@@ -217,28 +281,33 @@
     <div id="viewer-container" class="w-full h-screen bg-black"></div>
 
     <!-- UI Overlay -->
-    <div class="absolute top-0 left-0 w-full h-full pointer-events-none p-[25px] box-border z-[10000]">
+    <div class="absolute top-0 left-0 w-full h-full pointer-events-none p-[15px] box-border z-[10000]">
         
         <div class="flex items-start justify-between w-full" id="overlay-top-wrapper">
             <!-- Left Group: Toggle + Controls -->
             <div class="flex sm:flex-row flex-col items-center sm:items-start gap-[12px] pointer-events-auto" id="left-controls">
                 <!-- UI Toggle Button (Always Visible) -->
-                <div id="ui-toggle" class="w-[48px] h-[48px] bg-bg-glass backdrop-blur-[25px] border border-border-glass rounded-md text-white flex items-center justify-center cursor-pointer transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] shadow-[0_15px_30px_rgba(0,0,0,0.4)] hover:bg-primary hover:scale-110 hover:rotate-6 text-[1.1rem]">
+                <div id="ui-toggle" class="w-[48px] h-[48px] bg-bg-glass backdrop-blur-[25px] border border-border-glass rounded-lg text-white flex items-center justify-center cursor-pointer transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] shadow-[0_15px_30px_rgba(0,0,0,0.4)] hover:bg-primary hover:scale-110 hover:rotate-6 text-[1.1rem]">
                     <i class="fas fa-times"></i>
                 </div>
 
                 <!-- Control Buttons (Toggleable) -->
-                <div id="control-buttons-panel" class="bg-bg-glass backdrop-blur-[30px] border border-border-glass p-[6px] rounded-md flex sm:flex-row flex-col gap-[6px] shadow-[0_20px_40px_rgba(0,0,0,0.4)] transition-all duration-500 ease-in-out [&.minimized]:opacity-0 [&.minimized]:-translate-x-[20px] sm:[&.minimized]:-translate-x-[20px] [&.minimized]:-translate-y-[10px] [&.minimized]:pointer-events-none [&.minimized]:blur-[10px]">
+                <div id="control-buttons-panel" class="bg-bg-glass backdrop-blur-[30px] border border-border-glass p-[6px] rounded-lg flex sm:flex-row flex-col gap-[6px] shadow-[0_20px_40px_rgba(0,0,0,0.4)] transition-all duration-500 ease-in-out [&.minimized]:opacity-0 [&.minimized]:-translate-x-[20px] sm:[&.minimized]:-translate-x-[20px] [&.minimized]:-translate-y-[10px] [&.minimized]:pointer-events-none [&.minimized]:blur-[10px]">
                     <button id="toggle-rotate" class="btn-action btn-active bg-white/5 hover:bg-white/15 [&.btn-active]:bg-primary/35 border border-border-glass [&.btn-active]:border-primary/80 text-white/90 w-[38px] h-[38px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95" title="Auto Rotation"><i class="fas fa-sync-alt text-[14px] text-primary"></i></button>
                     
                     <button id="toggle-markers" class="btn-action btn-active bg-white/5 hover:bg-white/15 [&.btn-active]:bg-primary/35 border border-border-glass [&.btn-active]:border-primary/80 text-white/90 w-[38px] h-[38px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95" title="Show Markers"><i class="bi bi-eye-fill text-[14px] text-primary"></i></button>
 
                     <button id="toggle-fullscreen" class="btn-action bg-white/5 hover:bg-white/15 [&.btn-active]:bg-primary/35 border border-border-glass [&.btn-active]:border-primary/80 text-white/90 w-[38px] h-[38px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95" title="Full Screen"><i class="fas fa-expand text-[14px] text-primary"></i></button>
                 </div>
+
+                <!-- Scene List Sidebar -->
+                <div id="scene-list-panel" class="flex flex-col gap-[10px] mt-[5px] max-h-[calc(100vh-250px)] overflow-y-auto scrollbar-none transition-all duration-500 ease-in-out [&.minimized]:opacity-0 [&.minimized]:-translate-x-[40px] [&.minimized]:pointer-events-none [&.minimized]:blur-[10px]">
+                    <!-- Items will be dynamic -->
+                </div>
             </div>
 
             <!-- Right Panel: Scene Title (Always Visible) -->
-            <div class="bg-bg-glass backdrop-blur-[30px] border border-border-glass p-[10px_22px] rounded-md pointer-events-auto shadow-[0_30px_60px_rgba(0,0,0,0.5)] origin-right text-right">
+            <div class="bg-bg-glass backdrop-blur-[30px] border border-border-glass p-[10px_22px] rounded-lg pointer-events-auto shadow-[0_30px_60px_rgba(0,0,0,0.5)] origin-right text-right">
                 @php
                     $startScene = $tour->scenes->where('is_start_scene', true)->first() ?? $tour->scenes->first();
                 @endphp
@@ -448,6 +517,10 @@
                     loader.style.opacity = '0';
                     setTimeout(() => loader.style.display = 'none', 1000);
 
+                    // Inisialisasi daftar scene
+                    currentSceneData = startSceneData;
+                    renderSceneList();
+
                     // Apply saved initial camera direction after controls settle
                     const lon0 = parseFloat(startSceneData?.initial_lon ?? 0);
                     const lat0 = parseFloat(startSceneData?.initial_lat ?? 0);
@@ -510,9 +583,12 @@
                             });
 
                             document.getElementById('scene-title').innerText = title;
-                            // Subtitle stays as the Tour Name (already set via Blade initially)
-                            // or you can explicitly re-set it if tourData has it:
-                            // document.getElementById('scene-subtitle').innerText = tourData.name.toUpperCase();
+
+                            // Update active status in scene list
+                            document.querySelectorAll('.scene-card').forEach(card => {
+                                card.classList.toggle('active', card.dataset.id == targetSceneId);
+                            });
+                            currentSceneData = tourData.scenes.find(s => s.id == targetSceneId);
 
                             // Safeguard: re-apply autoRotate state from the internal flag
                             const ctrl = viewer.getControl();
@@ -575,11 +651,42 @@
 
             document.getElementById('ui-toggle').addEventListener('click', function () {
                 const panel = document.getElementById('control-buttons-panel');
+                const listPanel = document.getElementById('scene-list-panel');
                 const isMinimized = panel.classList.toggle('minimized');
+                if (listPanel) listPanel.classList.toggle('minimized', isMinimized);
+
                 this.innerHTML = isMinimized ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-times"></i>';
                 this.style.background = isMinimized ? 'rgba(255,255,255,0.05)' : '#6366f1';
                 this.style.borderColor = isMinimized ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.3)';
             });
+
+            function renderSceneList() {
+                const listPanel = document.getElementById('scene-list-panel');
+                if (!listPanel) return;
+                listPanel.innerHTML = '';
+
+                tourData.scenes.forEach(scene => {
+                    const card = document.createElement('div');
+                    card.className = `scene-card ${scene.id == currentSceneData?.id ? 'active' : ''}`;
+                    card.dataset.id = scene.id;
+                    
+                    const imageUrl = '{{ Storage::url("") }}' + scene.image_path;
+                    card.innerHTML = `
+                        <img src="${imageUrl}" alt="${scene.name}">
+                        <div class="scene-card-label">${scene.name}</div>
+                    `;
+
+                    card.onclick = () => {
+                        if (scene.id == currentSceneData?.id) return;
+                        const targetPano = getOrCreatePanorama(scene.id);
+                        if (targetPano) {
+                            walkToTarget(targetPano, new THREE.Vector3(0, 0, 0), scene.name, "Akses Langsung", scene.id);
+                        }
+                    };
+
+                    listPanel.appendChild(card);
+                });
+            }
 
             viewer.container.addEventListener('click', (e) => {
                 if (!document.getElementById('coord-display').classList.contains('show')) return;
