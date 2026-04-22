@@ -217,32 +217,39 @@
     <div id="viewer-container" class="w-full h-screen bg-black"></div>
 
     <!-- UI Overlay -->
-    <div class="absolute top-0 left-0 w-full h-full pointer-events-none flex flex-col justify-between p-[30px] box-border z-[10000]">
-        <!-- UI Toggle Button -->
-        <div id="ui-toggle" class="absolute top-[30px] left-[30px] w-[48px] h-[48px] bg-bg-glass backdrop-blur-[25px] border border-border-glass rounded-[16px] text-white flex items-center justify-center cursor-pointer z-[11000] pointer-events-auto transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] shadow-[0_15px_30px_rgba(0,0,0,0.4)] hover:bg-primary hover:scale-110 hover:rotate-6 hover:border-white/30 text-[1.1rem]">
-            <i class="fas fa-bars"></i>
-        </div>
+    <div class="absolute top-0 left-0 w-full h-full pointer-events-none p-[25px] box-border z-[10000]">
+        
+        <div class="flex items-start justify-between w-full transition-all duration-500 ease-in-out [&.minimized]:opacity-0 [&.minimized]:-translate-y-[20px] [&.minimized]:pointer-events-none [&.minimized]:blur-[10px]" id="overlay-top-wrapper">
+            <!-- Left Group: Toggle + Controls -->
+            <div class="flex items-center gap-[12px] pointer-events-auto" id="left-controls">
+                <!-- UI Toggle Button -->
+                <div id="ui-toggle" class="w-[48px] h-[48px] bg-bg-glass backdrop-blur-[25px] border border-border-glass rounded-[16px] text-white flex items-center justify-center cursor-pointer transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] shadow-[0_15px_30px_rgba(0,0,0,0.4)] hover:bg-primary hover:scale-110 hover:rotate-6 text-[1.1rem]">
+                    <i class="fas fa-times"></i>
+                </div>
 
-        <!-- Main Header Bar -->
-        <div class="flex items-start justify-between w-full pointer-events-none mt-[60px]" id="overlay-top">
-            <!-- Left Panel: Control Buttons -->
-            <div class="bg-bg-glass backdrop-blur-[30px] border border-border-glass p-[12px] rounded-[22px] pointer-events-auto shadow-[0_40px_80px_rgba(0,0,0,0.8)] transition-all duration-600 ease-[cubic-bezier(0.16,1,0.3,1)] origin-left" id="main-header">
-                <div class="flex flex-wrap gap-[8px]">
-                    <button id="toggle-rotate" class="btn-action btn-active bg-white/5 hover:bg-white/15 [&.btn-active]:bg-primary/35 border border-border-glass [&.btn-active]:border-primary/80 text-white/90 w-[42px] h-[42px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95" title="Auto Rotation"><i class="fas fa-sync-alt text-primary"></i></button>
+                <!-- Control Buttons -->
+                <div class="bg-bg-glass backdrop-blur-[30px] border border-border-glass p-[6px] rounded-[18px] flex gap-[6px] shadow-[0_20px_40px_rgba(0,0,0,0.4)]">
+                    <button id="toggle-rotate" class="btn-action btn-active bg-white/5 hover:bg-white/15 [&.btn-active]:bg-primary/35 border border-border-glass [&.btn-active]:border-primary/80 text-white/90 w-[38px] h-[38px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95" title="Auto Rotation"><i class="fas fa-sync-alt text-[14px] text-primary"></i></button>
                     
-                    <button id="toggle-markers" class="btn-action btn-active bg-white/5 hover:bg-white/15 [&.btn-active]:bg-primary/35 border border-border-glass [&.btn-active]:border-primary/80 text-white/90 w-[42px] h-[42px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95" title="Show Markers"><i class="bi bi-eye-fill text-primary"></i></button>
+                    <button id="toggle-markers" class="btn-action btn-active bg-white/5 hover:bg-white/15 [&.btn-active]:bg-primary/35 border border-border-glass [&.btn-active]:border-primary/80 text-white/90 w-[38px] h-[38px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95" title="Show Markers"><i class="bi bi-eye-fill text-[14px] text-primary"></i></button>
 
-                    <button id="toggle-fullscreen" class="btn-action bg-white/5 hover:bg-white/15 [&.btn-active]:bg-primary/35 border border-border-glass [&.btn-active]:border-primary/80 text-white/90 w-[42px] h-[42px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95" title="Full Screen"><i class="fas fa-expand text-primary"></i></button>
+                    <button id="toggle-fullscreen" class="btn-action bg-white/5 hover:bg-white/15 [&.btn-active]:bg-primary/35 border border-border-glass [&.btn-active]:border-primary/80 text-white/90 w-[38px] h-[38px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95" title="Full Screen"><i class="fas fa-expand text-[14px] text-primary"></i></button>
                 </div>
             </div>
 
             <!-- Right Panel: Scene Title -->
-            <div class="bg-bg-glass backdrop-blur-[30px] border border-border-glass p-[18px_25px] rounded-[22px] pointer-events-auto shadow-[0_40px_80px_rgba(0,0,0,0.8)] transition-all duration-600 ease-[cubic-bezier(0.16,1,0.3,1)] origin-right text-right">
-                <h1 id="scene-title" class="m-0 text-[18px] font-bold text-white tracking-[1px]">View Experience</h1>
-                <p id="scene-subtitle" class="mt-[6px] m-0 text-[10px] text-white/50 font-bold tracking-[3px] uppercase">LOBBY AREA</p>
+            <div class="bg-bg-glass backdrop-blur-[30px] border border-border-glass p-[15px_22px] rounded-[20px] pointer-events-auto shadow-[0_30px_60px_rgba(0,0,0,0.5)] origin-right text-right">
+                @php
+                    $startScene = $tour->scenes->where('is_start_scene', true)->first() ?? $tour->scenes->first();
+                @endphp
+                <h1 id="scene-title" class="m-0 text-[16px] font-bold text-white tracking-[0.8px]">{{ $startScene->name ?? 'SCENE' }}</h1>
+                <p id="scene-subtitle" class="mt-[4px] m-0 text-[9px] text-white/50 font-bold tracking-[2px] uppercase">{{ strtoupper($tour->name) }}</p>
             </div>
         </div>
         
+        <!-- Bottom Section (Flex empty space helper) -->
+        <div class="flex-1"></div>
+
         <!-- Coord Pill -->
         <div class="bg-bg-glass backdrop-blur-[20px] border border-border-glass px-[25px] py-[10px] rounded-[50px] text-white font-mono text-[13px] self-start pointer-events-auto opacity-0 invisible transition-all duration-400 shadow-[0_10px_30px_rgba(0,0,0,0.5)] [&.show]:opacity-100 [&.show]:visible" id="coord-display">Ambil kordinat dengan klik ruangan...</div>
     </div>
@@ -503,7 +510,9 @@
                             });
 
                             document.getElementById('scene-title').innerText = title;
-                            document.getElementById('scene-subtitle').innerText = subtitle;
+                            // Subtitle stays as the Tour Name (already set via Blade initially)
+                            // or you can explicitly re-set it if tourData has it:
+                            // document.getElementById('scene-subtitle').innerText = tourData.name.toUpperCase();
 
                             // Safeguard: re-apply autoRotate state from the internal flag
                             const ctrl = viewer.getControl();
@@ -565,10 +574,11 @@
             });
 
             document.getElementById('ui-toggle').addEventListener('click', function () {
-                const header = document.getElementById('main-header');
-                const isMinimized = header.classList.toggle('minimized');
+                const wrapper = document.getElementById('overlay-top-wrapper');
+                const isMinimized = wrapper.classList.toggle('minimized');
                 this.innerHTML = isMinimized ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-times"></i>';
-                this.style.background = isMinimized ? 'var(--color-bg-glass)' : 'var(--color-accent)';
+                this.style.background = isMinimized ? 'rgba(255,255,255,0.05)' : '#6366f1';
+                this.style.borderColor = isMinimized ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.3)';
             });
 
             viewer.container.addEventListener('click', (e) => {
