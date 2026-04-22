@@ -284,25 +284,28 @@
     <div class="absolute top-0 left-0 w-full h-full pointer-events-none p-[15px] box-border z-[10000]">
         
         <div class="flex items-start justify-between w-full" id="overlay-top-wrapper">
-            <!-- Left Group: Toggle + Controls -->
-            <div class="flex sm:flex-row flex-col items-center sm:items-start gap-[12px] pointer-events-auto" id="left-controls">
-                <!-- UI Toggle Button (Always Visible) -->
-                <div id="ui-toggle" class="w-[48px] h-[48px] bg-bg-glass backdrop-blur-[25px] border border-border-glass rounded-lg text-white flex items-center justify-center cursor-pointer transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] shadow-[0_15px_30px_rgba(0,0,0,0.4)] hover:bg-primary hover:scale-110 hover:rotate-6 text-[1.1rem]">
-                    <i class="fas fa-times"></i>
+            <!-- Left Group: Vertical Container -->
+            <div class="flex flex-col items-start gap-[12px] pointer-events-auto" id="left-sidebar-container">
+                <!-- Top Row: Toggle + Controls -->
+                <div class="flex items-center gap-[12px]" id="top-control-bar">
+                    <!-- UI Toggle Button (Always Visible) -->
+                    <div id="ui-toggle" class="w-[48px] h-[48px] bg-bg-glass backdrop-blur-[25px] border border-border-glass rounded-lg text-white flex items-center justify-center cursor-pointer transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] shadow-[0_15px_30px_rgba(0,0,0,0.4)] hover:bg-primary hover:scale-110 hover:rotate-6 text-[1.1rem]">
+                        <i class="fas fa-times"></i>
+                    </div>
+
+                    <!-- Control Buttons (Toggleable) -->
+                    <div id="control-buttons-panel" class="bg-bg-glass backdrop-blur-[30px] border border-border-glass p-[6px] rounded-lg flex gap-[6px] shadow-[0_20px_40px_rgba(0,0,0,0.4)] transition-all duration-500 ease-in-out [&.minimized]:opacity-0 [&.minimized]:-translate-x-[20px] [&.minimized]:pointer-events-none [&.minimized]:blur-[10px]">
+                        <button id="toggle-rotate" class="btn-action btn-active bg-white/5 hover:bg-white/15 [&.btn-active]:bg-primary/35 border border-border-glass [&.btn-active]:border-primary/80 text-white/90 w-[38px] h-[38px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95" title="Auto Rotation"><i class="fas fa-sync-alt text-[14px] text-primary"></i></button>
+                        
+                        <button id="toggle-markers" class="btn-action btn-active bg-white/5 hover:bg-white/15 [&.btn-active]:bg-primary/35 border border-border-glass [&.btn-active]:border-primary/80 text-white/90 w-[38px] h-[38px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95" title="Show Markers"><i class="bi bi-eye-fill text-[14px] text-primary"></i></button>
+
+                        <button id="toggle-fullscreen" class="btn-action bg-white/5 hover:bg-white/15 [&.btn-active]:bg-primary/35 border border-border-glass [&.btn-active]:border-primary/80 text-white/90 w-[38px] h-[38px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95" title="Full Screen"><i class="fas fa-expand text-[14px] text-primary"></i></button>
+                    </div>
                 </div>
 
-                <!-- Control Buttons (Toggleable) -->
-                <div id="control-buttons-panel" class="bg-bg-glass backdrop-blur-[30px] border border-border-glass p-[6px] rounded-lg flex sm:flex-row flex-col gap-[6px] shadow-[0_20px_40px_rgba(0,0,0,0.4)] transition-all duration-500 ease-in-out [&.minimized]:opacity-0 [&.minimized]:-translate-x-[20px] sm:[&.minimized]:-translate-x-[20px] [&.minimized]:-translate-y-[10px] [&.minimized]:pointer-events-none [&.minimized]:blur-[10px]">
-                    <button id="toggle-rotate" class="btn-action btn-active bg-white/5 hover:bg-white/15 [&.btn-active]:bg-primary/35 border border-border-glass [&.btn-active]:border-primary/80 text-white/90 w-[38px] h-[38px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95" title="Auto Rotation"><i class="fas fa-sync-alt text-[14px] text-primary"></i></button>
-                    
-                    <button id="toggle-markers" class="btn-action btn-active bg-white/5 hover:bg-white/15 [&.btn-active]:bg-primary/35 border border-border-glass [&.btn-active]:border-primary/80 text-white/90 w-[38px] h-[38px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95" title="Show Markers"><i class="bi bi-eye-fill text-[14px] text-primary"></i></button>
-
-                    <button id="toggle-fullscreen" class="btn-action bg-white/5 hover:bg-white/15 [&.btn-active]:bg-primary/35 border border-border-glass [&.btn-active]:border-primary/80 text-white/90 w-[38px] h-[38px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95" title="Full Screen"><i class="fas fa-expand text-[14px] text-primary"></i></button>
-                </div>
-
-                <!-- Scene List Sidebar -->
-                <div id="scene-list-panel" class="flex flex-col gap-[10px] mt-[5px] max-h-[calc(100vh-250px)] overflow-y-auto scrollbar-none transition-all duration-500 ease-in-out [&.minimized]:opacity-0 [&.minimized]:-translate-x-[40px] [&.minimized]:pointer-events-none [&.minimized]:blur-[10px]">
-                    <!-- Items will be dynamic -->
+                <!-- Scene List Sidebar (Toggleable, Below controls) -->
+                <div id="scene-list-panel" class="flex flex-col gap-[10px] max-h-[calc(100vh-250px)] overflow-y-auto scrollbar-none transition-all duration-500 ease-in-out [&.minimized]:opacity-0 [&.minimized]:-translate-x-[40px] [&.minimized]:pointer-events-none [&.minimized]:blur-[10px]">
+                    <!-- Items dynamic -->
                 </div>
             </div>
 
