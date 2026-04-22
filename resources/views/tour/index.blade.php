@@ -219,16 +219,16 @@
     <!-- UI Overlay -->
     <div class="absolute top-0 left-0 w-full h-full pointer-events-none p-[25px] box-border z-[10000]">
         
-        <div class="flex items-start justify-between w-full transition-all duration-500 ease-in-out [&.minimized]:opacity-0 [&.minimized]:-translate-y-[20px] [&.minimized]:pointer-events-none [&.minimized]:blur-[10px]" id="overlay-top-wrapper">
+        <div class="flex items-start justify-between w-full" id="overlay-top-wrapper">
             <!-- Left Group: Toggle + Controls -->
             <div class="flex items-center gap-[12px] pointer-events-auto" id="left-controls">
-                <!-- UI Toggle Button -->
+                <!-- UI Toggle Button (Always Visible) -->
                 <div id="ui-toggle" class="w-[48px] h-[48px] bg-bg-glass backdrop-blur-[25px] border border-border-glass rounded-[16px] text-white flex items-center justify-center cursor-pointer transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] shadow-[0_15px_30px_rgba(0,0,0,0.4)] hover:bg-primary hover:scale-110 hover:rotate-6 text-[1.1rem]">
                     <i class="fas fa-times"></i>
                 </div>
 
-                <!-- Control Buttons -->
-                <div class="bg-bg-glass backdrop-blur-[30px] border border-border-glass p-[6px] rounded-[18px] flex gap-[6px] shadow-[0_20px_40px_rgba(0,0,0,0.4)]">
+                <!-- Control Buttons (Toggleable) -->
+                <div id="control-buttons-panel" class="bg-bg-glass backdrop-blur-[30px] border border-border-glass p-[6px] rounded-[18px] flex gap-[6px] shadow-[0_20px_40px_rgba(0,0,0,0.4)] transition-all duration-500 ease-in-out [&.minimized]:opacity-0 [&.minimized]:-translate-x-[20px] [&.minimized]:pointer-events-none [&.minimized]:blur-[10px]">
                     <button id="toggle-rotate" class="btn-action btn-active bg-white/5 hover:bg-white/15 [&.btn-active]:bg-primary/35 border border-border-glass [&.btn-active]:border-primary/80 text-white/90 w-[38px] h-[38px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95" title="Auto Rotation"><i class="fas fa-sync-alt text-[14px] text-primary"></i></button>
                     
                     <button id="toggle-markers" class="btn-action btn-active bg-white/5 hover:bg-white/15 [&.btn-active]:bg-primary/35 border border-border-glass [&.btn-active]:border-primary/80 text-white/90 w-[38px] h-[38px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95" title="Show Markers"><i class="bi bi-eye-fill text-[14px] text-primary"></i></button>
@@ -237,7 +237,7 @@
                 </div>
             </div>
 
-            <!-- Right Panel: Scene Title -->
+            <!-- Right Panel: Scene Title (Always Visible) -->
             <div class="bg-bg-glass backdrop-blur-[30px] border border-border-glass p-[15px_22px] rounded-[20px] pointer-events-auto shadow-[0_30px_60px_rgba(0,0,0,0.5)] origin-right text-right">
                 @php
                     $startScene = $tour->scenes->where('is_start_scene', true)->first() ?? $tour->scenes->first();
@@ -574,8 +574,8 @@
             });
 
             document.getElementById('ui-toggle').addEventListener('click', function () {
-                const wrapper = document.getElementById('overlay-top-wrapper');
-                const isMinimized = wrapper.classList.toggle('minimized');
+                const panel = document.getElementById('control-buttons-panel');
+                const isMinimized = panel.classList.toggle('minimized');
                 this.innerHTML = isMinimized ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-times"></i>';
                 this.style.background = isMinimized ? 'rgba(255,255,255,0.05)' : '#6366f1';
                 this.style.borderColor = isMinimized ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.3)';
