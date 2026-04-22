@@ -73,8 +73,8 @@
                     @forelse($scene->infospots as $spot)
                         <button onclick="editInfospot({{ $spot->id }}, {{ json_encode($spot) }})" class="w-full flex items-center justify-between p-3 bg-white border border-slate-100 rounded-lg hover:border-blue-500 hover:bg-blue-50/10 transition-all group text-left shadow-sm">
                             <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 {{ $spot->type == 'info' ? 'bg-blue-50 text-blue-600' : 'bg-slate-100 text-slate-600' }} rounded flex items-center justify-center text-[10px] shadow-inner">
-                                    <i class="fas {{ $spot->type == 'info' ? 'fa-info' : 'fa-location-arrow' }}"></i>
+                                <div class="w-8 h-8 {{ $spot->type == 'info' ? 'bg-blue-50 text-blue-600' : ($spot->type == '3d' ? 'bg-purple-50 text-purple-600' : 'bg-slate-100 text-slate-600') }} rounded flex items-center justify-center text-[10px] shadow-inner">
+                                    <i class="fas {{ $spot->type == 'info' ? 'fa-info' : ($spot->type == '3d' ? 'fa-cube' : 'fa-location-arrow') }}"></i>
                                 </div>
                                 <div class="flex flex-col">
                                     <span class="text-xs font-bold text-slate-800 truncate max-w-[150px]">{{ $spot->title ?? ($spot->type == 'info' ? 'Info Node' : 'Nav Node') }}</span>
@@ -190,6 +190,21 @@
                             <div class="space-y-1.5">
                                 <label class="text-[9px] font-bold text-slate-500 uppercase tracking-widest ml-0.5">Node Title</label>
                                 <input type="text" name="title" id="input-title" class="modern-input" placeholder="Enter node title...">
+                            </div>
+
+                            <!-- 3D Model Primary Upload -->
+                            <div id="fields-3d" class="hidden space-y-2 p-3 bg-indigo-950/30 rounded border border-indigo-500/20 shadow-inner">
+                                <label class="text-[8px] font-bold text-indigo-400 uppercase tracking-widest block mb-1">Primary 3D Model (Floating Object)</label>
+                                <div class="space-y-2">
+                                    <input type="file" name="model_file" id="input-model-file" accept=".glb" 
+                                           class="w-full text-[9px] text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-[9px] file:font-bold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 transition-all cursor-pointer">
+                                    <div id="current-model-info" class="hidden flex items-center gap-2 p-1.5 bg-indigo-900/40 rounded border border-indigo-500/20">
+                                        <i class="fas fa-cube text-[10px] text-indigo-400"></i>
+                                        <span id="current-model-name" class="text-[8px] text-indigo-200 truncate flex-1"></span>
+                                        <span class="text-[7px] text-indigo-400 font-bold uppercase tracking-widest">Active</span>
+                                    </div>
+                                    <p class="text-[7px] text-slate-500 italic">Upload file .glb untuk merender objek 3D langsung di panorama.</p>
+                                </div>
                             </div>
 
                             <div class="space-y-3">
@@ -323,6 +338,11 @@
     <div id="menu-add-nav">
         <button onclick="handleMenuAction('add_nav')" class="w-full text-left px-5 py-3 hover:bg-blue-600 flex items-center justify-between group border-t border-white/5 transition-colors">
             <span>Add Nav Link</span> <i class="fas fa-link opacity-30 group-hover:opacity-100"></i>
+        </button>
+    </div>
+    <div id="menu-add-3d">
+        <button onclick="handleMenuAction('add_3d')" class="w-full text-left px-5 py-3 hover:bg-purple-600 flex items-center justify-between group border-t border-white/5 transition-colors">
+            <span>Add 3D Object</span> <i class="fas fa-cube opacity-30 group-hover:opacity-100"></i>
         </button>
     </div>
     <div id="menu-divider" class="h-px bg-white/5 my-1 mx-2"></div>
@@ -554,6 +574,7 @@
 </style>
 
 <script src="https://pchen66.github.io/js/three/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.105.0/examples/js/loaders/GLTFLoader.js"></script>
 <script src="https://pchen66.github.io/js/panolens/panolens.min.js"></script>
 <script>
     const container = document.getElementById('panolens-container');
@@ -564,6 +585,13 @@
         autoRotate: false,
         cameraFov: 90
     });
+
+    // Add Lights for 3D Models
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
+    viewer.add(ambientLight);
+    const sunLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    sunLight.position.set(1000, 2000, 1000);
+    viewer.add(sunLight);
     
     // Invert scroll zoom direction
     const controls = viewer.getControl();
@@ -598,6 +626,59 @@
     const renderedSpots = {};
     let isAdding = false;
     let editingId = null; 
+
+    // ---- 3D Model Loading & Animation System ----
+    const mixers = [];
+    const clock = new THREE.Clock();
+    let loader3d;
+    try {
+        loader3d = new THREE.GLTFLoader();
+        console.log("3D Loader initialized");
+    } catch(e) {
+        console.error("GLTFLoader initialization failed:", e);
+    }
+
+    function animate3d() {
+        requestAnimationFrame(animate3d);
+        const delta = clock.getDelta();
+        mixers.forEach(mixer => mixer.update(delta));
+    }
+    animate3d();
+
+    async function loadGLB(url, spotData) {
+        console.log("Loading GLB from:", url);
+        return new Promise((resolve, reject) => {
+            if (!loader3d) return reject("GLTFLoader not available");
+            loader3d.load(url, (gltf) => {
+                console.log("GLB Loaded successfully:", url);
+                const model = gltf.scene;
+                
+                // Set initial transform (Scale up significantly for world-space visibility)
+                const s = 100; // Base multiplier for 3D units vs panorama radius
+                model.position.set(spotData.position_x, spotData.position_y, spotData.position_z);
+                model.rotation.set(spotData.rotation_x || 0, spotData.rotation_y || 0, spotData.rotation_z || 0);
+                model.scale.set(
+                    (spotData.scale_x || 1) * s, 
+                    (spotData.scale_y || 1) * s, 
+                    (spotData.scale_z || spotData.scale_x || 1) * s
+                );
+                
+                // Base metadata
+                model.is3DModel = true;
+                model.spotData = spotData;
+
+                // Handle Animations
+                if (gltf.animations && gltf.animations.length > 0) {
+                    const mixer = new THREE.AnimationMixer(model);
+                    gltf.animations.forEach(clip => mixer.clipAction(clip).play());
+                    mixers.push(mixer);
+                    model.mixer = mixer;
+                }
+
+                resolve(model);
+            }, undefined, reject);
+        });
+    }
 
     // Helper: Create Styled Icon
     function createStyledIcon(iconContent, color = '#2563eb', rotation = 0) {
@@ -644,82 +725,119 @@
     // Render existing spots
     Promise.all([
         createStyledIcon('i', '#2563eb'), // info
-        createStyledIcon('⮝', '#4f46e5') // nav (Updated to vibrant indigo)
-    ]).then(([infoUrl, navUrl]) => {
+        createStyledIcon('⮝', '#4f46e5'), // nav (Updated to vibrant indigo)
+        createStyledIcon('3D', '#7c3aed') // 3d (Purple cube-like theme)
+    ]).then(([infoUrl, navUrl, threedUrl]) => {
         iconTextures.info = infoUrl;
         iconTextures.nav = navUrl;
+        iconTextures.threed = threedUrl;
         
-        existingSpots.forEach(spot => {
-            renderMarker(spot);
-        });
+        // Render existing spots sequentially to ensure clean loading
+        for (const spot of existingSpots) {
+            await renderMarker(spot);
+        }
         
         ghostMarker = new PANOLENS.Infospot(600, infoUrl);
         ghostMarker.material.opacity = 0.5;
     });
 
-    function renderMarker(spotData) {
+    async function renderMarker(spotData) {
         if (renderedSpots[spotData.id]) {
             const oldMarker = renderedSpots[spotData.id];
             if (oldMarker.bounceTween) oldMarker.bounceTween.stop();
+            if (oldMarker.mixer) {
+                const idx = mixers.indexOf(oldMarker.mixer);
+                if (idx > -1) mixers.splice(idx, 1);
+            }
             panorama.remove(oldMarker);
             delete renderedSpots[spotData.id];
         }
 
-        const iconUrl = spotData.type === 'info' ? iconTextures.info : iconTextures.nav;
+        const iconUrl = spotData.type === 'info' ? iconTextures.info : (spotData.type === '3d' ? iconTextures.threed : iconTextures.nav);
         let marker;
+        let modelObj = null;
 
-        if (spotData.is_perspective) {
-            const geometry = new THREE.PlaneGeometry(600, 600);
-            const loader = new THREE.TextureLoader();
-            const texture = loader.load(iconUrl);
-            const material = new THREE.MeshBasicMaterial({ 
-                map: texture, 
-                transparent: true, 
-                side: THREE.DoubleSide,
-                alphaTest: 0.1,
-                depthTest: false,
-                depthWrite: false
-            });
-            marker = new THREE.Mesh(geometry, material);
-            marker.renderOrder = 999;
-            marker.rotation.order = 'YXZ';
-            marker.rotation.set(spotData.rotation_x || 0, spotData.rotation_y || 0, spotData.rotation_z || 0);
-            marker.scale.set(spotData.scale_x || 1, spotData.scale_y || 1, 1);
-            marker.isPerspectiveMesh = true;
-            marker.spotData = spotData;
-        } else {
-            marker = new PANOLENS.Infospot(600, iconUrl);
+        // Position Normalization (Ensure inside the 5000 radius sphere)
+        const pos = new THREE.Vector3(spotData.position_x, spotData.position_y, spotData.position_z).normalize().multiplyScalar(4000);
+
+        if (spotData.model_path) {
+            try {
+                const modelUrl = '{{ url('storage') }}/' + spotData.model_path;
+                modelObj = await loadGLB(modelUrl, spotData);
+                
+                // Create a Proxy Infospot for interaction
+                marker = new PANOLENS.Infospot(800, PANOLENS.DataImage.Info); // Large hit area
+                marker.material.opacity = 0; // Invisible icon
+                marker.add(modelObj);
+                
+                // Reset model internal position to 0 (since it's a child of marker)
+                modelObj.position.set(0, 0, 0);
+                marker.is3DModel = true;
+                marker.modelObj = modelObj;
+            } catch (err) {
+                console.error("Failed to load GLB:", err);
+            }
         }
 
-        marker.position.set(spotData.position_x, spotData.position_y, spotData.position_z);
+        if (!marker) {
+            if (spotData.is_perspective) {
+                const geometry = new THREE.PlaneGeometry(600, 600);
+                const texture = new THREE.TextureLoader().load(iconUrl);
+                const material = new THREE.MeshBasicMaterial({ 
+                    map: texture, transparent: true, side: THREE.DoubleSide,
+                    alphaTest: 0.1, depthTest: false, depthWrite: false
+                });
+                marker = new THREE.Mesh(geometry, material);
+                marker.renderOrder = 999;
+                marker.rotation.order = 'YXZ';
+                marker.rotation.set(spotData.rotation_x || 0, spotData.rotation_y || 0, spotData.rotation_z || 0);
+                marker.scale.set(spotData.scale_x || 1, spotData.scale_y || 1, 1);
+                marker.isPerspectiveMesh = true;
+            } else {
+                marker = new PANOLENS.Infospot(600, iconUrl);
+            }
+        }
+
+        marker.spotData = spotData;
+        marker.position.copy(pos);
         
         marker.addEventListener('click', () => {
-            if(isAdding) return;
-            if(window.wasDragging) {
-                window.wasDragging = false; 
-                return;
-            }
+            if(isAdding || window.wasDragging) { window.wasDragging = false; return; }
             editInfospot(spotData.id, spotData);
         });
 
-        // Hover Effect
+        // Smart Hover Logic
         marker.addEventListener('hoverenter', () => {
-            if (marker.isPerspectiveMesh) {
+            if (marker.is3DModel) {
+                const s = 100 * 1.2;
+                new TWEEN.Tween(marker.modelObj.scale).to({ 
+                    x: (spotData.scale_x || 1) * s, 
+                    y: (spotData.scale_y || 1) * s, 
+                    z: (spotData.scale_z || spotData.scale_x || 1) * s 
+                }, 300).easing(TWEEN.Easing.Back.Out).start();
+            } else if (marker.isPerspectiveMesh) {
                 new TWEEN.Tween(marker.scale).to({ x: (spotData.scale_x || 1) * 1.2, y: (spotData.scale_y || 1) * 1.2, z: 1.2 }, 300).easing(TWEEN.Easing.Back.Out).start();
             } else {
                 marker.scale.set(1.3, 1.3, 1.3);
             }
         });
+
         marker.addEventListener('hoverleave', () => {
-            if (marker.isPerspectiveMesh) {
+            if (marker.is3DModel) {
+                const s = 100;
+                new TWEEN.Tween(marker.modelObj.scale).to({ 
+                    x: (spotData.scale_x || 1) * s, 
+                    y: (spotData.scale_y || 1) * s, 
+                    z: (spotData.scale_z || spotData.scale_x || 1) * s 
+                }, 300).easing(TWEEN.Easing.Back.Out).start();
+            } else if (marker.isPerspectiveMesh) {
                 new TWEEN.Tween(marker.scale).to({ x: spotData.scale_x || 1, y: spotData.scale_y || 1, z: 1 }, 300).easing(TWEEN.Easing.Back.Out).start();
             } else {
                 marker.scale.set(1, 1, 1);
             }
         });
 
-        // Bounce Animation
-        addBounce(marker);
+        if (!marker.is3DModel) addBounce(marker);
 
         panorama.add(marker);
         renderedSpots[spotData.id] = marker;
@@ -749,6 +867,11 @@
     const valX = document.getElementById('val_x'), valY = document.getElementById('val_y'), valZ = document.getElementById('val_z');
     const barX = document.getElementById('bar_x'), barY = document.getElementById('bar_y'), barZ = document.getElementById('bar_z');
     const pos_x = document.getElementById('pos_x'), pos_y = document.getElementById('pos_y'), pos_z = document.getElementById('pos_z');
+    
+    const fields3D = document.getElementById('fields-3d');
+    const inputModelFile = document.getElementById('input-model-file');
+    const currentModelInfo = document.getElementById('current-model-info');
+    const currentModelName = document.getElementById('current-model-name');
 
     inputPerspective.addEventListener('change', (e) => {
         if (e.target.checked) transformControls.classList.remove('hidden');
@@ -786,7 +909,12 @@
             if (needsRebuild) renderMarker(currentData);
             else {
                 const marker = renderedSpots[editingId];
-                if (currentData.is_perspective) {
+                if (marker.is3DModel) {
+                    marker.modelObj.rotation.set(currentData.rotation_x, currentData.rotation_y, currentData.rotation_z);
+                    const s = 100;
+                    const sz = currentData.scale_z || currentData.scale_x || 1;
+                    marker.modelObj.scale.set(currentData.scale_x * s, currentData.scale_y * s, sz * s);
+                } else if (marker.isPerspectiveMesh) {
                     marker.rotation.set(currentData.rotation_x, currentData.rotation_y, currentData.rotation_z);
                     marker.scale.set(currentData.scale_x, currentData.scale_y, 1);
                 }
@@ -798,9 +926,15 @@
         if(e.target.value === 'nav') {
             fieldsInfo.classList.add('hidden');
             fieldsNav.classList.remove('hidden');
+            fields3D.classList.add('hidden');
+        } else if(e.target.value === '3d') {
+            fieldsInfo.classList.remove('hidden');
+            fieldsNav.classList.add('hidden');
+            fields3D.classList.remove('hidden');
         } else {
             fieldsInfo.classList.remove('hidden');
             fieldsNav.classList.add('hidden');
+            fields3D.classList.add('hidden');
         }
     });
 
@@ -847,12 +981,14 @@
         if (mode === 'spot') {
             document.getElementById('menu-add-info').classList.add('hidden');
             document.getElementById('menu-add-nav').classList.add('hidden');
+            document.getElementById('menu-add-3d').classList.add('hidden');
             document.getElementById('menu-edit').classList.remove('hidden');
             document.getElementById('menu-delete').classList.remove('hidden');
             document.getElementById('menu-divider').classList.remove('hidden');
         } else {
             document.getElementById('menu-add-info').classList.remove('hidden');
             document.getElementById('menu-add-nav').classList.remove('hidden');
+            document.getElementById('menu-add-3d').classList.remove('hidden');
             document.getElementById('menu-edit').classList.add('hidden');
             document.getElementById('menu-delete').classList.add('hidden');
             document.getElementById('menu-divider').classList.add('hidden');
@@ -864,18 +1000,23 @@
 
     window.handleMenuAction = function(action) {
         hideContextMenu();
-        if (action === 'add_info' || action === 'add_nav') {
-            const type = (action === 'add_info') ? 'info' : 'nav';
+        if (action === 'add_info' || action === 'add_nav' || action === 'add_3d') {
+            let type = 'info';
+            if (action === 'add_nav') type = 'nav';
+            if (action === 'add_3d') type = '3d';
             if (lastRightClickCoords) {
-                openForm('create');
                 inputType.value = type;
+                openForm('create');
                 inputType.dispatchEvent(new Event('change'));
                 pos_x.value = lastRightClickCoords.x; pos_y.value = lastRightClickCoords.y; pos_z.value = lastRightClickCoords.z;
                 updatePosDisplay(lastRightClickCoords.x, lastRightClickCoords.y, lastRightClickCoords.z);
                 
                 // Update ghost marker texture to match type
                 if (ghostMarker) {
-                    const textureUrl = (type === 'info') ? iconTextures.info : iconTextures.nav;
+                    let textureUrl = iconTextures.info;
+                    if (type === 'nav') textureUrl = iconTextures.nav;
+                    if (type === '3d') textureUrl = iconTextures.threed;
+                    
                     const loader = new THREE.TextureLoader();
                     ghostMarker.material.map = loader.load(textureUrl);
                     ghostMarker.material.needsUpdate = true;
@@ -1155,7 +1296,7 @@
         listState.classList.add('hidden');
         createForm.classList.remove('hidden');
         if (mode === 'create') {
-            titleHeader.innerText = "New Node";
+            titleHeader.innerText = inputType.value === '3d' ? "New 3D Object" : "New Node";
             formEl.reset();
             document.getElementById('input-desc-id').value = '';
             document.getElementById('input-desc-en').value = '';
@@ -1169,12 +1310,30 @@
             methodPut.innerHTML = '';
             formEl.action = "{{ route('admin.scenes.infospots.store', $scene) }}";
             formDelete.classList.add('hidden');
-            inputPerspective.checked = false;
+            
+            // Reset 3D Model Field
+            inputModelFile.value = '';
+            currentModelInfo.classList.add('hidden');
+            if (inputType.value === '3d') {
+                inputPerspective.checked = true;
+            } else {
+                inputPerspective.checked = false;
+            }
             inputPerspective.dispatchEvent(new Event('change'));
         } else {
-            titleHeader.innerText = "Inspector";
+            titleHeader.innerText = spot.type === '3d' ? "3D Object Inspector" : "Inspector";
             inputType.value = spot.type;
             inputType.dispatchEvent(new Event('change'));
+            
+            // Handle 3D Model Info in Edit mode
+            inputModelFile.value = '';
+            if (spot.type === '3d' && spot.model_path) {
+                currentModelInfo.classList.remove('hidden');
+                currentModelName.innerText = spot.model_path.split('/').pop();
+            } else {
+                currentModelInfo.classList.add('hidden');
+            }
+
             pos_x.value = spot.position_x; pos_y.value = spot.position_y; pos_z.value = spot.position_z;
             updatePosDisplay(spot.position_x, spot.position_y, spot.position_z);
             inputPerspective.checked = !!spot.is_perspective;

@@ -19,7 +19,7 @@ class InfospotController extends Controller
     public function store(Request $request, Scene $scene)
     {
         $validated = $request->validate([
-            'type' => 'required|in:info,nav',
+            'type' => 'required|in:info,nav,3d',
             'position_x' => 'required|integer',
             'position_y' => 'required|integer',
             'position_z' => 'required|integer',
@@ -62,7 +62,7 @@ class InfospotController extends Controller
     public function update(Request $request, Infospot $infospot)
     {
         $validated = $request->validate([
-            'type' => 'required|in:info,nav',
+            'type' => 'required|in:info,nav,3d',
             'position_x' => 'required|integer',
             'position_y' => 'required|integer',
             'position_z' => 'required|integer',

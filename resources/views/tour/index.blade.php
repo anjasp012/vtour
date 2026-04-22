@@ -325,6 +325,7 @@
     </div>
 
     <script src="https://pchen66.github.io/js/three/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.105.0/examples/js/loaders/GLTFLoader.js"></script>
     <script src="https://pchen66.github.io/js/panolens/panolens.min.js"></script>
 
     <script>
@@ -358,6 +359,7 @@
         async function initTour() {
             const infoUrl = await createStyledIcon('i', '#2563eb');
             const arrowUrl = await createStyledIcon('⮝', '#4f46e5'); // Warna lebih vibrant dan senada dengan info
+            const threedUrl = await createStyledIcon('3D', '#7c3aed'); // Distinct icon for 3D objects
             // Removed legacy arrow rotations as we use real 3D rotation now
 
             viewer = new PANOLENS.Viewer({
@@ -367,6 +369,13 @@
                 controlBar: false,
                 cameraFov: 100
             });
+
+            // Add Lights for 3D Models
+            const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
+            viewer.add(ambientLight);
+            const sunLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            sunLight.position.set(1000, 2000, 1000);
+            viewer.add(sunLight);
 
             // OPTIMASI: Batasi pixel ratio maksimal ke 1.5 (seperti engine 3DVista). 
             // Layar HP modern sering memaksakan ratio 3x atau 4x yang membuat GPU kelebihan beban saat render 3D.
@@ -379,6 +388,46 @@
             const originalDollyIn = controls.dollyIn;
             controls.dollyIn = controls.dollyOut;
             controls.dollyOut = originalDollyIn;
+
+            // ---- 3D Model Rendering System ----
+            const mixers = [];
+            const clock = new THREE.Clock();
+            const loader3d = new THREE.GLTFLoader();
+
+            function animate3d() {
+                requestAnimationFrame(animate3d);
+                const delta = clock.getDelta();
+                mixers.forEach(mixer => mixer.update(delta));
+            }
+            animate3d();
+
+            async function loadGLB(url, spotData) {
+                return new Promise((resolve, reject) => {
+                    loader3d.load(url, (gltf) => {
+                        const model = gltf.scene;
+                        
+                        // Scale up significantly for world-space visibility
+                        const s = 100;
+                        model.position.set(0, 0, 0); // Position is handled by proxy
+                        model.rotation.set(spotData.rotation_x || 0, spotData.rotation_y || 0, spotData.rotation_z || 0);
+                        model.scale.set(
+                            (spotData.scale_x || 1) * s, 
+                            (spotData.scale_y || 1) * s, 
+                            (spotData.scale_z || spotData.scale_x || 1) * s
+                        );
+                        
+                        model.is3DModel = true;
+                        
+                        if (gltf.animations && gltf.animations.length > 0) {
+                            const mixer = new THREE.AnimationMixer(model);
+                            gltf.animations.forEach(clip => mixer.clipAction(clip).play());
+                            mixers.push(mixer);
+                        }
+
+                        resolve(model);
+                    }, undefined, reject);
+                });
+            }
 
             function addBounce(infospot) {
                 const startY = infospot.position.y;
@@ -410,56 +459,85 @@
 
                 // Attach infospots to this new panorama
                 if (sceneData.infospots) {
-                    sceneData.infospots.forEach(spot => {
+                    sceneData.infospots.forEach(async (spot) => {
                         let ispot;
-                        if (spot.is_perspective) {
-                            // Render as 3D Mesh for perspective mode
-                            const iconUrl = (spot.type === 'info') ? infoUrl : arrowUrl;
-                            const geometry = new THREE.PlaneGeometry(600, 600);
-                            const loader = new THREE.TextureLoader();
-                            const texture = loader.load(iconUrl);
-                            const material = new THREE.MeshBasicMaterial({ 
-                                map: texture, 
-                                transparent: true, 
-                                side: THREE.DoubleSide,
-                                alphaTest: 0.1,
-                                depthTest: false,
-                                depthWrite: false
-                            });
-                            ispot = new THREE.Mesh(geometry, material);
-                            ispot.renderOrder = 999;
-                            ispot.rotation.order = 'YXZ';
-                            ispot.position.set(spot.position_x, spot.position_y, spot.position_z);
-                            ispot.rotation.set(spot.rotation_x || 0, spot.rotation_y || 0, spot.rotation_z || 0);
-                            ispot.scale.set(spot.scale_x || 1, spot.scale_y || 1, 1);
-                            ispot.isPerspectiveMesh = true;
-                            
-                            // Interaction for Mesh
-                            ispot.addEventListener('click', () => { handleSpotClick(spot); });
+                        let modelObj = null;
 
-                            // Hover effect for Mesh
-                            ispot.addEventListener('hoverenter', () => {
-                                new TWEEN.Tween(ispot.scale).to({ x: (spot.scale_x || 1) * 1.2, y: (spot.scale_y || 1) * 1.2, z: 1.2 }, 300).easing(TWEEN.Easing.Back.Out).start();
-                            });
-                            ispot.addEventListener('hoverleave', () => {
-                                new TWEEN.Tween(ispot.scale).to({ x: spot.scale_x || 1, y: spot.scale_y || 1, z: 1 }, 300).easing(TWEEN.Easing.Back.Out).start();
-                            });
-
-                            addBounce(ispot);
-                        } else {
-                            // Standard Billboard
-                            const iconUrl = (spot.type === 'info') ? infoUrl : arrowUrl;
-                            ispot = new PANOLENS.Infospot(UNIFORM_SIZE, iconUrl);
-                            ispot.position.set(spot.position_x, spot.position_y, spot.position_z);
-                            ispot.addEventListener('click', () => { handleSpotClick(spot); });
-                            
-                            // Hover effect for Billboard
-                            ispot.addEventListener('hoverenter', () => { ispot.scale.set(1.3, 1.3, 1.3); });
-                            ispot.addEventListener('hoverleave', () => { ispot.scale.set(1, 1, 1); });
-                            
-                            addBounce(ispot);
+                        // Position Normalization (Ensure inside the 5000 radius sphere)
+                        const pos = new THREE.Vector3(spot.position_x, spot.position_y, spot.position_z).normalize().multiplyScalar(4000);
+                        
+                        // Check for direct 3D model
+                        if (spot.model_path) {
+                            try {
+                                const modelUrl = '{{ url('storage') }}/' + spot.model_path;
+                                modelObj = await loadGLB(modelUrl, spot);
+                                
+                                // Create a Proxy Infospot for interaction
+                                ispot = new PANOLENS.Infospot(800, PANOLENS.DataImage.Info);
+                                ispot.material.opacity = 0;
+                                ispot.add(modelObj);
+                                ispot.is3DModel = true;
+                                ispot.modelObj = modelObj;
+                            } catch (e) {
+                                console.error("GLB load failed:", e);
+                            }
                         }
-                        pano.add(ispot);
+
+                        if (!ispot) {
+                            if (spot.is_perspective) {
+                                // Render as 3D Mesh for perspective mode
+                                const iconUrl = (spot.type === 'info') ? infoUrl : (spot.type === '3d' ? threedUrl : arrowUrl);
+                                const geometry = new THREE.PlaneGeometry(600, 600);
+                                const texture = new THREE.TextureLoader().load(iconUrl);
+                                const material = new THREE.MeshBasicMaterial({ 
+                                    map: texture, transparent: true, side: THREE.DoubleSide,
+                                    alphaTest: 0.1, depthTest: false, depthWrite: false
+                                });
+                                ispot = new THREE.Mesh(geometry, material);
+                                ispot.renderOrder = 999;
+                                ispot.rotation.order = 'YXZ';
+                                ispot.rotation.set(spot.rotation_x || 0, spot.rotation_y || 0, spot.rotation_z || 0);
+                                ispot.scale.set(spot.scale_x || 1, spot.scale_y || 1, 1);
+                                ispot.isPerspectiveMesh = true;
+                            } else {
+                                // Standard Billboard
+                                const iconUrl = (spot.type === 'info') ? infoUrl : (spot.type === '3d' ? threedUrl : arrowUrl);
+                                ispot = new PANOLENS.Infospot(UNIFORM_SIZE, iconUrl);
+                            }
+                        }
+
+                        ispot.position.copy(pos);
+                        ispot.addEventListener('click', () => { handleSpotClick(spot); });
+
+                        // Smart Hover Logic
+                        ispot.addEventListener('hoverenter', () => {
+                            if (ispot.is3DModel) {
+                                const s = 100 * 1.2;
+                                new TWEEN.Tween(ispot.modelObj.scale).to({ 
+                                    x: (spot.scale_x || 1) * s, y: (spot.scale_y || 1) * s, z: (spot.scale_z || spot.scale_x || 1) * s 
+                                }, 300).easing(TWEEN.Easing.Back.Out).start();
+                            } else if (ispot.isPerspectiveMesh) {
+                                new TWEEN.Tween(ispot.scale).to({ x: (spot.scale_x || 1) * 1.2, y: (spot.scale_y || 1) * 1.2, z: 1.2 }, 300).easing(TWEEN.Easing.Back.Out).start();
+                            } else {
+                                ispot.scale.set(1.3, 1.3, 1.3);
+                            }
+                        });
+
+                        ispot.addEventListener('hoverleave', () => {
+                            if (ispot.is3DModel) {
+                                const s = 100;
+                                new TWEEN.Tween(ispot.modelObj.scale).to({ 
+                                    x: (spot.scale_x || 1) * s, y: (spot.scale_y || 1) * s, z: (spot.scale_z || spot.scale_x || 1) * s 
+                                }, 300).easing(TWEEN.Easing.Back.Out).start();
+                            } else if (ispot.isPerspectiveMesh) {
+                                new TWEEN.Tween(ispot.scale).to({ x: spot.scale_x || 1, y: spot.scale_y || 1, z: 1 }, 300).easing(TWEEN.Easing.Back.Out).start();
+                            } else {
+                                ispot.scale.set(1, 1, 1);
+                            }
+                        });
+
+                        if (!ispot.is3DModel) addBounce(ispot);
+                        if (ispot) pano.add(ispot);
                     });
                 }
 
@@ -487,7 +565,7 @@
             let startScene = startSceneData ? getOrCreatePanorama(startSceneData.id) : null;
 
             function handleSpotClick(spot) {
-                if (spot.type === 'info') {
+                if (spot.type === 'info' || spot.type === '3d') {
                     // Build assets array — prefer assets relation, fallback to legacy model_path
                     let assets = [];
                     if (spot.assets && spot.assets.length > 0) {
