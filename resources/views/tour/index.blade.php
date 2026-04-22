@@ -48,10 +48,10 @@
         .vc-wrap {
             position: relative;
             width: 100%;
-            overflow: hidden;
             border-radius: 18px;
             background: rgba(255,255,255,0.03);
             border: 1px solid rgba(255,255,255,0.08);
+            overflow: hidden; /* hides sliding track; zoom handled via img transform */
         }
         .vc-track {
             display: flex;
@@ -66,13 +66,13 @@
         .vc-slide img {
             width: 100%;
             height: 300px;
-            object-fit: cover;
+            object-fit: contain;
             display: block;
             cursor: zoom-in;
-            transform-origin: center center;
+            transform-origin: 50% 50%; /* overridden dynamically on wheel */
             transition: transform 0.15s ease;
             user-select: none;
-            object-fit: contain;
+            background: rgba(0,0,0,0.2);
         }
         .vc-slide .mv-wrap {
             width: 100%;
@@ -715,39 +715,43 @@
         const _imgMaxScale = 5;
 
         function _imgApplyTransform(img) {
-            img.style.transform = `scale(${_imgScale}) translate(${_imgTransX}px, ${_imgTransY}px)`;
+            img.style.transform = `scale(${_imgScale})`;
             img.style.cursor    = _imgScale > 1 ? 'grab' : 'zoom-in';
         }
 
         function _imgZoomReset() {
-            _imgScale  = 1;
-            _imgTransX = 0;
-            _imgTransY = 0;
+            _imgScale = 1;
             document.querySelectorAll('.vc-slide img').forEach(img => {
-                img.style.transform = '';
-                img.style.cursor    = 'zoom-in';
+                img.style.transform      = '';
+                img.style.transformOrigin = '50% 50%';
+                img.style.cursor         = 'zoom-in';
             });
         }
 
-        // Wheel zoom — attached to the carousel wrapper
+        // Wheel zoom — zoom toward mouse cursor position
         document.getElementById('vc-wrap').addEventListener('wheel', (e) => {
-            // Only zoom if hovering a 2D image slide
             const img = e.target.closest('.vc-slide')?.querySelector('img');
             if (!img) return;
 
             e.preventDefault();
 
-            const delta = e.deltaY < 0 ? 1.12 : 1 / 1.12;
+            const rect     = img.getBoundingClientRect();
+            const originX  = ((e.clientX - rect.left) / rect.width  * 100).toFixed(2) + '%';
+            const originY  = ((e.clientY - rect.top)  / rect.height * 100).toFixed(2) + '%';
+
+            const delta    = e.deltaY < 0 ? 1.15 : 1 / 1.15;
             const newScale = Math.min(_imgMaxScale, Math.max(_imgMinScale, _imgScale * delta));
 
-            if (newScale === _imgMinScale) {
-                _imgScale  = _imgMinScale;
-                _imgTransX = 0;
-                _imgTransY = 0;
-            } else {
-                _imgScale = newScale;
+            if (newScale <= _imgMinScale) {
+                _imgScale = _imgMinScale;
+                img.style.transformOrigin = '50% 50%';
+                img.style.transform       = '';
+                img.style.cursor          = 'zoom-in';
+                return;
             }
 
+            _imgScale = newScale;
+            img.style.transformOrigin = `${originX} ${originY}`;
             _imgApplyTransform(img);
         }, { passive: false });
 
