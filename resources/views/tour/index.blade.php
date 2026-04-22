@@ -188,14 +188,12 @@
             }
         }
         .scene-card:hover {
-            transform: translateX(8px);
             border-color: rgba(255,255,255,0.3);
             box-shadow: 0 10px 20px rgba(0,0,0,0.4);
         }
         .scene-card.active {
             border-color: #6366f1;
             box-shadow: 0 0 15px rgba(99,102,241,0.6);
-            transform: translateX(12px);
         }
         .scene-card img {
             width: 100%;
