@@ -25,13 +25,14 @@
             </div>
         </div>
 
-        <!-- Small Coordinates Display -->
-        <div id="coord-display" class="hidden absolute top-4 right-4 z-10 bg-[#1a1a1a]/80 backdrop-blur border border-white/5 px-4 py-2 rounded-lg text-white font-mono text-[9px] tracking-widest shadow-xl">
-            POS: <span class="text-blue-400">X: 0 | Y: 0 | Z: 0</span>
-        </div>
-
-        <!-- Lock Initial View Button -->
+        <!-- Top-right overlay: coord display + lock button -->
         <div class="absolute top-4 right-4 z-10 flex items-center gap-2">
+            <!-- Small Coordinates Display (shown during node placement) -->
+            <div id="coord-display" class="hidden bg-[#1a1a1a]/80 backdrop-blur border border-white/5 px-4 py-2 rounded-lg text-white font-mono text-[9px] tracking-widest shadow-xl">
+                POS: <span class="text-blue-400">X: 0 | Y: 0 | Z: 0</span>
+            </div>
+
+            <!-- Lock Initial View Button -->
             <button id="btn-lock-view"
                 onclick="lockInitialView()"
                 title="Lock initial camera direction for this scene"
@@ -1377,10 +1378,14 @@
     }
 
     window.lockInitialView = async function() {
-        const controls = viewer.getControl();
-        // Panolens OrbitControls exposes lon/lat on the control object
-        const lon = controls.lon ?? 0;
-        const lat = controls.lat ?? 0;
+        // Read the actual camera direction from Three.js (more reliable than controls.lon/lat)
+        const camera = viewer.getCamera();
+        const dir    = new THREE.Vector3();
+        camera.getWorldDirection(dir);
+
+        // Convert world direction to lon/lat (Panolens spherical convention)
+        const lon = Math.atan2(dir.x, -dir.z) * (180 / Math.PI);
+        const lat = Math.asin(Math.max(-1, Math.min(1, dir.y))) * (180 / Math.PI);
 
         const btn = document.getElementById('btn-lock-view');
         btn.disabled = true;

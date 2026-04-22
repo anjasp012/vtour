@@ -436,12 +436,15 @@
                     loader.style.opacity = '0';
                     setTimeout(() => loader.style.display = 'none', 1000);
 
-                    // Apply saved initial camera direction if set
-                    const ctrl = viewer.getControl();
-                    if (startSceneData && (startSceneData.initial_lon || startSceneData.initial_lat)) {
-                        ctrl.lon = startSceneData.initial_lon || 0;
-                        ctrl.lat = startSceneData.initial_lat || 0;
-                        ctrl.update();
+                    // Apply saved initial camera direction after controls settle
+                    if (startSceneData && (startSceneData.initial_lon != null && startSceneData.initial_lat != null)
+                        && (startSceneData.initial_lon !== 0 || startSceneData.initial_lat !== 0)) {
+                        setTimeout(() => {
+                            const ctrl = viewer.getControl();
+                            ctrl.lon = parseFloat(startSceneData.initial_lon);
+                            ctrl.lat = parseFloat(startSceneData.initial_lat);
+                            ctrl.update();
+                        }, 200);
                     }
                 });
             } else {
@@ -491,12 +494,12 @@
 
                             // Apply saved initial camera direction if target scene has one
                             const tsd = targetSceneId ? tourData.scenes.find(s => s.id == targetSceneId) : null;
-                            if (tsd && (tsd.initial_lon || tsd.initial_lat)) {
+                            if (tsd && (tsd.initial_lon !== 0 || tsd.initial_lat !== 0)) {
                                 setTimeout(() => {
-                                    ctrl.lon = tsd.initial_lon || 0;
-                                    ctrl.lat = tsd.initial_lat || 0;
+                                    ctrl.lon = parseFloat(tsd.initial_lon);
+                                    ctrl.lat = parseFloat(tsd.initial_lat);
                                     ctrl.update();
-                                }, 350);
+                                }, 400);
                             }
 
                             startTime = Date.now();
