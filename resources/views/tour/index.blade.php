@@ -223,18 +223,23 @@
             <i class="fas fa-bars"></i>
         </div>
 
-        <!-- Main Header -->
-        <div class="bg-bg-glass backdrop-blur-[30px] border border-border-glass p-[22px_25px] rounded-[24px] text-white max-w-[280px] pointer-events-auto shadow-[0_40px_80px_rgba(0,0,0,0.8)] transition-all duration-600 ease-[cubic-bezier(0.16,1,0.3,1)] origin-[left_top] mt-[60px] [&.minimized]:opacity-0 [&.minimized]:-translate-y-[20px] [&.minimized]:scale-95 [&.minimized]:pointer-events-none [&.minimized]:blur-[10px]" id="main-header">
-            <h1 id="scene-title" class="m-0 text-[16px] font-semibold text-white tracking-[0.5px]">View Experience</h1>
-            <p id="scene-subtitle" class="mt-[4px] mb-[15px] mx-0 text-[9px] opacity-50 tracking-[2.5px] uppercase">LOBBY AREA</p>
+        <!-- Main Header Bar -->
+        <div class="flex items-start justify-between w-full pointer-events-none mt-[60px]" id="overlay-top">
+            <!-- Left Panel: Control Buttons -->
+            <div class="bg-bg-glass backdrop-blur-[30px] border border-border-glass p-[12px] rounded-[22px] pointer-events-auto shadow-[0_40px_80px_rgba(0,0,0,0.8)] transition-all duration-600 ease-[cubic-bezier(0.16,1,0.3,1)] origin-left" id="main-header">
+                <div class="flex flex-wrap gap-[8px]">
+                    <button id="toggle-rotate" class="btn-action btn-active bg-white/5 hover:bg-white/15 [&.btn-active]:bg-primary/35 border border-border-glass [&.btn-active]:border-primary/80 text-white/90 w-[42px] h-[42px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95" title="Auto Rotation"><i class="fas fa-sync-alt text-primary"></i></button>
+                    
+                    <button id="toggle-markers" class="btn-action btn-active bg-white/5 hover:bg-white/15 [&.btn-active]:bg-primary/35 border border-border-glass [&.btn-active]:border-primary/80 text-white/90 w-[42px] h-[42px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95" title="Show Markers"><i class="bi bi-eye-fill text-primary"></i></button>
 
-            <div class="flex flex-wrap gap-[10px] mt-[15px]">
-                <button id="toggle-rotate" class="btn-action btn-active bg-white/5 hover:bg-white/15 [&.btn-active]:bg-primary/35 border border-border-glass [&.btn-active]:border-primary/80 text-white/90 w-[42px] h-[42px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 pointer-events-auto m-0 hover:translate-x-[5px]" title="Auto Rotation"><i class="fas fa-sync-alt text-primary"></i></button>
-                
-                <button id="toggle-markers" class="btn-action btn-active bg-white/5 hover:bg-white/15 [&.btn-active]:bg-primary/35 border border-border-glass [&.btn-active]:border-primary/80 text-white/90 w-[42px] h-[42px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 pointer-events-auto m-0 hover:translate-x-[5px]" title="Show Markers"><i class="bi bi-eye-fill text-primary"></i></button>
+                    <button id="toggle-fullscreen" class="btn-action bg-white/5 hover:bg-white/15 [&.btn-active]:bg-primary/35 border border-border-glass [&.btn-active]:border-primary/80 text-white/90 w-[42px] h-[42px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95" title="Full Screen"><i class="fas fa-expand text-primary"></i></button>
+                </div>
+            </div>
 
-                <button id="toggle-fullscreen" class="btn-action bg-white/5 hover:bg-white/15 [&.btn-active]:bg-primary/35 border border-border-glass [&.btn-active]:border-primary/80 text-white/90 w-[42px] h-[42px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 pointer-events-auto m-0 hover:translate-x-[5px]" title="Full Screen"><i class="fas fa-expand text-primary"></i></button>
-
+            <!-- Right Panel: Scene Title -->
+            <div class="bg-bg-glass backdrop-blur-[30px] border border-border-glass p-[18px_25px] rounded-[22px] pointer-events-auto shadow-[0_40px_80px_rgba(0,0,0,0.8)] transition-all duration-600 ease-[cubic-bezier(0.16,1,0.3,1)] origin-right text-right">
+                <h1 id="scene-title" class="m-0 text-[18px] font-bold text-white tracking-[1px]">View Experience</h1>
+                <p id="scene-subtitle" class="mt-[6px] m-0 text-[10px] text-white/50 font-bold tracking-[3px] uppercase">LOBBY AREA</p>
             </div>
         </div>
         
