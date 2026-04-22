@@ -82,7 +82,7 @@ class SceneController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:10240',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg',
             'is_start_scene' => 'boolean',
             'description_id' => 'nullable|string',
             'description_en' => 'nullable|string',
@@ -120,5 +120,28 @@ class SceneController extends Controller
         $scene->delete();
 
         return redirect()->route('admin.scenes.index')->with('success', 'Scene deleted successfully.');
+    }
+
+    /**
+     * Save the initial camera direction (lon/lat) for the scene.
+     */
+    public function lockView(Request $request, Scene $scene)
+    {
+        $request->validate([
+            'lon' => 'required|numeric',
+            'lat' => 'required|numeric',
+        ]);
+
+        $scene->update([
+            'initial_lon' => $request->lon,
+            'initial_lat' => $request->lat,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Initial view locked.',
+            'lon'     => $scene->initial_lon,
+            'lat'     => $scene->initial_lat,
+        ]);
     }
 }

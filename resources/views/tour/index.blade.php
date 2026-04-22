@@ -424,7 +424,7 @@
                         if (targetPano) {
                             const targetSceneData = spot.target_scene || spot.targetScene || tourData.scenes.find(s => s.id == spot.target_scene_id);
                             const targetSceneName = targetSceneData ? targetSceneData.name : "NEXT SCENE";
-                            walkToTarget(targetPano, new THREE.Vector3(spot.position_x, spot.position_y, spot.position_z), targetSceneName, "Navigasi");
+                            walkToTarget(targetPano, new THREE.Vector3(spot.position_x, spot.position_y, spot.position_z), targetSceneName, "Navigasi", spot.target_scene_id);
                         }
                     }
                 }
@@ -435,13 +435,21 @@
                 startScene.addEventListener('load', () => {
                     loader.style.opacity = '0';
                     setTimeout(() => loader.style.display = 'none', 1000);
+
+                    // Apply saved initial camera direction if set
+                    const ctrl = viewer.getControl();
+                    if (startSceneData && (startSceneData.initial_lon || startSceneData.initial_lat)) {
+                        ctrl.lon = startSceneData.initial_lon || 0;
+                        ctrl.lat = startSceneData.initial_lat || 0;
+                        ctrl.update();
+                    }
                 });
             } else {
                 loader.style.opacity = '0';
                 setTimeout(() => loader.style.display = 'none', 1000);
             }
 
-            function walkToTarget(pano, targetPosition, title, subtitle) {
+            function walkToTarget(pano, targetPosition, title, subtitle, targetSceneId = null) {
                 // Sembunyikan ikon di panorama lama agar tidak "mengikuti" saat transisi
                 if(viewer.panorama) {
                     viewer.panorama.children.forEach(c => {
@@ -478,7 +486,18 @@
                             document.getElementById('scene-subtitle').innerText = subtitle;
 
                             // Safeguard: re-apply autoRotate state from the internal flag
-                            viewer.getControl().autoRotate = viewer.autoRotate;
+                            const ctrl = viewer.getControl();
+                            ctrl.autoRotate = viewer.autoRotate;
+
+                            // Apply saved initial camera direction if target scene has one
+                            const tsd = targetSceneId ? tourData.scenes.find(s => s.id == targetSceneId) : null;
+                            if (tsd && (tsd.initial_lon || tsd.initial_lat)) {
+                                setTimeout(() => {
+                                    ctrl.lon = tsd.initial_lon || 0;
+                                    ctrl.lat = tsd.initial_lat || 0;
+                                    ctrl.update();
+                                }, 350);
+                            }
 
                             startTime = Date.now();
                             zoomOut();
@@ -708,9 +727,7 @@
         }
 
         /* ---- Image zoom via mouse scroll ---- */
-        let _imgScale   = 1;
-        let _imgTransX  = 0;
-        let _imgTransY  = 0;
+        let _imgScale      = 1;
         const _imgMinScale = 1;
         const _imgMaxScale = 5;
 
@@ -755,9 +772,10 @@
             _imgApplyTransform(img);
         }, { passive: false });
 
-        // Pan while zoomed in — drag to move image
+        // Pan while zoomed in — shift transform-origin to pan
         (() => {
-            let dragging = false, startX = 0, startY = 0, baseX = 0, baseY = 0;
+            let dragging = false, startX = 0, startY = 0;
+            let originXpct = 50, originYpct = 50;
             let activeImg = null;
 
             document.getElementById('vc-wrap').addEventListener('mousedown', (e) => {
@@ -767,23 +785,29 @@
                 activeImg = img;
                 startX    = e.clientX;
                 startY    = e.clientY;
-                baseX     = _imgTransX;
-                baseY     = _imgTransY;
+                // Read current origin
+                const orig = (img.style.transformOrigin || '50% 50%').split(' ');
+                originXpct = parseFloat(orig[0]) || 50;
+                originYpct = parseFloat(orig[1]) || 50;
                 img.style.cursor = 'grabbing';
                 e.preventDefault();
             });
 
             window.addEventListener('mousemove', (e) => {
                 if (!dragging || !activeImg) return;
-                _imgTransX = baseX + (e.clientX - startX) / _imgScale;
-                _imgTransY = baseY + (e.clientY - startY) / _imgScale;
-                _imgApplyTransform(activeImg);
+                const rect  = activeImg.getBoundingClientRect();
+                // How much in % did we move relative to image size
+                const dxPct = (e.clientX - startX) / rect.width  * 100 / _imgScale;
+                const dyPct = (e.clientY - startY) / rect.height * 100 / _imgScale;
+                startX = e.clientX;
+                startY = e.clientY;
+                originXpct = Math.max(0, Math.min(100, originXpct - dxPct));
+                originYpct = Math.max(0, Math.min(100, originYpct - dyPct));
+                activeImg.style.transformOrigin = `${originXpct.toFixed(2)}% ${originYpct.toFixed(2)}%`;
             });
 
             window.addEventListener('mouseup', () => {
-                if (dragging && activeImg) {
-                    activeImg.style.cursor = _imgScale > 1 ? 'grab' : 'zoom-in';
-                }
+                if (dragging && activeImg) activeImg.style.cursor = _imgScale > 1 ? 'grab' : 'zoom-in';
                 dragging  = false;
                 activeImg = null;
             });

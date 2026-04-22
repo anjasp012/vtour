@@ -30,6 +30,18 @@
             POS: <span class="text-blue-400">X: 0 | Y: 0 | Z: 0</span>
         </div>
 
+        <!-- Lock Initial View Button -->
+        <div class="absolute top-4 right-4 z-10 flex items-center gap-2">
+            <button id="btn-lock-view"
+                onclick="lockInitialView()"
+                title="Lock initial camera direction for this scene"
+                class="flex items-center gap-2 px-3 py-2 rounded-lg text-[9px] font-bold uppercase tracking-widest shadow-xl transition-all duration-200 select-none
+                       bg-[#1a1a1a]/80 backdrop-blur border border-white/10 text-white/60 hover:border-indigo-500/50 hover:text-white">
+                <i class="fas fa-lock-open text-[10px]" id="lock-icon"></i>
+                <span id="lock-label">Lock View</span>
+            </button>
+        </div>
+
         <!-- Instructional Toast -->
         <div id="instruction-toast" class="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 px-6 py-3 bg-white border border-slate-200 rounded-lg shadow-2xl transition-all duration-500 opacity-0 translate-y-4 pointer-events-none">
             <p class="text-slate-900 text-[9px] font-bold uppercase tracking-widest flex items-center gap-3">
@@ -1336,6 +1348,67 @@
     });
 
     setTimeout(() => showInstruction("RIGHT-CLICK FOR CONTEXT OVERLAY."), 1000);
+
+    /* ---- Lock Initial View ---- */
+    // Show locked state if scene already has a saved view
+    (function initLockBtn() {
+        const savedLon = {{ $scene->initial_lon ?? 0 }};
+        const savedLat = {{ $scene->initial_lat ?? 0 }};
+        if (savedLon !== 0 || savedLat !== 0) {
+            _setLockState(true, savedLon, savedLat);
+        }
+    })();
+
+    function _setLockState(locked, lon, lat) {
+        const btn   = document.getElementById('btn-lock-view');
+        const icon  = document.getElementById('lock-icon');
+        const label = document.getElementById('lock-label');
+        if (locked) {
+            btn.classList.add('border-indigo-500/60', 'text-indigo-300');
+            btn.classList.remove('border-white/10', 'text-white/60');
+            icon.className  = 'fas fa-lock text-[10px] text-indigo-400';
+            label.innerText = `Locked (${lon?.toFixed(1)}° / ${lat?.toFixed(1)}°)`;
+        } else {
+            btn.classList.remove('border-indigo-500/60', 'text-indigo-300');
+            btn.classList.add('border-white/10', 'text-white/60');
+            icon.className  = 'fas fa-lock-open text-[10px]';
+            label.innerText = 'Lock View';
+        }
+    }
+
+    window.lockInitialView = async function() {
+        const controls = viewer.getControl();
+        // Panolens OrbitControls exposes lon/lat on the control object
+        const lon = controls.lon ?? 0;
+        const lat = controls.lat ?? 0;
+
+        const btn = document.getElementById('btn-lock-view');
+        btn.disabled = true;
+        const origLabel = document.getElementById('lock-label').innerText;
+        document.getElementById('lock-label').innerText = 'Saving...';
+
+        try {
+            const res = await fetch('{{ route('admin.scenes.lockView', $scene) }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({ lon, lat })
+            });
+            const data = await res.json();
+            if (data.success) {
+                _setLockState(true, data.lon, data.lat);
+                showInstruction(`VIEW LOCKED — LON: ${lon.toFixed(1)}° LAT: ${lat.toFixed(1)}°`);
+            }
+        } catch(e) {
+            document.getElementById('lock-label').innerText = origLabel;
+            alert('Failed to save view.');
+        } finally {
+            btn.disabled = false;
+        }
+    };
 </script>
 
 <!-- ===== Quill Rich Text Editor Popup ===== -->

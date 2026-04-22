@@ -20,6 +20,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     // Admin Scene CRUD
     Route::resource('scenes', AdminSceneController::class);
+    Route::post('scenes/{scene}/lock-view', [AdminSceneController::class, 'lockView'])
+        ->name('scenes.lockView');
     // Nested resources for infospots within a scene
     Route::resource('scenes.infospots', AdminInfospotController::class)->shallow();
 
