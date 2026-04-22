@@ -68,6 +68,10 @@
             height: 300px;
             object-fit: cover;
             display: block;
+            cursor: zoom-in;
+            transform-origin: center center;
+            transition: transform 0.15s ease;
+            user-select: none;
         }
         .vc-slide .mv-wrap {
             width: 100%;
@@ -131,15 +135,6 @@
             background: #6366f1;
             transform: scale(1.5);
         }
-        /* Counter */
-        .vc-counter {
-            font-size: 9px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: rgba(255,255,255,0.25);
-            text-align: center;
-            padding-top: 4px;
-        }
         /* Type badge */
         .vc-badge {
             position: absolute;
@@ -190,7 +185,6 @@
                         <button class="vc-btn vc-next" id="vc-next" aria-label="Next"><i class="fas fa-chevron-right"></i></button>
                     </div>
                     <div class="vc-dots" id="vc-dots"></div>
-                    <div class="vc-counter" id="vc-counter"></div>
                 </div>
 
                 <!-- Text Pane -->
@@ -618,25 +612,23 @@
             // dots
             document.querySelectorAll('.vc-dot').forEach((d, i) => d.classList.toggle('active', i === _vcIndex));
 
-            // counter
-            const counter = document.getElementById('vc-counter');
-            if (counter && _vcTotal > 1) counter.innerText = `${_vcIndex + 1} / ${_vcTotal} media`;
-
             // update arrow state
             const prevBtn = document.getElementById('vc-prev');
             const nextBtn = document.getElementById('vc-next');
             if (prevBtn) prevBtn.disabled = _vcIndex === 0;
             if (nextBtn) nextBtn.disabled = _vcIndex === _vcTotal - 1;
+
+            // reset zoom on slide change
+            _imgZoomReset();
         }
 
         document.getElementById('vc-prev').addEventListener('click', () => vcGoto(_vcIndex - 1));
         document.getElementById('vc-next').addEventListener('click', () => vcGoto(_vcIndex + 1));
 
         function buildCarousel(assets) {
-            const track   = document.getElementById('vc-track');
-            const dotsEl  = document.getElementById('vc-dots');
-            const counter = document.getElementById('vc-counter');
-            const pane    = document.getElementById('modal-pane-assets');
+            const track  = document.getElementById('vc-track');
+            const dotsEl = document.getElementById('vc-dots');
+            const pane   = document.getElementById('modal-pane-assets');
 
             // Reset
             track.innerHTML  = '';
@@ -646,7 +638,6 @@
 
             if (!assets || assets.length === 0) {
                 pane.style.display = 'none';
-                counter.innerText = '';
                 return;
             }
 
@@ -698,9 +689,9 @@
             document.getElementById('vc-prev').style.display = isSingle ? 'none' : 'flex';
             document.getElementById('vc-next').style.display = isSingle ? 'none' : 'flex';
             dotsEl.style.display = isSingle ? 'none' : 'flex';
-            counter.innerText = isSingle ? '' : `1 / ${assets.length} media`;
 
-            // Reset track position
+            // Reset track position & zoom
+            _imgZoomReset();
             track.style.transition = 'none';
             track.style.transform  = 'translateX(0)';
             setTimeout(() => { track.style.transition = ''; }, 50);
@@ -709,6 +700,91 @@
             document.getElementById('vc-prev').disabled = true;
             document.getElementById('vc-next').disabled = isSingle;
         }
+
+        /* ---- Image zoom via mouse scroll ---- */
+        let _imgScale   = 1;
+        let _imgTransX  = 0;
+        let _imgTransY  = 0;
+        const _imgMinScale = 1;
+        const _imgMaxScale = 5;
+
+        function _imgApplyTransform(img) {
+            img.style.transform = `scale(${_imgScale}) translate(${_imgTransX}px, ${_imgTransY}px)`;
+            img.style.cursor    = _imgScale > 1 ? 'grab' : 'zoom-in';
+        }
+
+        function _imgZoomReset() {
+            _imgScale  = 1;
+            _imgTransX = 0;
+            _imgTransY = 0;
+            document.querySelectorAll('.vc-slide img').forEach(img => {
+                img.style.transform = '';
+                img.style.cursor    = 'zoom-in';
+            });
+        }
+
+        // Wheel zoom — attached to the carousel wrapper
+        document.getElementById('vc-wrap').addEventListener('wheel', (e) => {
+            // Only zoom if hovering a 2D image slide
+            const img = e.target.closest('.vc-slide')?.querySelector('img');
+            if (!img) return;
+
+            e.preventDefault();
+
+            const delta = e.deltaY < 0 ? 1.12 : 1 / 1.12;
+            const newScale = Math.min(_imgMaxScale, Math.max(_imgMinScale, _imgScale * delta));
+
+            if (newScale === _imgMinScale) {
+                _imgScale  = _imgMinScale;
+                _imgTransX = 0;
+                _imgTransY = 0;
+            } else {
+                _imgScale = newScale;
+            }
+
+            _imgApplyTransform(img);
+        }, { passive: false });
+
+        // Pan while zoomed in — drag to move image
+        (() => {
+            let dragging = false, startX = 0, startY = 0, baseX = 0, baseY = 0;
+            let activeImg = null;
+
+            document.getElementById('vc-wrap').addEventListener('mousedown', (e) => {
+                const img = e.target.closest('.vc-slide')?.querySelector('img');
+                if (!img || _imgScale <= 1) return;
+                dragging  = true;
+                activeImg = img;
+                startX    = e.clientX;
+                startY    = e.clientY;
+                baseX     = _imgTransX;
+                baseY     = _imgTransY;
+                img.style.cursor = 'grabbing';
+                e.preventDefault();
+            });
+
+            window.addEventListener('mousemove', (e) => {
+                if (!dragging || !activeImg) return;
+                _imgTransX = baseX + (e.clientX - startX) / _imgScale;
+                _imgTransY = baseY + (e.clientY - startY) / _imgScale;
+                _imgApplyTransform(activeImg);
+            });
+
+            window.addEventListener('mouseup', () => {
+                if (dragging && activeImg) {
+                    activeImg.style.cursor = _imgScale > 1 ? 'grab' : 'zoom-in';
+                }
+                dragging  = false;
+                activeImg = null;
+            });
+
+            // Double-click to reset zoom
+            document.getElementById('vc-wrap').addEventListener('dblclick', (e) => {
+                const img = e.target.closest('.vc-slide')?.querySelector('img');
+                if (!img) return;
+                _imgZoomReset();
+            });
+        })();
 
         function openModal(title, textId, textEn, assets = []) {
             document.getElementById('modal-title').innerText = title;
