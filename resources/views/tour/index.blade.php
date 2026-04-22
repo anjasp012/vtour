@@ -437,19 +437,30 @@
                     setTimeout(() => loader.style.display = 'none', 1000);
 
                     // Apply saved initial camera direction after controls settle
-                    if (startSceneData && (startSceneData.initial_lon != null && startSceneData.initial_lat != null)
-                        && (startSceneData.initial_lon !== 0 || startSceneData.initial_lat !== 0)) {
-                        setTimeout(() => {
-                            const ctrl = viewer.getControl();
-                            ctrl.lon = parseFloat(startSceneData.initial_lon);
-                            ctrl.lat = parseFloat(startSceneData.initial_lat);
-                            ctrl.update();
-                        }, 200);
+                    const lon0 = parseFloat(startSceneData?.initial_lon ?? 0);
+                    const lat0 = parseFloat(startSceneData?.initial_lat ?? 0);
+                    if (lon0 !== 0 || lat0 !== 0) {
+                        setTimeout(() => _applyInitialView(lon0, lat0), 300);
                     }
                 });
             } else {
                 loader.style.opacity = '0';
                 setTimeout(() => loader.style.display = 'none', 1000);
+            }
+
+            // Convert saved lon/lat back to a THREE.Vector3 and apply via tweenControlCenter
+            function _applyInitialView(lon, lat) {
+                // Inverse of: lon=atan2(dir.z,dir.x), lat=asin(dir.y)
+                // Panolens: target = (sin(phi)*cos(theta), cos(phi), sin(phi)*sin(theta))
+                //           phi = 90-lat (degrees), theta = lon (degrees)
+                const phi   = THREE.MathUtils.degToRad(90 - lat);
+                const theta = THREE.MathUtils.degToRad(lon);
+                const target = new THREE.Vector3(
+                    Math.sin(phi) * Math.cos(theta),
+                    Math.cos(phi),
+                    Math.sin(phi) * Math.sin(theta)
+                ).multiplyScalar(500);
+                viewer.tweenControlCenter(target, 0);
             }
 
             function walkToTarget(pano, targetPosition, title, subtitle, targetSceneId = null) {
@@ -496,10 +507,11 @@
                             const tsd = targetSceneId ? tourData.scenes.find(s => s.id == targetSceneId) : null;
                             if (tsd && (tsd.initial_lon !== 0 || tsd.initial_lat !== 0)) {
                                 setTimeout(() => {
-                                    ctrl.lon = parseFloat(tsd.initial_lon);
-                                    ctrl.lat = parseFloat(tsd.initial_lat);
-                                    ctrl.update();
-                                }, 400);
+                                    _applyInitialView(
+                                        parseFloat(tsd.initial_lon),
+                                        parseFloat(tsd.initial_lat)
+                                    );
+                                }, 500);
                             }
 
                             startTime = Date.now();
