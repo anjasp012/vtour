@@ -526,6 +526,18 @@
         background: rgba(99,102,241,0.04);
     }
     .narasi-btn.has-content .preview-text { color: #64748b; }
+
+    /* ---- Drag & Drop sort indicators ---- */
+    [draggable="true"] { transition: opacity 0.15s; }
+    .drag-over-top {
+        border-top: 2px solid #6366f1 !important;
+        border-radius: 6px 6px 4px 4px;
+    }
+    .drag-over-bottom {
+        border-bottom: 2px solid #6366f1 !important;
+        border-radius: 4px 4px 6px 6px;
+    }
+    .drag-handle { touch-action: none; }
 </style>
 
 <script src="https://pchen66.github.io/js/three/three.min.js"></script>
@@ -927,23 +939,104 @@
             }
 
             container.innerHTML = data.assets.map(a => `
-                <div class="flex items-center justify-between gap-1.5 p-1.5 bg-slate-800 rounded border border-slate-700" id="asset-row-${a.id}">
-                    <div class="flex items-center gap-1.5 min-w-0">
-                        <span class="shrink-0 text-[7px] font-bold px-1.5 py-0.5 rounded ${
-                            a.file_type === '3d'
-                            ? 'bg-purple-900 text-purple-300'
-                            : 'bg-blue-900 text-blue-300'
-                        } uppercase tracking-widest">${a.file_type === '3d' ? '3D' : '2D'}</span>
-                        <span class="text-[8px] text-slate-300 truncate">${a.label || a.filename}</span>
-                    </div>
+                <div class="flex items-center gap-1.5 p-1.5 bg-slate-800 rounded border border-slate-700 cursor-default select-none"
+                     id="asset-row-${a.id}" data-asset-id="${a.id}" draggable="true">
+                    <!-- Drag Handle -->
+                    <span class="drag-handle shrink-0 text-slate-600 hover:text-slate-300 cursor-grab active:cursor-grabbing px-0.5"
+                          title="Drag to reorder">
+                        <i class="fas fa-grip-vertical text-[9px]"></i>
+                    </span>
+                    <span class="shrink-0 text-[7px] font-bold px-1.5 py-0.5 rounded ${
+                        a.file_type === '3d'
+                        ? 'bg-purple-900 text-purple-300'
+                        : 'bg-blue-900 text-blue-300'
+                    } uppercase tracking-widest">${a.file_type === '3d' ? '3D' : '2D'}</span>
+                    <span class="text-[8px] text-slate-300 truncate flex-1 min-w-0">${a.label || a.filename}</span>
                     <button type="button" onclick="deleteAsset(${a.id})" title="Hapus"
                         class="shrink-0 text-slate-500 hover:text-rose-400 transition-colors">
                         <i class="fas fa-trash-alt text-[9px]"></i>
                     </button>
                 </div>
             `).join('');
+
+            // init drag-and-drop
+            initDragSort(container);
+
         } catch(e) {
             container.innerHTML = '<p class="text-[8px] text-rose-400 italic text-center py-1">Gagal memuat asset.</p>';
+        }
+    }
+
+    // ---- Vanilla drag-and-drop sort ----
+    function initDragSort(container) {
+        let draggingEl = null;
+
+        container.querySelectorAll('[draggable="true"]').forEach(row => {
+            row.addEventListener('dragstart', (e) => {
+                draggingEl = row;
+                row.style.opacity = '0.4';
+                e.dataTransfer.effectAllowed = 'move';
+            });
+
+            row.addEventListener('dragend', () => {
+                row.style.opacity = '';
+                draggingEl = null;
+                container.querySelectorAll('[draggable="true"]').forEach(r => r.classList.remove('drag-over'));
+                // Save new order to server
+                saveSortOrder(container);
+            });
+
+            row.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                if (row === draggingEl) return;
+
+                // Determine insert position
+                const rect   = row.getBoundingClientRect();
+                const midY   = rect.top + rect.height / 2;
+                const isAfter = e.clientY > midY;
+
+                container.querySelectorAll('[draggable="true"]').forEach(r => r.classList.remove('drag-over-top', 'drag-over-bottom'));
+                row.classList.add(isAfter ? 'drag-over-bottom' : 'drag-over-top');
+            });
+
+            row.addEventListener('drop', (e) => {
+                e.preventDefault();
+                if (!draggingEl || draggingEl === row) return;
+
+                const rect   = row.getBoundingClientRect();
+                const isAfter = e.clientY > rect.top + rect.height / 2;
+
+                if (isAfter) {
+                    row.after(draggingEl);
+                } else {
+                    row.before(draggingEl);
+                }
+                container.querySelectorAll('[draggable="true"]').forEach(r => r.classList.remove('drag-over-top', 'drag-over-bottom'));
+            });
+        });
+    }
+
+    // ---- Save new sort order to server ----
+    async function saveSortOrder(container) {
+        const ids = [...container.querySelectorAll('[data-asset-id]')]
+            .map(el => ({ id: parseInt(el.dataset.assetId) }));
+
+        if (ids.length === 0) return;
+
+        try {
+            await fetch('{{ url('admin/infospot-assets/reorder') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ order: ids })
+            });
+        } catch(e) {
+            console.warn('Failed to save sort order:', e);
         }
     }
 

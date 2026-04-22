@@ -30,4 +30,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
         ->name('infospots.assets.store');
     Route::delete('infospot-assets/{asset}', [AdminInfospotAssetController::class, 'destroy'])
         ->name('infospot-assets.destroy');
+    Route::post('infospot-assets/reorder', [AdminInfospotAssetController::class, 'reorder'])
+        ->name('infospot-assets.reorder');
 });

@@ -95,4 +95,22 @@ class InfospotAssetController extends Controller
             ->route('admin.infospots.edit', $infospotId)
             ->with('success', 'Asset deleted.');
     }
+
+    /**
+     * Reorder assets (update sort_order in bulk).
+     * Expects JSON body: { "order": [{"id": 1}, {"id": 3}, {"id": 2}] }
+     */
+    public function reorder(Request $request)
+    {
+        $request->validate([
+            'order'    => 'required|array',
+            'order.*.id' => 'required|integer|exists:infospot_assets,id',
+        ]);
+
+        foreach ($request->input('order') as $position => $item) {
+            InfospotAsset::where('id', $item['id'])->update(['sort_order' => $position]);
+        }
+
+        return response()->json(['success' => true]);
+    }
 }
