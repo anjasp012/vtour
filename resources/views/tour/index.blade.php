@@ -128,8 +128,8 @@
             pointer-events: auto;
         }
         .vc-dot {
-            width: 7px;
-            height: 7px;
+            width: 5px;
+            height: 5px;
             border-radius: 50%;
             background: rgba(255,255,255,0.2);
             border: none;

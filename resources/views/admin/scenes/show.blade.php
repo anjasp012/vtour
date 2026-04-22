@@ -179,19 +179,33 @@
                                 <input type="text" name="title" id="input-title" class="modern-input" placeholder="Enter node title...">
                             </div>
 
-                            <div class="space-y-4">
-                                <div class="space-y-1.5 p-3 bg-slate-50 border border-slate-100 rounded-lg">
+                            <div class="space-y-3">
+                                <!-- Indonesian -->
+                                <div class="space-y-1">
                                     <label class="text-[8px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
                                         <span class="w-1 h-1 bg-slate-400 rounded-full"></span> Indonesian
                                     </label>
-                                    <textarea name="content_id" id="input-desc-id" rows="3" class="modern-input border-transparent bg-white shadow-sm text-xs font-normal" placeholder="Deskripsi..."></textarea>
+                                    <textarea name="content_id" id="input-desc-id" class="hidden"></textarea>
+                                    <button type="button" class="narasi-btn" id="btn-open-editor-id"
+                                        onclick="openQuillEditor('id')">
+                                        <span style="font-size:10px">🇮🇩</span>
+                                        <span class="preview-text" id="preview-id">Klik untuk menulis narasi...</span>
+                                        <i class="fas fa-pen-to-square text-[10px] opacity-40 ml-2"></i>
+                                    </button>
                                 </div>
 
-                                <div class="space-y-1.5 p-3 bg-blue-50/20 border border-blue-100/30 rounded-lg">
+                                <!-- English -->
+                                <div class="space-y-1">
                                     <label class="text-[8px] font-bold text-blue-400 uppercase tracking-widest flex items-center gap-1.5">
                                         <span class="w-1 h-1 bg-blue-400 rounded-full"></span> English
                                     </label>
-                                    <textarea name="content_en" id="input-desc-en" rows="3" class="modern-input border-transparent bg-white shadow-sm text-xs font-normal" placeholder="Description..."></textarea>
+                                    <textarea name="content_en" id="input-desc-en" class="hidden"></textarea>
+                                    <button type="button" class="narasi-btn" id="btn-open-editor-en"
+                                        onclick="openQuillEditor('en')">
+                                        <span style="font-size:10px">🇬🇧</span>
+                                        <span class="preview-text" id="preview-en">Click to write narration...</span>
+                                        <i class="fas fa-pen-to-square text-[10px] opacity-40 ml-2"></i>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -318,6 +332,10 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
 <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
 
+<!-- Quill Rich Text Editor -->
+<link rel="stylesheet" href="https://cdn.quilljs.com/1.3.7/quill.snow.css">
+<script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+
 <style type="text/tailwindcss">
     @layer utilities {
         .modern-input {
@@ -339,6 +357,175 @@
         .choices__list--dropdown .choices__item--selectable.is-highlighted { @apply bg-blue-600 text-white; }
         .choices[data-type*="select-one"]::after { @apply border-t-slate-400; }
     }
+</style>
+
+<style>
+    /* ---- Quill Editor Popup ---- */
+    #quill-popup-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.6);
+        backdrop-filter: blur(6px);
+        z-index: 99999;
+        display: none;
+        align-items: center;
+        justify-content: center;
+    }
+    #quill-popup-overlay.open { display: flex; }
+    #quill-popup-box {
+        background: #0f172a;
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 24px;
+        width: min(820px, 96vw);
+        max-height: 90vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        box-shadow: 0 40px 80px rgba(0,0,0,0.7);
+    }
+    #quill-popup-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 24px;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+        flex-shrink: 0;
+    }
+    #quill-popup-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: #e2e8f0;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    #quill-popup-close {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: none;
+        background: rgba(255,255,255,0.1);
+        color: rgba(255,255,255,0.5);
+        cursor: pointer;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s, color 0.2s;
+    }
+    #quill-popup-close:hover { background: #ef4444; color: #fff; }
+    #quill-popup-editor {
+        flex: 1;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+    /* Override Quill toolbar for dark bg */
+    #quill-popup-editor .ql-toolbar {
+        background: #1e293b;
+        border: none;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+        padding: 10px 16px;
+        flex-shrink: 0;
+    }
+    #quill-popup-editor .ql-toolbar button,
+    #quill-popup-editor .ql-toolbar .ql-picker-label {
+        color: #94a3b8;
+    }
+    #quill-popup-editor .ql-toolbar button:hover,
+    #quill-popup-editor .ql-toolbar button.ql-active,
+    #quill-popup-editor .ql-toolbar .ql-picker-label:hover {
+        color: #6366f1;
+    }
+    #quill-popup-editor .ql-toolbar .ql-stroke { stroke: #94a3b8; }
+    #quill-popup-editor .ql-toolbar button:hover .ql-stroke,
+    #quill-popup-editor .ql-toolbar button.ql-active .ql-stroke { stroke: #6366f1; }
+    #quill-popup-editor .ql-toolbar .ql-fill { fill: #94a3b8; }
+    #quill-popup-editor .ql-toolbar button:hover .ql-fill,
+    #quill-popup-editor .ql-toolbar button.ql-active .ql-fill { fill: #6366f1; }
+    #quill-popup-editor .ql-container {
+        border: none;
+        background: #0f172a;
+        flex: 1;
+        overflow-y: auto;
+        min-height: 320px;
+    }
+    #quill-popup-editor .ql-editor {
+        font-size: 14px;
+        line-height: 1.75;
+        color: #cbd5e1;
+        padding: 20px 24px;
+        min-height: 320px;
+    }
+    #quill-popup-editor .ql-editor.ql-blank::before { color: rgba(148,163,184,0.4); }
+    #quill-popup-footer {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
+        padding: 14px 24px;
+        border-top: 1px solid rgba(255,255,255,0.08);
+        flex-shrink: 0;
+    }
+    .ql-popup-btn {
+        padding: 8px 20px;
+        border-radius: 10px;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        border: none;
+        transition: all 0.2s;
+    }
+    .ql-popup-btn-cancel {
+        background: rgba(255,255,255,0.06);
+        color: #94a3b8;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    .ql-popup-btn-cancel:hover { background: rgba(255,255,255,0.12); color: #e2e8f0; }
+    .ql-popup-btn-apply {
+        background: #6366f1;
+        color: #fff;
+    }
+    .ql-popup-btn-apply:hover { background: #4f46e5; }
+    /* Narasi trigger buttons in sidebar */
+    .narasi-btn {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 14px;
+        border-radius: 8px;
+        border: 1.5px dashed rgba(100,116,139,0.35);
+        background: rgba(248,250,252,0.5);
+        cursor: pointer;
+        transition: border-color 0.2s, background 0.2s;
+        font-size: 11px;
+        font-weight: 600;
+        color: #475569;
+        text-align: left;
+    }
+    .narasi-btn:hover {
+        border-color: #6366f1;
+        background: rgba(99,102,241,0.05);
+        color: #6366f1;
+    }
+    .narasi-btn .preview-text {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 160px;
+        font-weight: 400;
+        color: #94a3b8;
+        font-size: 10px;
+    }
+    .narasi-btn.has-content {
+        border-style: solid;
+        border-color: rgba(99,102,241,0.4);
+        background: rgba(99,102,241,0.04);
+    }
+    .narasi-btn.has-content .preview-text { color: #64748b; }
 </style>
 
 <script src="https://pchen66.github.io/js/three/three.min.js"></script>
@@ -873,6 +1060,9 @@
             document.getElementById('input-target').value = spot.target_scene_id || '';
             document.getElementById('input-desc-id').value = spot.content_id || '';
             document.getElementById('input-desc-en').value = spot.content_en || '';
+            // Update narasi preview buttons
+            _updateNarasiPreview('id', spot.content_id || '');
+            _updateNarasiPreview('en', spot.content_en || '');
 
             // Load existing assets
             loadExistingAssets(spot.id);
@@ -1054,4 +1244,117 @@
 
     setTimeout(() => showInstruction("RIGHT-CLICK FOR CONTEXT OVERLAY."), 1000);
 </script>
+
+<!-- ===== Quill Rich Text Editor Popup ===== -->
+<div id="quill-popup-overlay">
+    <div id="quill-popup-box">
+        <div id="quill-popup-header">
+            <div id="quill-popup-title">
+                <i class="fas fa-pen-to-square" style="color:#6366f1"></i>
+                <span id="quill-popup-title-text">Edit Narration</span>
+            </div>
+            <button id="quill-popup-close" onclick="closeQuillEditor()">&#10005;</button>
+        </div>
+        <div id="quill-popup-editor">
+            <div id="quill-container"></div>
+        </div>
+        <div id="quill-popup-footer">
+            <button class="ql-popup-btn ql-popup-btn-cancel" onclick="closeQuillEditor()">Cancel</button>
+            <button class="ql-popup-btn ql-popup-btn-apply" onclick="applyQuillContent()"><i class="fas fa-check mr-1"></i> Apply</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    /* ---- Quill Editor Popup Logic ---- */
+    let _quill = null;
+    let _quillLang = null; // 'id' or 'en'
+
+    // Init Quill once DOM is ready
+    document.addEventListener('DOMContentLoaded', () => {
+        _quill = new Quill('#quill-container', {
+            theme: 'snow',
+            placeholder: 'Write your narration here...',
+            modules: {
+                toolbar: [
+                    [{ header: [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline'],
+                    [{ list: 'ordered' }, { list: 'bullet' }],
+                    ['link'],
+                    ['clean']
+                ]
+            }
+        });
+    });
+
+    window.openQuillEditor = function(lang) {
+        _quillLang = lang;
+        const textarea = document.getElementById('input-desc-' + lang);
+        const isId = lang === 'id';
+
+        // Set popup title
+        document.getElementById('quill-popup-title-text').innerText =
+            isId ? '🇮🇩 Narasi Indonesia' : '🇬🇧 English Narration';
+
+        // Load existing content into Quill
+        const html = textarea.value || '';
+        _quill.root.innerHTML = html;
+
+        // Show popup
+        document.getElementById('quill-popup-overlay').classList.add('open');
+        setTimeout(() => _quill.focus(), 100);
+    };
+
+    window.closeQuillEditor = function() {
+        document.getElementById('quill-popup-overlay').classList.remove('open');
+    };
+
+    window.applyQuillContent = function() {
+        if (!_quillLang) return;
+        const html = _quill.root.innerHTML;
+
+        // Write to hidden textarea
+        document.getElementById('input-desc-' + _quillLang).value = html;
+
+        // Update preview button text (strip tags for preview)
+        const plain = _quill.getText().trim();
+        const btnId = 'btn-open-editor-' + _quillLang;
+        const prevId = 'preview-' + _quillLang;
+        const btn    = document.getElementById(btnId);
+        const prev   = document.getElementById(prevId);
+
+        if (plain) {
+            prev.innerText = plain.substring(0, 80) + (plain.length > 80 ? '...' : '');
+            btn.classList.add('has-content');
+        } else {
+            prev.innerText = _quillLang === 'id' ? 'Klik untuk menulis narasi...' : 'Click to write narration...';
+            btn.classList.remove('has-content');
+        }
+
+        closeQuillEditor();
+    };
+
+    // Close on overlay click
+    document.getElementById('quill-popup-overlay').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('quill-popup-overlay')) closeQuillEditor();
+    });
+
+    // Helper: update preview button after loading spot
+    window._updateNarasiPreview = function(lang, html) {
+        const tmp   = document.createElement('div');
+        tmp.innerHTML = html || '';
+        const plain = (tmp.innerText || '').trim();
+        const btn   = document.getElementById('btn-open-editor-' + lang);
+        const prev  = document.getElementById('preview-' + lang);
+        if (!btn || !prev) return;
+        if (plain) {
+            prev.innerText = plain.substring(0, 80) + (plain.length > 80 ? '...' : '');
+            btn.classList.add('has-content');
+        } else {
+            prev.innerText = lang === 'id' ? 'Klik untuk menulis narasi...' : 'Click to write narration...';
+            btn.classList.remove('has-content');
+        }
+    }
+</script>
+
 @endsection
