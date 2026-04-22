@@ -572,6 +572,27 @@
     const panorama = new PANOLENS.ImagePanorama('{{ Storage::url($scene->image_path) }}');
     viewer.add(panorama);
 
+    // Apply saved initial view in Editor
+    panorama.addEventListener('load', () => {
+        const lon = {{ $scene->initial_lon ?? 0 }};
+        const lat = {{ $scene->initial_lat ?? 0 }};
+        if (lon !== 0 || lat !== 0) {
+            _applyInitialView(lon, lat, 0); // Jump directly without tween duration
+        }
+    });
+
+    function _applyInitialView(lon, lat, duration = 500) {
+        const toRad = Math.PI / 180;
+        const phi   = (90 - lat) * toRad;
+        const theta = lon * toRad;
+        const target = new THREE.Vector3(
+            Math.sin(phi) * Math.cos(theta),
+            Math.cos(phi),
+            Math.sin(phi) * Math.sin(theta)
+        ).multiplyScalar(500);
+        viewer.tweenControlCenter(target, duration);
+    }
+
     // Initial state vars
     const existingSpots = @json($scene->infospots);
     const renderedSpots = {};

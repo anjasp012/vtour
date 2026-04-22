@@ -453,8 +453,9 @@
                 // Inverse of: lon=atan2(dir.z,dir.x), lat=asin(dir.y)
                 // Panolens: target = (sin(phi)*cos(theta), cos(phi), sin(phi)*sin(theta))
                 //           phi = 90-lat (degrees), theta = lon (degrees)
-                const phi   = THREE.MathUtils.degToRad(90 - lat);
-                const theta = THREE.MathUtils.degToRad(lon);
+                const toRad = Math.PI / 180;
+                const phi   = (90 - lat) * toRad;
+                const theta = lon * toRad;
                 const target = new THREE.Vector3(
                     Math.sin(phi) * Math.cos(theta),
                     Math.cos(phi),
@@ -760,32 +761,60 @@
             });
         }
 
-        // Wheel zoom — zoom toward mouse cursor position
+        // Zoom via mouse scroll (Desktop)
         document.getElementById('vc-wrap').addEventListener('wheel', (e) => {
             const img = e.target.closest('.vc-slide')?.querySelector('img');
             if (!img) return;
 
             e.preventDefault();
+            const delta = -e.deltaY;
+            const factor = 1.1;
+            const direction = delta > 0 ? 1 : -1;
+            const newScale = direction > 0 ? _imgScale * factor : _imgScale / factor;
+            
+            if (newScale < _imgMinScale || newScale > _imgMaxScale) return;
 
-            const rect     = img.getBoundingClientRect();
-            const originX  = ((e.clientX - rect.left) / rect.width  * 100).toFixed(2) + '%';
-            const originY  = ((e.clientY - rect.top)  / rect.height * 100).toFixed(2) + '%';
-
-            const delta    = e.deltaY < 0 ? 1.15 : 1 / 1.15;
-            const newScale = Math.min(_imgMaxScale, Math.max(_imgMinScale, _imgScale * delta));
-
-            if (newScale <= _imgMinScale) {
-                _imgScale = _imgMinScale;
-                img.style.transformOrigin = '50% 50%';
-                img.style.transform       = '';
-                img.style.cursor          = 'zoom-in';
-                return;
-            }
+            const rect = img.getBoundingClientRect();
+            const mouseX = (e.clientX - rect.left) / _imgScale;
+            const mouseY = (e.clientY - rect.top) / _imgScale;
+            const originX = (mouseX / (rect.width / _imgScale)) * 100;
+            const originY = (mouseY / (rect.height / _imgScale)) * 100;
 
             _imgScale = newScale;
-            img.style.transformOrigin = `${originX} ${originY}`;
+            img.style.transformOrigin = `${originX}% ${originY}%`;
             _imgApplyTransform(img);
         }, { passive: false });
+
+        // Zoom via Pinch (Mobile)
+        (() => {
+            let initialDist = 0;
+            let initialScale = 1;
+
+            document.getElementById('vc-wrap').addEventListener('touchstart', (e) => {
+                if (e.touches.length === 2) {
+                    initialDist = Math.hypot(
+                        e.touches[0].pageX - e.touches[1].pageX,
+                        e.touches[0].pageY - e.touches[1].pageY
+                    );
+                    initialScale = _imgScale;
+                    e.preventDefault();
+                }
+            }, { passive: false });
+
+            document.getElementById('vc-wrap').addEventListener('touchmove', (e) => {
+                const img = e.target.closest('.vc-slide')?.querySelector('img');
+                if (img && e.touches.length === 2 && initialDist > 0) {
+                    const dist = Math.hypot(
+                        e.touches[0].pageX - e.touches[1].pageX,
+                        e.touches[0].pageY - e.touches[1].pageY
+                    );
+                    const delta = dist / initialDist;
+                    _imgScale = Math.max(_imgMinScale, Math.min(_imgMaxScale, initialScale * delta));
+                    _imgApplyTransform(img);
+                    e.preventDefault();
+                }
+            }, { passive: false });
+        })();
 
         // Pan while zoomed in — shift transform-origin to pan
         (() => {

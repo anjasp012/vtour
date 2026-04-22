@@ -43,6 +43,9 @@ class InfospotController extends Controller
         // Remove file object from array before database insertion
         unset($validated['model_file']);
 
+        // Handle checkbox default
+        $validated['is_perspective'] = $request->has('is_perspective');
+
         $scene->infospots()->create($validated);
 
         return redirect()->route('admin.scenes.show', $scene)->with('success', 'Infospot added successfully.');
@@ -83,6 +86,9 @@ class InfospotController extends Controller
             }
             $validated['model_path'] = $request->file('model_file')->store('infospots/models', 'public');
         }
+
+        // Handle checkbox (if unchecked, and not in validated array)
+        $validated['is_perspective'] = $request->has('is_perspective');
 
         // Remove file object from array before database update
         unset($validated['model_file']);
