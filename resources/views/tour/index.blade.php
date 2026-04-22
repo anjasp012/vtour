@@ -9,9 +9,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    <!-- Owl Carousel -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.min.css">
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script>
     <script src="https://code.responsivevoice.org/responsivevoice.js?key=QlpaIuG0"></script>
     
@@ -45,74 +42,106 @@
         .scrollbar-none::-webkit-scrollbar { display: none; }
         .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* ---- Owl Carousel custom skin (dark glass) ---- */
-        #asset-carousel { width: 100%; }
-        .asset-slide {
+        /* =============================================
+           VANILLA CAROUSEL — Asset Media Slider
+           ============================================= */
+        .vc-wrap {
+            position: relative;
             width: 100%;
-            border-radius: 16px;
             overflow: hidden;
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 18px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
         }
-        .asset-slide img {
+        .vc-track {
+            display: flex;
+            transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            will-change: transform;
+        }
+        .vc-slide {
+            min-width: 100%;
+            position: relative;
+            flex-shrink: 0;
+        }
+        .vc-slide img {
             width: 100%;
-            height: 320px;
+            height: 300px;
             object-fit: cover;
             display: block;
         }
-        .asset-slide .model-wrap {
+        .vc-slide .mv-wrap {
             width: 100%;
-            height: 320px;
+            height: 300px;
         }
-        .asset-slide .asset-label {
+        .vc-slide .mv-wrap model-viewer {
+            width: 100% !important;
+            height: 100% !important;
+        }
+        .vc-slide-label {
             font-size: 10px;
             letter-spacing: 2px;
             text-transform: uppercase;
-            color: rgba(255,255,255,0.45);
+            color: rgba(255,255,255,0.4);
             text-align: center;
-            padding: 8px 12px;
-            background: rgba(0,0,0,0.3);
+            padding: 8px;
+            background: rgba(0,0,0,0.35);
         }
-        /* Owl nav buttons */
-        #asset-carousel.owl-carousel .owl-nav button {
+        /* Nav arrows */
+        .vc-btn {
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            background: rgba(15,23,42,0.75) !important;
-            border: 1px solid rgba(255,255,255,0.15) !important;
-            color: #fff !important;
             width: 36px;
             height: 36px;
             border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.15);
+            background: rgba(10,15,30,0.75);
+            color: #fff;
+            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 13px;
             backdrop-filter: blur(10px);
             transition: background 0.2s;
+            z-index: 10;
         }
-        #asset-carousel.owl-carousel .owl-nav button:hover {
-            background: rgba(99,102,241,0.7) !important;
+        .vc-btn:hover { background: rgba(99,102,241,0.75); }
+        .vc-btn.vc-prev { left: 10px; }
+        .vc-btn.vc-next { right: 10px; }
+        .vc-btn:disabled { opacity: 0.2; cursor: default; }
+        /* Dots */
+        .vc-dots {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            padding: 10px 0;
         }
-        #asset-carousel.owl-carousel .owl-nav .owl-prev { left: 8px; }
-        #asset-carousel.owl-carousel .owl-nav .owl-next { right: 8px; }
-        #asset-carousel.owl-carousel .owl-dots {
-            text-align: center;
-            padding-top: 10px;
-        }
-        #asset-carousel.owl-carousel .owl-dots .owl-dot span {
-            background: rgba(255,255,255,0.25);
+        .vc-dot {
             width: 6px;
             height: 6px;
             border-radius: 50%;
-            margin: 0 3px;
-            display: block;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            cursor: pointer;
             transition: background 0.2s, transform 0.2s;
+            padding: 0;
         }
-        #asset-carousel.owl-carousel .owl-dots .owl-dot.active span {
+        .vc-dot.active {
             background: #6366f1;
-            transform: scale(1.4);
+            transform: scale(1.5);
         }
-        .asset-type-badge {
+        /* Counter */
+        .vc-counter {
+            font-size: 9px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.25);
+            text-align: center;
+            padding-top: 4px;
+        }
+        /* Type badge */
+        .vc-badge {
             position: absolute;
             top: 10px;
             left: 10px;
@@ -124,9 +153,10 @@
             border-radius: 6px;
             backdrop-filter: blur(8px);
             border: 1px solid rgba(255,255,255,0.15);
+            z-index: 5;
         }
-        .badge-3d { background: rgba(124,58,237,0.6); color: #ddd6fe; }
-        .badge-2d { background: rgba(37,99,235,0.6); color: #bfdbfe; }
+        .vc-badge-2d { background: rgba(37,99,235,0.65); color: #bfdbfe; }
+        .vc-badge-3d { background: rgba(124,58,237,0.65); color: #ddd6fe; }
     </style>
 </head>
 
@@ -153,10 +183,14 @@
 
                 <!-- Asset Carousel Pane -->
                 <div class="flex-1 w-full hidden" id="modal-pane-assets">
-                    <div class="relative">
-                        <div id="asset-carousel" class="owl-carousel"></div>
+                    <!-- track wrapper -->
+                    <div class="vc-wrap" id="vc-wrap">
+                        <div class="vc-track" id="vc-track"></div>
+                        <button class="vc-btn vc-prev" id="vc-prev" aria-label="Previous"><i class="fas fa-chevron-left"></i></button>
+                        <button class="vc-btn vc-next" id="vc-next" aria-label="Next"><i class="fas fa-chevron-right"></i></button>
                     </div>
-                    <p id="asset-counter" class="text-[9px] text-white/30 text-center mt-2 tracking-widest uppercase"></p>
+                    <div class="vc-dots" id="vc-dots"></div>
+                    <div class="vc-counter" id="vc-counter"></div>
                 </div>
 
                 <!-- Text Pane -->
@@ -210,10 +244,6 @@
 
     <script src="https://pchen66.github.io/js/three/three.min.js"></script>
     <script src="https://pchen66.github.io/js/panolens/panolens.min.js"></script>
-    <!-- jQuery (required by Owl Carousel) -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <!-- Owl Carousel JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
 
     <script>
         const container = document.querySelector('#viewer-container');
@@ -577,6 +607,109 @@
             }
         }
 
+        /* ---- Vanilla Carousel state ---- */
+        let _vcIndex = 0;
+        let _vcTotal = 0;
+
+        function vcGoto(idx) {
+            _vcIndex = Math.max(0, Math.min(idx, _vcTotal - 1));
+            document.getElementById('vc-track').style.transform = `translateX(-${_vcIndex * 100}%)`;
+
+            // dots
+            document.querySelectorAll('.vc-dot').forEach((d, i) => d.classList.toggle('active', i === _vcIndex));
+
+            // counter
+            const counter = document.getElementById('vc-counter');
+            if (counter && _vcTotal > 1) counter.innerText = `${_vcIndex + 1} / ${_vcTotal} media`;
+
+            // update arrow state
+            const prevBtn = document.getElementById('vc-prev');
+            const nextBtn = document.getElementById('vc-next');
+            if (prevBtn) prevBtn.disabled = _vcIndex === 0;
+            if (nextBtn) nextBtn.disabled = _vcIndex === _vcTotal - 1;
+        }
+
+        document.getElementById('vc-prev').addEventListener('click', () => vcGoto(_vcIndex - 1));
+        document.getElementById('vc-next').addEventListener('click', () => vcGoto(_vcIndex + 1));
+
+        function buildCarousel(assets) {
+            const track   = document.getElementById('vc-track');
+            const dotsEl  = document.getElementById('vc-dots');
+            const counter = document.getElementById('vc-counter');
+            const pane    = document.getElementById('modal-pane-assets');
+
+            // Reset
+            track.innerHTML  = '';
+            dotsEl.innerHTML = '';
+            _vcIndex = 0;
+            _vcTotal = assets.length;
+
+            if (!assets || assets.length === 0) {
+                pane.style.display = 'none';
+                counter.innerText = '';
+                return;
+            }
+
+            pane.style.display = 'block';
+
+            assets.forEach((asset, i) => {
+                // --- Slide ---
+                const slide = document.createElement('div');
+                slide.className = 'vc-slide';
+
+                const badge = document.createElement('span');
+                badge.className = `vc-badge ${asset.file_type === '3d' ? 'vc-badge-3d' : 'vc-badge-2d'}`;
+                badge.innerText = asset.file_type === '3d' ? '🧊 3D' : '🖼 Photo';
+                slide.appendChild(badge);
+
+                if (asset.file_type === '2d') {
+                    const img = document.createElement('img');
+                    img.src     = asset.url;
+                    img.alt     = asset.label || 'Image';
+                    img.loading = 'lazy';
+                    slide.appendChild(img);
+                } else {
+                    const wrap = document.createElement('div');
+                    wrap.className = 'mv-wrap';
+                    wrap.innerHTML = `<model-viewer src="${asset.url}" auto-rotate camera-controls shadow-intensity="1" touch-action="pan-y" loading="eager"></model-viewer>`;
+                    slide.appendChild(wrap);
+                }
+
+                if (asset.label) {
+                    const lbl = document.createElement('div');
+                    lbl.className = 'vc-slide-label';
+                    lbl.innerText = asset.label;
+                    slide.appendChild(lbl);
+                }
+
+                track.appendChild(slide);
+
+                // --- Dot ---
+                if (assets.length > 1) {
+                    const dot = document.createElement('button');
+                    dot.className = 'vc-dot' + (i === 0 ? ' active' : '');
+                    dot.addEventListener('click', () => vcGoto(i));
+                    dotsEl.appendChild(dot);
+                }
+            });
+
+            // Hide arrows & dots when single slide
+            const isSingle = assets.length === 1;
+            document.getElementById('vc-prev').style.display = isSingle ? 'none' : 'flex';
+            document.getElementById('vc-next').style.display = isSingle ? 'none' : 'flex';
+            dotsEl.style.display = isSingle ? 'none' : 'flex';
+            counter.innerText = isSingle ? '' : `1 / ${assets.length} media`;
+
+            // Reset track position
+            track.style.transition = 'none';
+            track.style.transform  = 'translateX(0)';
+            setTimeout(() => { track.style.transition = ''; }, 50);
+
+            // Disable prev on first slide
+            document.getElementById('vc-prev').disabled = true;
+            document.getElementById('vc-next').disabled = isSingle;
+        }
+
         function openModal(title, textId, textEn, assets = []) {
             document.getElementById('modal-title').innerText = title;
             document.getElementById('tab-id').innerHTML  = textId || '';
@@ -589,64 +722,7 @@
                 if (viewer.getControl()) viewer.getControl().autoRotate = false;
             }
 
-            const assetPane  = document.getElementById('modal-pane-assets');
-            const carouselEl = document.getElementById('asset-carousel');
-            const counterEl  = document.getElementById('asset-counter');
-
-            // Destroy old Owl instance to prevent leaks
-            if ($(carouselEl).hasClass('owl-loaded')) {
-                $(carouselEl).trigger('destroy.owl.carousel');
-                $(carouselEl).removeClass('owl-carousel owl-loaded owl-drag');
-            }
-            carouselEl.innerHTML = '';
-
-            if (assets && assets.length > 0) {
-                assetPane.style.display = 'block';
-
-                assets.forEach(asset => {
-                    const slide = document.createElement('div');
-                    slide.className = 'asset-slide relative';
-
-                    if (asset.file_type === '2d') {
-                        slide.innerHTML = `
-                            <span class="asset-type-badge badge-2d">🖼 Photo</span>
-                            <img src="${asset.url}" alt="${asset.label || 'Image'}" loading="lazy">
-                            ${asset.label ? `<div class="asset-label">${asset.label}</div>` : ''}
-                        `;
-                    } else {
-                        slide.innerHTML = `
-                            <span class="asset-type-badge badge-3d">🧊 3D Model</span>
-                            <div class="model-wrap">
-                                <model-viewer src="${asset.url}"
-                                    auto-rotate camera-controls shadow-intensity="1"
-                                    touch-action="pan-y" loading="eager"
-                                    style="width:100%;height:100%;">
-                                </model-viewer>
-                            </div>
-                            ${asset.label ? `<div class="asset-label">${asset.label}</div>` : ''}
-                        `;
-                    }
-                    carouselEl.appendChild(slide);
-                });
-
-                const isSingle = assets.length === 1;
-                $(carouselEl).addClass('owl-carousel').owlCarousel({
-                    items: 1,
-                    loop: !isSingle,
-                    nav: !isSingle,
-                    dots: !isSingle,
-                    navText: ['<i class="fas fa-chevron-left text-xs"></i>','<i class="fas fa-chevron-right text-xs"></i>'],
-                    autoplay: false,
-                    smartSpeed: 400,
-                    touchDrag: !isSingle,
-                    mouseDrag: !isSingle,
-                });
-
-                counterEl.innerText = isSingle ? '' : `${assets.length} media`;
-            } else {
-                assetPane.style.display = 'none';
-                counterEl.innerText = '';
-            }
+            buildCarousel(assets);
 
             document.getElementById('modal').classList.add('active');
         }
