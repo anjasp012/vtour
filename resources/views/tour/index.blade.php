@@ -72,6 +72,7 @@
             transform-origin: center center;
             transition: transform 0.15s ease;
             user-select: none;
+            object-fit: contain;
         }
         .vc-slide .mv-wrap {
             width: 100%;
@@ -114,16 +115,21 @@
         .vc-btn.vc-prev { left: 10px; }
         .vc-btn.vc-next { right: 10px; }
         .vc-btn:disabled { opacity: 0.2; cursor: default; }
-        /* Dots */
+        /* Dots — inside card, absolute bottom center */
         .vc-dots {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
             display: flex;
             justify-content: center;
             gap: 6px;
-            padding: 10px 0;
+            z-index: 10;
+            pointer-events: auto;
         }
         .vc-dot {
-            width: 6px;
-            height: 6px;
+            width: 7px;
+            height: 7px;
             border-radius: 50%;
             background: rgba(255,255,255,0.2);
             border: none;
@@ -183,8 +189,8 @@
                         <div class="vc-track" id="vc-track"></div>
                         <button class="vc-btn vc-prev" id="vc-prev" aria-label="Previous"><i class="fas fa-chevron-left"></i></button>
                         <button class="vc-btn vc-next" id="vc-next" aria-label="Next"><i class="fas fa-chevron-right"></i></button>
+                        <div class="vc-dots" id="vc-dots"></div>
                     </div>
-                    <div class="vc-dots" id="vc-dots"></div>
                 </div>
 
                 <!-- Text Pane -->
