@@ -727,7 +727,7 @@
         createStyledIcon('i', '#2563eb'), // info
         createStyledIcon('⮝', '#4f46e5'), // nav (Updated to vibrant indigo)
         createStyledIcon('3D', '#7c3aed') // 3d (Purple cube-like theme)
-    ]).then(([infoUrl, navUrl, threedUrl]) => {
+    ]).then(async ([infoUrl, navUrl, threedUrl]) => {
         iconTextures.info = infoUrl;
         iconTextures.nav = navUrl;
         iconTextures.threed = threedUrl;
