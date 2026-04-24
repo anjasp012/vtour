@@ -234,9 +234,9 @@
 
     <!-- Modal System -->
     <div id="modal" class="group fixed top-0 left-0 w-full h-full bg-black/60 backdrop-blur-[15px] flex items-center justify-center z-[20000] opacity-0 invisible transition-all duration-400 [&.active]:opacity-100 [&.active]:visible">
-        <div class="bg-bg-glass border border-border-glass py-5 px-6 md:py-[20px] md:px-[35px] rounded-[25px] max-w-[1000px] w-[90%] max-h-[85vh] flex flex-col text-white transform scale-80 transition-transform duration-400 text-left relative scrollbar-none group-[.active]:scale-100 overflow-hidden">
+        <div class="bg-bg-glass border border-border-glass py-5 px-6 md:py-[20px] md:px-[25px] rounded-[25px] max-w-[1000px] w-[90%] max-h-[85vh] flex flex-col text-white transform scale-80 transition-transform duration-400 text-left relative scrollbar-none group-[.active]:scale-100 overflow-hidden">
             
-            <div class="flex items-center justify-between mb-[25px]">
+            <div class="flex items-center justify-between mb-[15px]">
                 <h2 id="modal-title" class="m-0 text-2xl">Info</h2>
                 <div class="text-[1.2rem] text-white/40 cursor-pointer transition-all duration-300 z-10 w-[36px] h-[36px] flex items-center justify-center rounded-full bg-white/10 shrink-0 hover:text-white hover:bg-accent hover:rotate-90" onclick="closeModal()">
                     <i class="fas fa-times"></i>
