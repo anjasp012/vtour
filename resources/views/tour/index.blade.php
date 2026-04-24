@@ -341,8 +341,8 @@
             </div>
 
             <!-- Map Canvas -->
-            <div class="flex-1 w-full relative overflow-auto scrollbar-none flex items-center justify-center rounded-[24px] bg-black/20 border border-white/5 p-4">
-                <div id="active-map-container" class="relative inline-block">
+            <div class="flex-1 w-full relative overflow-hidden flex items-center justify-center rounded-[24px] bg-black/20 border border-white/5 p-4" id="map-canvas-area">
+                <div id="active-map-container" class="relative inline-block transition-transform duration-200 ease-out origin-center cursor-grab active:cursor-grabbing">
                     <!-- Map Image will be injected here -->
                 </div>
             </div>
@@ -1177,8 +1177,15 @@
                 btn.classList.toggle('text-white/60', !isActive);
             });
 
+            // Reset Map Zoom
+            _mapScale = 1;
+            _mapOriginX = 50;
+            _mapOriginY = 50;
+            activeMapContainer.style.transform = 'scale(1)';
+            activeMapContainer.style.transformOrigin = '50% 50%';
+
             activeMapContainer.innerHTML = `
-                <img src="/storage/${plan.image_path}" class="max-w-full h-auto block rounded-lg shadow-2xl">
+                <img src="/storage/${plan.image_path}" class="max-w-full max-h-[70vh] block rounded-lg shadow-2xl pointer-events-none">
                 <div id="map-hotspots-layer" class="absolute inset-0"></div>
             `;
 
@@ -1212,6 +1219,84 @@
                 layer.appendChild(marker);
             });
         }
+
+        /* ---- Map Zoom/Pan Logic ---- */
+        let _mapScale = 1;
+        let _mapOriginX = 50;
+        let _mapOriginY = 50;
+        let _mapDragging = false;
+        let _mapStartX = 0;
+        let _mapStartY = 0;
+
+        const mapArea = document.getElementById('map-canvas-area');
+
+        mapArea.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const delta = -e.deltaY;
+            const factor = 1.1;
+            const direction = delta > 0 ? 1 : -1;
+            const newScale = direction > 0 ? _mapScale * factor : _mapScale / factor;
+            
+            if (newScale < 1 || newScale > 10) return;
+
+            const rect = activeMapContainer.getBoundingClientRect();
+            const mouseX = (e.clientX - rect.left) / _mapScale;
+            const mouseY = (e.clientY - rect.top) / _mapScale;
+            _mapOriginX = (mouseX / (rect.width / _mapScale)) * 100;
+            _mapOriginY = (mouseY / (rect.height / _mapScale)) * 100;
+
+            _mapScale = newScale;
+            activeMapContainer.style.transformOrigin = `${_mapOriginX}% ${_mapOriginY}%`;
+            activeMapContainer.style.transform = `scale(${_mapScale})`;
+        }, { passive: false });
+
+        mapArea.addEventListener('mousedown', (e) => {
+            if (_mapScale <= 1) return;
+            _mapDragging = true;
+            _mapStartX = e.clientX;
+            _mapStartY = e.clientY;
+            e.preventDefault();
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!_mapDragging) return;
+            const rect = activeMapContainer.getBoundingClientRect();
+            const dxPct = (e.clientX - _mapStartX) / rect.width * 100 / _mapScale;
+            const dyPct = (e.clientY - _mapStartY) / rect.height * 100 / _mapScale;
+            
+            _mapStartX = e.clientX;
+            _mapStartY = e.clientY;
+            
+            _mapOriginX = Math.max(0, Math.min(100, _mapOriginX - dxPct));
+            _mapOriginY = Math.max(0, Math.min(100, _mapOriginY - dyPct));
+            
+            activeMapContainer.style.transformOrigin = `${_mapOriginX.toFixed(2)}% ${_mapOriginY.toFixed(2)}%`;
+        });
+
+        window.addEventListener('mouseup', () => {
+            _mapDragging = false;
+        });
+
+        // Mobile Pinch Zoom for Map
+        (() => {
+            let initialDist = 0;
+            let initialScale = 1;
+            mapArea.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 2) {
+                    initialDist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
+                    initialScale = _mapScale;
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            mapArea.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 2 && initialDist > 0) {
+                    const dist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
+                    _mapScale = Math.max(1, Math.min(10, initialScale * (dist / initialDist)));
+                    activeMapContainer.style.transform = `scale(${_mapScale})`;
+                    e.preventDefault();
+                }
+            }, { passive: false });
+        })();
 
         initTour();
     </script>
