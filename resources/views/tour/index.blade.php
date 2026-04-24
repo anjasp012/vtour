@@ -1185,7 +1185,7 @@
             activeMapContainer.style.transformOrigin = '50% 50%';
 
             activeMapContainer.innerHTML = `
-                <img src="/storage/${plan.image_path}" class="max-w-full max-h-[70vh] block rounded-lg shadow-2xl pointer-events-none">
+                <img src="/storage/${plan.image_path}" class="max-w-full max-h-[60vh] w-auto h-auto block rounded-lg shadow-2xl pointer-events-none object-contain">
                 <div id="map-hotspots-layer" class="absolute inset-0"></div>
             `;
 
