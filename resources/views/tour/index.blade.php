@@ -220,6 +220,8 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
+        .scrollbar-none::-webkit-scrollbar { display: none; }
+        .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 
@@ -232,7 +234,7 @@
 
     <!-- Modal System -->
     <div id="modal" class="group fixed top-0 left-0 w-full h-full bg-black/60 backdrop-blur-[15px] flex items-center justify-center z-[20000] opacity-0 invisible transition-all duration-400 [&.active]:opacity-100 [&.active]:visible">
-        <div class="bg-bg-glass border border-border-glass py-5 px-6 md:py-[30px] md:px-[45px] rounded-[35px] max-w-[1000px] w-[90%] max-h-[85vh] flex flex-col text-white transform scale-80 transition-transform duration-400 text-left relative scrollbar-none group-[.active]:scale-100 overflow-hidden">
+        <div class="bg-bg-glass border border-border-glass py-5 px-6 md:py-[20px] md:px-[35px] rounded-[25px] max-w-[1000px] w-[90%] max-h-[85vh] flex flex-col text-white transform scale-80 transition-transform duration-400 text-left relative scrollbar-none group-[.active]:scale-100 overflow-hidden">
             
             <div class="flex items-center justify-between mb-[25px]">
                 <h2 id="modal-title" class="m-0 text-2xl">Info</h2>
@@ -272,7 +274,7 @@
                             <button id="btn-stop" class="tab-btn bg-rose-500/20 border border-rose-500/50 text-rose-500 py-1 px-2 rounded-md text-xs cursor-pointer transition-all duration-300 font-semibold hidden hover:bg-rose-500/30 hover:text-white hover:border-rose-500/70" onclick="stopNarration()"><i class="fas fa-stop"></i></button>
                         </div>
                         
-                        <div class="flex-1 overflow-y-auto max-h-[250px] md:max-h-[400px] pr-2 scrollbar-thin">
+                        <div class="flex-1 overflow-y-auto max-h-[250px] md:max-h-[400px] pr-2 scrollbar-none">
                             <div class="leading-[1.6] text-white/80 text-justify hidden opacity-0 [&.active]:block [&.active]:animate-fade-in [&.active]:opacity-100 [&_p]:mt-0 [&_p]:mb-[1em]" id="tab-id"></div>
                             <div class="leading-[1.6] text-white/80 text-justify hidden opacity-0 [&.active]:block [&.active]:animate-fade-in [&.active]:opacity-100 [&_p]:mt-0 [&_p]:mb-[1em]" id="tab-en"></div>
                         </div>
