@@ -7,7 +7,7 @@
     <!-- Main Editing Canvas -->
     <div class="flex-1 relative overflow-auto p-8 flex items-center justify-center min-h-0">
         <div class="relative inline-block shadow-2xl border-4 border-white rounded-lg bg-white group" id="map-container">
-            <img src="{{ Storage::url($sitePlan->image_path) }}" class="max-w-full max-h-[75vh] w-auto h-auto block select-none pointer-events-none rounded-sm" id="site-plan-image">
+            <img src="{{ Storage::url($sitePlan->image_path) }}" class="max-w-full max-h-[90vh] w-auto h-auto block select-none pointer-events-none rounded-sm" id="site-plan-image">
             
             <!-- Hotspots Layer -->
             <div id="hotspots-layer" class="absolute inset-0 cursor-crosshair"></div>
@@ -75,8 +75,7 @@
     <div class="absolute group hotspot-marker -translate-x-1/2 -translate-y-1/2" style="left: 0%; top: 0%;">
         <!-- Marker Visual -->
         <div class="relative">
-            <div class="w-8 h-8 bg-blue-600 rounded-full border-4 border-white shadow-xl flex items-center justify-center text-white text-[10px] cursor-grab active:cursor-grabbing hover:scale-110 transition-transform">
-                <i class="fas fa-location-arrow"></i>
+            <div class="w-4 h-4 md:w-6 md:h-6 bg-blue-600 rounded-full border-4 border-white shadow-xl flex items-center justify-center text-white text-[10px] cursor-grab active:cursor-grabbing hover:scale-110 transition-transform">
             </div>
             <!-- Tooltip -->
             <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 bg-slate-900 text-white px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-widest whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-2xl">
