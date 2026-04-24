@@ -11,14 +11,6 @@
             
             <!-- Hotspots Layer -->
             <div id="hotspots-layer" class="absolute inset-0 cursor-crosshair"></div>
-
-            <!-- Canvas Info Badge -->
-            <div class="absolute -top-12 left-0 flex items-center gap-3">
-                <div class="bg-white px-4 py-2 rounded-lg shadow-sm border border-slate-200">
-                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest block leading-none mb-1">Canvas Resolution</span>
-                    <span class="text-xs font-black text-slate-900" id="res-display">Loading...</span>
-                </div>
-            </div>
         </div>
 
         <!-- Float Help -->
