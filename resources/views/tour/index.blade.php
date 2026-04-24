@@ -232,7 +232,7 @@
 
     <!-- Modal System -->
     <div id="modal" class="group fixed top-0 left-0 w-full h-full bg-black/60 backdrop-blur-[15px] flex items-center justify-center z-[20000] opacity-0 invisible transition-all duration-400 [&.active]:opacity-100 [&.active]:visible">
-        <div class="bg-bg-glass border border-border-glass py-5 px-6 md:py-[30px] md:px-[45px] rounded-[35px] max-w-[1000px] w-[90%] max-h-[80vh] overflow-y-auto text-white transform scale-80 transition-transform duration-400 text-left relative scrollbar-none group-[.active]:scale-100">
+        <div class="bg-bg-glass border border-border-glass py-5 px-6 md:py-[30px] md:px-[45px] rounded-[35px] max-w-[1000px] w-[90%] max-h-[85vh] flex flex-col text-white transform scale-80 transition-transform duration-400 text-left relative scrollbar-none group-[.active]:scale-100 overflow-hidden">
             
             <div class="flex items-center justify-between mb-[25px]">
                 <h2 id="modal-title" class="m-0 text-2xl">Info</h2>
@@ -251,6 +251,12 @@
                         <div class="vc-track" id="vc-track"></div>
                         <button class="vc-btn vc-prev" id="vc-prev" aria-label="Previous"><i class="fas fa-chevron-left"></i></button>
                         <button class="vc-btn vc-next" id="vc-next" aria-label="Next"><i class="fas fa-chevron-right"></i></button>
+                        
+                        <!-- Enlarge Button -->
+                        <button class="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-black/50 backdrop-blur-md border border-white/20 text-white flex items-center justify-center cursor-pointer z-20 hover:bg-primary transition-all" onclick="toggleEnlarge()" title="Enlarge View">
+                            <i class="fas fa-expand-arrows-alt text-xs" id="enlarge-icon"></i>
+                        </button>
+
                         <div class="vc-dots" id="vc-dots"></div>
                     </div>
                 </div>
@@ -259,15 +265,17 @@
                 <div class="flex-1 w-full" id="modal-pane-text">
                     <div class="flex flex-col w-full">
                         <div class="flex flex-wrap gap-[10px] mb-[15px] border-b border-white/10 pb-[10px]">
-                            <button id="btn-tab-id" class="tab-btn active bg-white/5 border border-transparent text-white/60 py-1 px-2 rounded-lg text-xs cursor-pointer transition-all duration-300 font-semibold hover:text-white hover:bg-white/10 hover:border-transparent [&.active]:bg-primary [&.active]:text-white [&.active]:border-white/20" onclick="switchTab('id')">Indonesia</button>
-                            <button id="btn-tab-en" class="tab-btn bg-white/5 border border-transparent text-white/60 py-1 px-2 rounded-lg text-xs cursor-pointer transition-all duration-300 font-semibold hover:text-white hover:bg-white/10 hover:border-transparent [&.active]:bg-primary [&.active]:text-white [&.active]:border-white/20" onclick="switchTab('en')">English</button>
+                            <button id="btn-tab-id" class="tab-btn active bg-white/5 border border-transparent text-white/60 py-1 px-2 rounded-md text-xs cursor-pointer transition-all duration-300 font-semibold hover:text-white hover:bg-white/10 hover:border-transparent [&.active]:bg-primary [&.active]:text-white [&.active]:border-white/20" onclick="switchTab('id')">Indonesia</button>
+                            <button id="btn-tab-en" class="tab-btn bg-white/5 border border-transparent text-white/60 py-1 px-2 rounded-md text-xs cursor-pointer transition-all duration-300 font-semibold hover:text-white hover:bg-white/10 hover:border-transparent [&.active]:bg-primary [&.active]:text-white [&.active]:border-white/20" onclick="switchTab('en')">English</button>
                             <div class="grow min-w-[20px]"></div>
-                            <button id="btn-play" class="tab-btn bg-white/5 border border-transparent text-white/60 py-1 px-2 rounded-lg text-xs cursor-pointer transition-all duration-300 font-semibold hover:text-white hover:bg-white/10" onclick="playNarration()"><i class="fas fa-volume-up mr-1.5"></i></button>
-                            <button id="btn-stop" class="tab-btn bg-rose-500/20 border border-rose-500/50 text-rose-500 py-1 px-2 rounded-lg text-xs cursor-pointer transition-all duration-300 font-semibold hidden hover:bg-rose-500/30 hover:text-white hover:border-rose-500/70" onclick="stopNarration()"><i class="fas fa-stop mr-1.5"></i></button>
+                            <button id="btn-play" class="tab-btn bg-white/5 border border-transparent text-white/60 py-1 px-2 rounded-md text-xs cursor-pointer transition-all duration-300 font-semibold hover:text-white hover:bg-white/10" onclick="playNarration()"><i class="fas fa-volume-up"></i></button>
+                            <button id="btn-stop" class="tab-btn bg-rose-500/20 border border-rose-500/50 text-rose-500 py-1 px-2 rounded-md text-xs cursor-pointer transition-all duration-300 font-semibold hidden hover:bg-rose-500/30 hover:text-white hover:border-rose-500/70" onclick="stopNarration()"><i class="fas fa-stop"></i></button>
                         </div>
                         
-                        <div class="leading-[1.6] text-white/80 text-justify hidden opacity-0 [&.active]:block [&.active]:animate-fade-in [&.active]:opacity-100 [&_p]:mt-0 [&_p]:mb-[1em]" id="tab-id"></div>
-                        <div class="leading-[1.6] text-white/80 text-justify hidden opacity-0 [&.active]:block [&.active]:animate-fade-in [&.active]:opacity-100 [&_p]:mt-0 [&_p]:mb-[1em]" id="tab-en"></div>
+                        <div class="flex-1 overflow-y-auto max-h-[250px] md:max-h-[400px] pr-2 scrollbar-thin">
+                            <div class="leading-[1.6] text-white/80 text-justify hidden opacity-0 [&.active]:block [&.active]:animate-fade-in [&.active]:opacity-100 [&_p]:mt-0 [&_p]:mb-[1em]" id="tab-id"></div>
+                            <div class="leading-[1.6] text-white/80 text-justify hidden opacity-0 [&.active]:block [&.active]:animate-fade-in [&.active]:opacity-100 [&_p]:mt-0 [&_p]:mb-[1em]" id="tab-en"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -877,17 +885,22 @@
             document.getElementById('tab-' + lang).classList.add('active');
         }
 
-        function toggleLayout() {
+        function toggleEnlarge() {
             const wrapper = document.getElementById('modal-layout-wrapper');
-            if (wrapper) {
-                if (wrapper.classList.contains('layout-horizontal')) {
-                    wrapper.classList.remove('layout-horizontal');
-                    wrapper.classList.add('layout-vertical');
-                } else {
-                    wrapper.classList.remove('layout-vertical');
-                    wrapper.classList.add('layout-horizontal');
-                }
-            }
+            const icon = document.getElementById('enlarge-icon');
+            const isEnlarged = wrapper.classList.toggle('assets-enlarged');
+            
+            icon.className = isEnlarged ? 'fas fa-compress-arrows-alt text-xs' : 'fas fa-expand-arrows-alt text-xs';
+
+            // Adapt carousel height
+            const slides = document.querySelectorAll('.vc-slide img, .vc-slide .mv-wrap');
+            slides.forEach(el => {
+                el.style.height = isEnlarged ? '60vh' : '300px';
+            });
+
+            // If enlarged, hide text pane
+            const textPane = document.getElementById('modal-pane-text');
+            textPane.style.display = isEnlarged ? 'none' : 'block';
         }
 
         /* ---- Vanilla Carousel state ---- */
@@ -1132,6 +1145,17 @@
         function closeModal() {
             const modal = document.getElementById('modal');
             modal.classList.remove('active');
+
+            // Reset enlarge state on close
+            const wrapper = document.getElementById('modal-layout-wrapper');
+            const icon = document.getElementById('enlarge-icon');
+            if (wrapper && wrapper.classList.contains('assets-enlarged')) {
+                wrapper.classList.remove('assets-enlarged');
+                if (icon) icon.className = 'fas fa-expand-arrows-alt text-xs';
+                const slides = document.querySelectorAll('.vc-slide img, .vc-slide .mv-wrap');
+                slides.forEach(el => el.style.height = '300px');
+                document.getElementById('modal-pane-text').style.display = 'block';
+            }
 
             stopNarration();
 
