@@ -340,7 +340,7 @@
     <div id="site-plan-overlay" class="fixed top-0 left-0 w-full h-full bg-black/80 backdrop-blur-xl z-[25000] opacity-0 invisible transition-all duration-500 flex items-center justify-center p-6 md:p-12">
         <div class="relative bg-[#0f172a]/90 border border-white/10 py-5 px-6 md:py-[20px] md:px-[25px] rounded-[25px] max-w-[1000px] w-[90%] max-h-[85vh] flex flex-col items-center shadow-2xl">
             <!-- Header -->
-            <div class="w-full flex items-center justify-between mb-6 px-4">
+            <div class="w-full flex items-center justify-between mb-[15px]">
                 <div>
                     <h2 class="text-white text-xl font-black uppercase tracking-tighter">Site Plan & Maps</h2>
                     <p class="text-white/40 text-[9px] font-bold uppercase tracking-[2px] mt-1">Select a location to navigate</p>
