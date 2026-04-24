@@ -119,7 +119,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const hotspotList = document.getElementById('hotspot-list');
     const emptyState = document.getElementById('empty-state');
     const hotspotCount = document.getElementById('hotspot-count');
-    const resDisplay = document.getElementById('res-display');
     const saveBtn = document.getElementById('save-btn');
     const img = document.getElementById('site-plan-image');
 
@@ -132,11 +131,7 @@ document.addEventListener('DOMContentLoaded', function() {
         ];
     })) !!};
 
-    // Initialize resolution display
-    img.onload = () => {
-        resDisplay.textContent = `${img.naturalWidth} x ${img.naturalHeight} PX`;
-    };
-    if (img.complete) resDisplay.textContent = `${img.naturalWidth} x ${img.naturalHeight} PX`;
+
 
     function updateUI() {
         hotspotCount.textContent = hotspots.length;
