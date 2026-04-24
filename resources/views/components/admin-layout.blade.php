@@ -61,6 +61,9 @@
                 <a href="{{ route('admin.scenes.index') }}" class="nav-link {{ request()->routeIs('admin.scenes.*') && !request()->routeIs('admin.scenes.show') ? 'active' : '' }}">
                     Collections
                 </a>
+                <a href="{{ route('admin.tours.site-plans.index', 1) }}" class="nav-link {{ request()->routeIs('admin.site-plans.*') || request()->routeIs('admin.tours.site-plans.*') ? 'active' : '' }}">
+                    Site Plans
+                </a>
                 <a href="{{ url('/') }}" target="_blank" class="nav-link">
                     Preview
                 </a>

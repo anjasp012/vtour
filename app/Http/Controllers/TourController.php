@@ -9,7 +9,11 @@ class TourController extends Controller
 {
     public function index()
     {
-        $tour = Tour::with(['scenes.infospots.targetScene', 'scenes.infospots.assets'])->first();
+        $tour = Tour::with([
+            'scenes.infospots.targetScene', 
+            'scenes.infospots.assets',
+            'sitePlans.hotspots.scene'
+        ])->first();
         
         if (!$tour) {
             return view('welcome');

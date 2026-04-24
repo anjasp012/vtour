@@ -12,4 +12,9 @@ class Tour extends Model
     {
         return $this->hasMany(Scene::class);
     }
+
+    public function sitePlans()
+    {
+        return $this->hasMany(SitePlan::class);
+    }
 }

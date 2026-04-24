@@ -297,6 +297,8 @@
                         
                         <button id="toggle-markers" class="btn-action btn-active bg-white/5 hover:bg-white/15 [&.btn-active]:bg-primary/35 border border-border-glass [&.btn-active]:border-primary/80 text-white/90 w-[38px] h-[38px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95" title="Show Markers"><i class="bi bi-eye-fill text-[14px] text-primary"></i></button>
 
+                        <button id="toggle-map" class="btn-action bg-white/5 hover:bg-white/15 border border-border-glass text-white/90 w-[38px] h-[38px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95" title="Site Plan"><i class="fas fa-map text-[14px] text-primary"></i></button>
+
                         <button id="toggle-fullscreen" class="btn-action bg-white/5 hover:bg-white/15 [&.btn-active]:bg-primary/35 border border-border-glass [&.btn-active]:border-primary/80 text-white/90 w-[38px] h-[38px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95" title="Full Screen"><i class="fas fa-expand text-[14px] text-primary"></i></button>
                     </div>
                 </div>
@@ -324,6 +326,40 @@
         <div class="bg-bg-glass backdrop-blur-[20px] border border-border-glass px-[25px] py-[10px] rounded-[50px] text-white font-mono text-[13px] self-start pointer-events-auto opacity-0 invisible transition-all duration-400 shadow-[0_10px_30px_rgba(0,0,0,0.5)] [&.show]:opacity-100 [&.show]:visible" id="coord-display">Ambil kordinat dengan klik ruangan...</div>
     </div>
 
+    <!-- Site Plan Overlay -->
+    <div id="site-plan-overlay" class="fixed top-0 left-0 w-full h-full bg-black/80 backdrop-blur-xl z-[25000] opacity-0 invisible transition-all duration-500 flex items-center justify-center p-6 md:p-12">
+        <div class="relative bg-[#0f172a]/90 border border-white/10 rounded-[40px] p-4 md:p-8 w-full max-w-5xl max-h-full flex flex-col items-center shadow-2xl">
+            <!-- Header -->
+            <div class="w-full flex items-center justify-between mb-6 px-4">
+                <div>
+                    <h2 class="text-white text-xl font-black uppercase tracking-tighter">Site Plan & Maps</h2>
+                    <p class="text-white/40 text-[9px] font-bold uppercase tracking-[2px] mt-1">Select a location to navigate</p>
+                </div>
+                <button class="w-10 h-10 bg-white/10 rounded-full text-white/60 hover:text-white hover:bg-rose-500 transition-all flex items-center justify-center cursor-pointer" onclick="closeSitePlan()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Map Canvas -->
+            <div class="flex-1 w-full relative overflow-auto scrollbar-none flex items-center justify-center rounded-[24px] bg-black/20 border border-white/5 p-4">
+                <div id="active-map-container" class="relative inline-block">
+                    <!-- Map Image will be injected here -->
+                </div>
+            </div>
+
+            <!-- Map Selector -->
+            @if($tour->sitePlans->count() > 1)
+                <div class="w-full flex items-center justify-center gap-4 mt-6 overflow-x-auto py-2 scrollbar-none">
+                    @foreach($tour->sitePlans as $plan)
+                        <button class="px-6 py-2 bg-white/5 border border-white/10 rounded-full text-white/60 text-[10px] font-bold uppercase tracking-widest hover:bg-primary/20 hover:text-white hover:border-primary/50 transition-all whitespace-nowrap cursor-pointer plan-tab-btn" data-id="{{ $plan->id }}" onclick="loadMap({{ $plan->id }})">
+                            {{ $plan->name }}
+                        </button>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+    </div>
+
     <script src="https://pchen66.github.io/js/three/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.105.0/examples/js/loaders/GLTFLoader.js"></script>
     <script src="https://pchen66.github.io/js/panolens/panolens.min.js"></script>
@@ -332,6 +368,14 @@
         const container = document.querySelector('#viewer-container');
         const loader = document.getElementById('loader');
         let viewer; // Global viewer instance
+        let infoUrl, arrowUrl, threedUrl; // Icon URLs
+        const tourData = {!! $tour->toJson() !!};
+        const panoramas = {};
+        const mixers = [];
+        const clock = new THREE.Clock();
+        const loader3d = new THREE.GLTFLoader();
+        const UNIFORM_SIZE = 500;
+        let currentSceneData = null;
 
         async function createStyledIcon(iconString, color = '#6366f1', rotation = 0) {
             await document.fonts.ready;
@@ -356,11 +400,293 @@
             return canvas.toDataURL();
         }
 
+        function animate3d() {
+            requestAnimationFrame(animate3d);
+            const delta = clock.getDelta();
+            mixers.forEach(mixer => mixer.update(delta));
+        }
+
+        async function loadGLB(url, spotData) {
+            return new Promise((resolve, reject) => {
+                loader3d.load(url, (gltf) => {
+                    const model = gltf.scene;
+                    
+                    // Scale up significantly for world-space visibility
+                    const s = 100;
+                    model.position.set(0, 0, 0); // Position is handled by proxy
+                    model.rotation.set(spotData.rotation_x || 0, spotData.rotation_y || 0, spotData.rotation_z || 0);
+                    model.scale.set(
+                        (spotData.scale_x || 1) * s, 
+                        (spotData.scale_y || 1) * s, 
+                        (spotData.scale_z || spotData.scale_x || 1) * s
+                    );
+                    
+                    model.is3DModel = true;
+                    
+                    if (gltf.animations && gltf.animations.length > 0) {
+                        const mixer = new THREE.AnimationMixer(model);
+                        gltf.animations.forEach(clip => mixer.clipAction(clip).play());
+                        mixers.push(mixer);
+                    }
+
+                    resolve(model);
+                }, undefined, reject);
+            });
+        }
+
+        function addBounce(infospot) {
+            const startY = infospot.position.y;
+            new TWEEN.Tween(infospot.position)
+                .to({ y: startY + 200 }, 1000)
+                .easing(TWEEN.Easing.Quadratic.InOut)
+                .repeat(Infinity)
+                .yoyo(true)
+                .start();
+        }
+
+        function getOrCreatePanorama(sceneId) {
+            if (panoramas[sceneId]) return panoramas[sceneId];
+
+            const sceneData = tourData.scenes.find(s => s.id == sceneId);
+            if (!sceneData) return null;
+
+            const imageUrl = '{{ Storage::url("") }}' + sceneData.image_path;
+            const pano = new PANOLENS.ImagePanorama(imageUrl);
+            panoramas[sceneId] = pano;
+
+            // Attach infospots to this new panorama
+            if (sceneData.infospots) {
+                sceneData.infospots.forEach(async (spot) => {
+                    let ispot;
+                    let modelObj = null;
+
+                    // Position Normalization (Ensure inside the 5000 radius sphere)
+                    const pos = new THREE.Vector3(spot.position_x, spot.position_y, spot.position_z).normalize().multiplyScalar(4000);
+                    
+                    // Check for direct 3D model
+                    if (spot.model_path) {
+                        try {
+                            const modelUrl = '{{ url('storage') }}/' + spot.model_path;
+                            modelObj = await loadGLB(modelUrl, spot);
+                            
+                            // Create a Proxy Infospot for interaction
+                            ispot = new PANOLENS.Infospot(800, PANOLENS.DataImage.Info);
+                            ispot.material.opacity = 0;
+                            ispot.add(modelObj);
+                            ispot.is3DModel = true;
+                            ispot.modelObj = modelObj;
+                        } catch (e) {
+                            console.error("GLB load failed:", e);
+                        }
+                    }
+
+                    if (!ispot) {
+                        if (spot.is_perspective) {
+                            // Render as 3D Mesh for perspective mode
+                            const iconUrl = (spot.type === 'info') ? infoUrl : (spot.type === '3d' ? threedUrl : arrowUrl);
+                            const geometry = new THREE.PlaneGeometry(600, 600);
+                            const texture = new THREE.TextureLoader().load(iconUrl);
+                            const material = new THREE.MeshBasicMaterial({ 
+                                map: texture, transparent: true, side: THREE.DoubleSide,
+                                alphaTest: 0.1, depthTest: false, depthWrite: false
+                            });
+                            ispot = new THREE.Mesh(geometry, material);
+                            ispot.renderOrder = 999;
+                            ispot.rotation.order = 'YXZ';
+                            ispot.rotation.set(spot.rotation_x || 0, spot.rotation_y || 0, spot.rotation_z || 0);
+                            ispot.scale.set(spot.scale_x || 1, spot.scale_y || 1, 1);
+                            ispot.isPerspectiveMesh = true;
+                        } else {
+                            // Standard Billboard
+                            const iconUrl = (spot.type === 'info') ? infoUrl : (spot.type === '3d' ? threedUrl : arrowUrl);
+                            ispot = new PANOLENS.Infospot(UNIFORM_SIZE, iconUrl);
+                        }
+                    }
+
+                    ispot.position.copy(pos);
+                    ispot.addEventListener('click', () => { handleSpotClick(spot); });
+
+                    // Smart Hover Logic
+                    ispot.addEventListener('hoverenter', () => {
+                        if (ispot.is3DModel) {
+                            const s = 100 * 1.2;
+                            new TWEEN.Tween(ispot.modelObj.scale).to({ 
+                                x: (spot.scale_x || 1) * s, y: (spot.scale_y || 1) * s, z: (spot.scale_z || spot.scale_x || 1) * s 
+                            }, 300).easing(TWEEN.Easing.Back.Out).start();
+                        } else if (ispot.isPerspectiveMesh) {
+                            new TWEEN.Tween(ispot.scale).to({ x: (spot.scale_x || 1) * 1.2, y: (spot.scale_y || 1) * 1.2, z: 1.2 }, 300).easing(TWEEN.Easing.Back.Out).start();
+                        } else {
+                            ispot.scale.set(1.3, 1.3, 1.3);
+                        }
+                    });
+
+                    ispot.addEventListener('hoverleave', () => {
+                        if (ispot.is3DModel) {
+                            const s = 100;
+                            new TWEEN.Tween(ispot.modelObj.scale).to({ 
+                                x: (spot.scale_x || 1) * s, y: (spot.scale_y || 1) * s, z: (spot.scale_z || spot.scale_x || 1) * s 
+                            }, 300).easing(TWEEN.Easing.Back.Out).start();
+                        } else if (ispot.isPerspectiveMesh) {
+                            new TWEEN.Tween(ispot.scale).to({ x: spot.scale_x || 1, y: spot.scale_y || 1, z: 1 }, 300).easing(TWEEN.Easing.Back.Out).start();
+                        } else {
+                            ispot.scale.set(1, 1, 1);
+                        }
+                    });
+
+                    if (!ispot.is3DModel) addBounce(ispot);
+                    if (ispot) pano.add(ispot);
+                });
+            }
+
+            // Preload neighbors when this panorama loads
+            pano.addEventListener('load', () => {
+                preloadNeighbors(sceneId);
+            });
+
+            return pano;
+        }
+
+        function preloadNeighbors(sceneId) {
+            const sceneData = tourData.scenes.find(s => s.id == sceneId);
+            if (sceneData && sceneData.infospots) {
+                sceneData.infospots.forEach(spot => {
+                    if (spot.type === 'nav' && spot.target_scene_id) {
+                        getOrCreatePanorama(spot.target_scene_id);
+                    }
+                });
+            }
+        }
+
+        function handleSpotClick(spot) {
+            if (spot.type === 'info' || spot.type === '3d') {
+                // Build assets array — prefer assets relation, fallback to legacy model_path
+                let assets = [];
+                if (spot.assets && spot.assets.length > 0) {
+                    assets = spot.assets.map(a => ({
+                        file_type: a.file_type,
+                        url: '{{ Storage::url("") }}' + a.file_path,
+                        label: a.label || null
+                    }));
+                } else if (spot.model_path) {
+                    assets = [{ file_type: '3d', url: '{{ Storage::url("") }}' + spot.model_path, label: null }];
+                }
+                openModal(spot.title || "Info", spot.content_id || "", spot.content_en || "", assets);
+            } else if (spot.type === 'nav') {
+                if (spot.target_scene_id) {
+                    const targetPano = getOrCreatePanorama(spot.target_scene_id);
+                    if (targetPano) {
+                        const targetSceneData = spot.target_scene || spot.targetScene || tourData.scenes.find(s => s.id == spot.target_scene_id);
+                        const targetSceneName = targetSceneData ? targetSceneData.name : "NEXT SCENE";
+                        walkToTarget(targetPano, new THREE.Vector3(spot.position_x, spot.position_y, spot.position_z), targetSceneName, "Navigasi", spot.target_scene_id);
+                    }
+                }
+            }
+        }
+
+        function walkToTarget(pano, targetPosition, title, subtitle, targetSceneId = null) {
+            // Sembunyikan ikon di panorama lama agar tidak "mengikuti" saat transisi
+            if(viewer.panorama) {
+                viewer.panorama.children.forEach(c => {
+                    if (c instanceof PANOLENS.Infospot || c.isPerspectiveMesh) c.visible = false;
+                });
+            }
+
+            viewer.tweenControlCenter(targetPosition, 500);
+            setTimeout(() => {
+                let startFov = viewer.camera.fov;
+                let targetFovIn = 40;
+                let duration = 600;
+                let startTime = Date.now();
+                function zoomIn() {
+                    let elapsed = Date.now() - startTime;
+                    let progress = Math.min(elapsed / duration, 1);
+                    let eased = progress * progress * progress;
+                    viewer.camera.fov = startFov + (targetFovIn - startFov) * eased;
+                    viewer.camera.updateProjectionMatrix();
+
+                    if (progress < 1) requestAnimationFrame(zoomIn);
+                    else {
+                        if (!pano.parent) viewer.add(pano);
+                        viewer.setPanorama(pano);
+                        
+                        // Pastikan visibilitas ikon di panorama baru sesuai dengan tombol toggle
+                        const markersBtn = document.getElementById('toggle-markers');
+                        const isMarkersEnabled = markersBtn ? markersBtn.classList.contains('btn-active') : true;
+                        pano.children.forEach(c => {
+                            if (c instanceof PANOLENS.Infospot || c.isPerspectiveMesh) c.visible = isMarkersEnabled;
+                        });
+
+                        document.getElementById('scene-title').innerText = title;
+
+                        // Update active status in scene list
+                        document.querySelectorAll('.scene-card').forEach(card => {
+                            card.classList.toggle('active', card.dataset.id == targetSceneId);
+                        });
+                        currentSceneData = tourData.scenes.find(s => s.id == targetSceneId);
+
+                        // Safeguard: re-apply autoRotate state from the internal flag
+                        const ctrl = viewer.getControl();
+                        ctrl.autoRotate = viewer.autoRotate;
+
+                        // Apply saved initial camera direction if target scene has one
+                        const tsd = targetSceneId ? tourData.scenes.find(s => s.id == targetSceneId) : null;
+                        if (tsd && (tsd.initial_lon !== 0 || tsd.initial_lat !== 0)) {
+                            setTimeout(() => {
+                                _applyInitialView(
+                                    parseFloat(tsd.initial_lon),
+                                    parseFloat(tsd.initial_lat)
+                                );
+                            }, 500);
+                        }
+
+                        startTime = Date.now();
+                        zoomOut();
+                    }
+                }
+                function zoomOut() {
+                    let elapsed = Date.now() - startTime;
+                    let progress = Math.min(elapsed / duration, 1);
+                    let eased = 1 - Math.pow(1 - progress, 3);
+                    viewer.camera.fov = targetFovIn + (startFov - targetFovIn) * eased;
+                    viewer.camera.updateProjectionMatrix();
+                    if (progress < 1) requestAnimationFrame(zoomOut);
+                }
+                zoomIn();
+            }, 500);
+        }
+
+        function renderSceneList() {
+            const listPanel = document.getElementById('scene-list-panel');
+            if (!listPanel) return;
+            listPanel.innerHTML = '';
+
+            tourData.scenes.forEach(scene => {
+                const card = document.createElement('div');
+                card.className = `scene-card ${scene.id == currentSceneData?.id ? 'active' : ''}`;
+                card.dataset.id = scene.id;
+                
+                const imageUrl = '{{ Storage::url("") }}' + scene.image_path;
+                card.innerHTML = `
+                    <img src="${imageUrl}" alt="${scene.name}">
+                    <div class="scene-card-label">${scene.name}</div>
+                `;
+
+                card.onclick = () => {
+                    if (scene.id == currentSceneData?.id) return;
+                    const targetPano = getOrCreatePanorama(scene.id);
+                    if (targetPano) {
+                        walkToTarget(targetPano, new THREE.Vector3(0, 0, 0), scene.name, "Akses Langsung", scene.id);
+                    }
+                };
+
+                listPanel.appendChild(card);
+            });
+        }
+
         async function initTour() {
-            const infoUrl = await createStyledIcon('i', '#2563eb');
-            const arrowUrl = await createStyledIcon('⮝', '#4f46e5'); // Warna lebih vibrant dan senada dengan info
-            const threedUrl = await createStyledIcon('3D', '#7c3aed'); // Distinct icon for 3D objects
-            // Removed legacy arrow rotations as we use real 3D rotation now
+            infoUrl = await createStyledIcon('i', '#2563eb');
+            arrowUrl = await createStyledIcon('⮝', '#4f46e5'); 
+            threedUrl = await createStyledIcon('3D', '#7c3aed'); 
 
             viewer = new PANOLENS.Viewer({
                 container: container,
@@ -389,206 +715,23 @@
             controls.dollyIn = controls.dollyOut;
             controls.dollyOut = originalDollyIn;
 
-            // ---- 3D Model Rendering System ----
-            const mixers = [];
-            const clock = new THREE.Clock();
-            const loader3d = new THREE.GLTFLoader();
-
-            function animate3d() {
-                requestAnimationFrame(animate3d);
-                const delta = clock.getDelta();
-                mixers.forEach(mixer => mixer.update(delta));
-            }
-            animate3d();
-
-            async function loadGLB(url, spotData) {
-                return new Promise((resolve, reject) => {
-                    loader3d.load(url, (gltf) => {
-                        const model = gltf.scene;
-                        
-                        // Scale up significantly for world-space visibility
-                        const s = 100;
-                        model.position.set(0, 0, 0); // Position is handled by proxy
-                        model.rotation.set(spotData.rotation_x || 0, spotData.rotation_y || 0, spotData.rotation_z || 0);
-                        model.scale.set(
-                            (spotData.scale_x || 1) * s, 
-                            (spotData.scale_y || 1) * s, 
-                            (spotData.scale_z || spotData.scale_x || 1) * s
-                        );
-                        
-                        model.is3DModel = true;
-                        
-                        if (gltf.animations && gltf.animations.length > 0) {
-                            const mixer = new THREE.AnimationMixer(model);
-                            gltf.animations.forEach(clip => mixer.clipAction(clip).play());
-                            mixers.push(mixer);
-                        }
-
-                        resolve(model);
-                    }, undefined, reject);
-                });
-            }
-
-            function addBounce(infospot) {
-                const startY = infospot.position.y;
-                new TWEEN.Tween(infospot.position)
-                    .to({ y: startY + 200 }, 1000)
-                    .easing(TWEEN.Easing.Quadratic.InOut)
-                    .repeat(Infinity)
-                    .yoyo(true)
-                    .start();
-            }
 
 
 
-            const tourData = {!! $tour->toJson() !!};
+
+
             
-            const UNIFORM_SIZE = 500;
-            const panoramas = {};
-            let currentSceneData = null;
 
-            function getOrCreatePanorama(sceneId) {
-                if (panoramas[sceneId]) return panoramas[sceneId];
 
-                const sceneData = tourData.scenes.find(s => s.id == sceneId);
-                if (!sceneData) return null;
 
-                const imageUrl = '{{ Storage::url("") }}' + sceneData.image_path;
-                const pano = new PANOLENS.ImagePanorama(imageUrl);
-                panoramas[sceneId] = pano;
 
-                // Attach infospots to this new panorama
-                if (sceneData.infospots) {
-                    sceneData.infospots.forEach(async (spot) => {
-                        let ispot;
-                        let modelObj = null;
 
-                        // Position Normalization (Ensure inside the 5000 radius sphere)
-                        const pos = new THREE.Vector3(spot.position_x, spot.position_y, spot.position_z).normalize().multiplyScalar(4000);
-                        
-                        // Check for direct 3D model
-                        if (spot.model_path) {
-                            try {
-                                const modelUrl = '{{ url('storage') }}/' + spot.model_path;
-                                modelObj = await loadGLB(modelUrl, spot);
-                                
-                                // Create a Proxy Infospot for interaction
-                                ispot = new PANOLENS.Infospot(800, PANOLENS.DataImage.Info);
-                                ispot.material.opacity = 0;
-                                ispot.add(modelObj);
-                                ispot.is3DModel = true;
-                                ispot.modelObj = modelObj;
-                            } catch (e) {
-                                console.error("GLB load failed:", e);
-                            }
-                        }
-
-                        if (!ispot) {
-                            if (spot.is_perspective) {
-                                // Render as 3D Mesh for perspective mode
-                                const iconUrl = (spot.type === 'info') ? infoUrl : (spot.type === '3d' ? threedUrl : arrowUrl);
-                                const geometry = new THREE.PlaneGeometry(600, 600);
-                                const texture = new THREE.TextureLoader().load(iconUrl);
-                                const material = new THREE.MeshBasicMaterial({ 
-                                    map: texture, transparent: true, side: THREE.DoubleSide,
-                                    alphaTest: 0.1, depthTest: false, depthWrite: false
-                                });
-                                ispot = new THREE.Mesh(geometry, material);
-                                ispot.renderOrder = 999;
-                                ispot.rotation.order = 'YXZ';
-                                ispot.rotation.set(spot.rotation_x || 0, spot.rotation_y || 0, spot.rotation_z || 0);
-                                ispot.scale.set(spot.scale_x || 1, spot.scale_y || 1, 1);
-                                ispot.isPerspectiveMesh = true;
-                            } else {
-                                // Standard Billboard
-                                const iconUrl = (spot.type === 'info') ? infoUrl : (spot.type === '3d' ? threedUrl : arrowUrl);
-                                ispot = new PANOLENS.Infospot(UNIFORM_SIZE, iconUrl);
-                            }
-                        }
-
-                        ispot.position.copy(pos);
-                        ispot.addEventListener('click', () => { handleSpotClick(spot); });
-
-                        // Smart Hover Logic
-                        ispot.addEventListener('hoverenter', () => {
-                            if (ispot.is3DModel) {
-                                const s = 100 * 1.2;
-                                new TWEEN.Tween(ispot.modelObj.scale).to({ 
-                                    x: (spot.scale_x || 1) * s, y: (spot.scale_y || 1) * s, z: (spot.scale_z || spot.scale_x || 1) * s 
-                                }, 300).easing(TWEEN.Easing.Back.Out).start();
-                            } else if (ispot.isPerspectiveMesh) {
-                                new TWEEN.Tween(ispot.scale).to({ x: (spot.scale_x || 1) * 1.2, y: (spot.scale_y || 1) * 1.2, z: 1.2 }, 300).easing(TWEEN.Easing.Back.Out).start();
-                            } else {
-                                ispot.scale.set(1.3, 1.3, 1.3);
-                            }
-                        });
-
-                        ispot.addEventListener('hoverleave', () => {
-                            if (ispot.is3DModel) {
-                                const s = 100;
-                                new TWEEN.Tween(ispot.modelObj.scale).to({ 
-                                    x: (spot.scale_x || 1) * s, y: (spot.scale_y || 1) * s, z: (spot.scale_z || spot.scale_x || 1) * s 
-                                }, 300).easing(TWEEN.Easing.Back.Out).start();
-                            } else if (ispot.isPerspectiveMesh) {
-                                new TWEEN.Tween(ispot.scale).to({ x: spot.scale_x || 1, y: spot.scale_y || 1, z: 1 }, 300).easing(TWEEN.Easing.Back.Out).start();
-                            } else {
-                                ispot.scale.set(1, 1, 1);
-                            }
-                        });
-
-                        if (!ispot.is3DModel) addBounce(ispot);
-                        if (ispot) pano.add(ispot);
-                    });
-                }
-
-                // Preload neighbors when this panorama loads
-                pano.addEventListener('load', () => {
-                    preloadNeighbors(sceneId);
-                });
-
-                return pano;
-            }
-
-            function preloadNeighbors(sceneId) {
-                const sceneData = tourData.scenes.find(s => s.id == sceneId);
-                if (sceneData && sceneData.infospots) {
-                    sceneData.infospots.forEach(spot => {
-                        if (spot.type === 'nav' && spot.target_scene_id) {
-                            getOrCreatePanorama(spot.target_scene_id);
-                        }
-                    });
-                }
-            }
 
             // Inisialisasi awal hanya untuk scene pertama
             let startSceneData = tourData.scenes.find(s => s.is_start_scene) || tourData.scenes[0];
             let startScene = startSceneData ? getOrCreatePanorama(startSceneData.id) : null;
 
-            function handleSpotClick(spot) {
-                if (spot.type === 'info' || spot.type === '3d') {
-                    // Build assets array — prefer assets relation, fallback to legacy model_path
-                    let assets = [];
-                    if (spot.assets && spot.assets.length > 0) {
-                        assets = spot.assets.map(a => ({
-                            file_type: a.file_type,
-                            url: '{{ Storage::url("") }}' + a.file_path,
-                            label: a.label || null
-                        }));
-                    } else if (spot.model_path) {
-                        assets = [{ file_type: '3d', url: '{{ Storage::url("") }}' + spot.model_path, label: null }];
-                    }
-                    openModal(spot.title || "Info", spot.content_id || "", spot.content_en || "", assets);
-                } else if (spot.type === 'nav') {
-                    if (spot.target_scene_id) {
-                        const targetPano = getOrCreatePanorama(spot.target_scene_id);
-                        if (targetPano) {
-                            const targetSceneData = spot.target_scene || spot.targetScene || tourData.scenes.find(s => s.id == spot.target_scene_id);
-                            const targetSceneName = targetSceneData ? targetSceneData.name : "NEXT SCENE";
-                            walkToTarget(targetPano, new THREE.Vector3(spot.position_x, spot.position_y, spot.position_z), targetSceneName, "Navigasi", spot.target_scene_id);
-                        }
-                    }
-                }
-            }
+
 
             if (startScene) {
                 viewer.add(startScene);
@@ -628,77 +771,7 @@
                 viewer.tweenControlCenter(target, 0);
             }
 
-            function walkToTarget(pano, targetPosition, title, subtitle, targetSceneId = null) {
-                // Sembunyikan ikon di panorama lama agar tidak "mengikuti" saat transisi
-                if(viewer.panorama) {
-                    viewer.panorama.children.forEach(c => {
-                        if (c instanceof PANOLENS.Infospot || c.isPerspectiveMesh) c.visible = false;
-                    });
-                }
 
-                viewer.tweenControlCenter(targetPosition, 500);
-                setTimeout(() => {
-                    let startFov = viewer.camera.fov;
-                    let targetFovIn = 40;
-                    let duration = 600;
-                    let startTime = Date.now();
-                    function zoomIn() {
-                        let elapsed = Date.now() - startTime;
-                        let progress = Math.min(elapsed / duration, 1);
-                        let eased = progress * progress * progress;
-                        viewer.camera.fov = startFov + (targetFovIn - startFov) * eased;
-                        viewer.camera.updateProjectionMatrix();
-
-                        if (progress < 1) requestAnimationFrame(zoomIn);
-                        else {
-                            if (!pano.parent) viewer.add(pano);
-                            viewer.setPanorama(pano);
-                            
-                            // Pastikan visibilitas ikon di panorama baru sesuai dengan tombol toggle
-                            const markersBtn = document.getElementById('toggle-markers');
-                            const isMarkersEnabled = markersBtn ? markersBtn.classList.contains('btn-active') : true;
-                            pano.children.forEach(c => {
-                                if (c instanceof PANOLENS.Infospot || c.isPerspectiveMesh) c.visible = isMarkersEnabled;
-                            });
-
-                            document.getElementById('scene-title').innerText = title;
-
-                            // Update active status in scene list
-                            document.querySelectorAll('.scene-card').forEach(card => {
-                                card.classList.toggle('active', card.dataset.id == targetSceneId);
-                            });
-                            currentSceneData = tourData.scenes.find(s => s.id == targetSceneId);
-
-                            // Safeguard: re-apply autoRotate state from the internal flag
-                            const ctrl = viewer.getControl();
-                            ctrl.autoRotate = viewer.autoRotate;
-
-                            // Apply saved initial camera direction if target scene has one
-                            const tsd = targetSceneId ? tourData.scenes.find(s => s.id == targetSceneId) : null;
-                            if (tsd && (tsd.initial_lon !== 0 || tsd.initial_lat !== 0)) {
-                                setTimeout(() => {
-                                    _applyInitialView(
-                                        parseFloat(tsd.initial_lon),
-                                        parseFloat(tsd.initial_lat)
-                                    );
-                                }, 500);
-                            }
-
-                            startTime = Date.now();
-                            zoomOut();
-                        }
-                    }
-                    function zoomOut() {
-                        let elapsed = Date.now() - startTime;
-                        let progress = Math.min(elapsed / duration, 1);
-                        let eased = 1 - Math.pow(1 - progress, 3);
-                        viewer.camera.fov = targetFovIn + (startFov - targetFovIn) * eased;
-                        viewer.camera.updateProjectionMatrix();
-                        if (progress < 1) requestAnimationFrame(zoomOut);
-                    }
-                    zoomIn();
-                }, 500);
-            }
 
             document.getElementById('toggle-rotate').addEventListener('click', function () {
                 const isAutoRotate = !viewer.getControl().autoRotate;
@@ -739,33 +812,7 @@
                 this.style.borderColor = isMinimized ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.3)';
             });
 
-            function renderSceneList() {
-                const listPanel = document.getElementById('scene-list-panel');
-                if (!listPanel) return;
-                listPanel.innerHTML = '';
 
-                tourData.scenes.forEach(scene => {
-                    const card = document.createElement('div');
-                    card.className = `scene-card ${scene.id == currentSceneData?.id ? 'active' : ''}`;
-                    card.dataset.id = scene.id;
-                    
-                    const imageUrl = '{{ Storage::url("") }}' + scene.image_path;
-                    card.innerHTML = `
-                        <img src="${imageUrl}" alt="${scene.name}">
-                        <div class="scene-card-label">${scene.name}</div>
-                    `;
-
-                    card.onclick = () => {
-                        if (scene.id == currentSceneData?.id) return;
-                        const targetPano = getOrCreatePanorama(scene.id);
-                        if (targetPano) {
-                            walkToTarget(targetPano, new THREE.Vector3(0, 0, 0), scene.name, "Akses Langsung", scene.id);
-                        }
-                    };
-
-                    listPanel.appendChild(card);
-                });
-            }
 
             viewer.container.addEventListener('click', (e) => {
                 if (!document.getElementById('coord-display').classList.contains('show')) return;
@@ -1093,6 +1140,77 @@
                 viewer.autoRotate = isAutoRotateOn;
                 if (viewer.getControl()) viewer.getControl().autoRotate = isAutoRotateOn;
             }
+        }
+
+        /* ---- Site Plan System ---- */
+        const sitePlanOverlay = document.getElementById('site-plan-overlay');
+        const activeMapContainer = document.getElementById('active-map-container');
+        
+        document.getElementById('toggle-map').addEventListener('click', () => {
+            const plans = tourData.site_plans || tourData.sitePlans;
+            if (plans && plans.length > 0) {
+                const firstPlanId = plans[0].id;
+                loadMap(firstPlanId);
+                sitePlanOverlay.classList.remove('invisible');
+                sitePlanOverlay.classList.add('opacity-100');
+            } else {
+                alert('No site plans available for this tour.');
+            }
+        });
+
+        function closeSitePlan() {
+            sitePlanOverlay.classList.add('invisible');
+            sitePlanOverlay.classList.remove('opacity-100');
+        }
+
+        function loadMap(planId) {
+            const plans = tourData.site_plans || tourData.sitePlans;
+            const plan = plans.find(p => p.id == planId);
+            if (!plan) return;
+
+            // Update tab UI
+            document.querySelectorAll('.plan-tab-btn').forEach(btn => {
+                const isActive = btn.dataset.id == planId;
+                btn.classList.toggle('text-white', isActive);
+                btn.classList.toggle('bg-primary/20', isActive);
+                btn.classList.toggle('border-primary/50', isActive);
+                btn.classList.toggle('text-white/60', !isActive);
+            });
+
+            activeMapContainer.innerHTML = `
+                <img src="/storage/${plan.image_path}" class="max-w-full h-auto block rounded-lg shadow-2xl">
+                <div id="map-hotspots-layer" class="absolute inset-0"></div>
+            `;
+
+            const layer = document.getElementById('map-hotspots-layer');
+            plan.hotspots.forEach(hs => {
+                const marker = document.createElement('div');
+                marker.className = 'absolute -translate-x-1/2 -translate-y-1/2 group cursor-pointer';
+                marker.style.left = hs.x + '%';
+                marker.style.top = hs.y + '%';
+                
+                const sceneName = hs.scene ? hs.scene.name : 'Unknown Scene';
+                
+                marker.innerHTML = `
+                    <div class="relative">
+                        <div class="w-4 h-4 md:w-6 md:h-6 bg-primary rounded-full border-2 md:border-4 border-white shadow-lg animate-pulse hover:scale-125 transition-transform"></div>
+                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-slate-900 text-white px-2 py-1 rounded text-[8px] font-bold uppercase tracking-widest whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-xl">
+                            ${sceneName}
+                            <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900"></div>
+                        </div>
+                    </div>
+                `;
+
+                marker.onclick = () => {
+                    const targetPano = getOrCreatePanorama(hs.scene_id);
+                    if (targetPano) {
+                        closeSitePlan();
+                        walkToTarget(targetPano, new THREE.Vector3(0, 0, 0), sceneName, "Site Plan Navigation", hs.scene_id);
+                    }
+                };
+
+                layer.appendChild(marker);
+            });
         }
 
         initTour();

@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TourController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\SceneController as AdminSceneController;
+use App\Http\Controllers\Admin\TourController as AdminTourController;
+use App\Http\Controllers\Admin\SitePlanController as AdminSitePlanController;
 use App\Http\Controllers\Admin\InfospotController as AdminInfospotController;
 use App\Http\Controllers\Admin\InfospotAssetController as AdminInfospotAssetController;
 
@@ -17,6 +19,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
     });
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Admin Tour CRUD
+    Route::resource('tours', AdminTourController::class);
+    Route::resource('tours.site-plans', AdminSitePlanController::class)->shallow();
+    Route::post('site-plans/{site_plan}/hotspots', [AdminSitePlanController::class, 'saveHotspots'])
+        ->name('site-plans.hotspots.save');
 
     // Admin Scene CRUD
     Route::resource('scenes', AdminSceneController::class);

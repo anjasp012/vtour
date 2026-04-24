@@ -1,0 +1,46 @@
+@extends('components.admin-layout')
+
+@section('header', 'New Site Plan')
+
+@section('content')
+<div class="p-6 max-w-2xl mx-auto">
+    <div class="bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden animate-fade-in">
+        <div class="p-6 border-b border-slate-100 bg-slate-50/50">
+            <h1 class="text-xl font-black text-slate-900 tracking-tighter uppercase">Initialize 2D Map</h1>
+            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Upload a floor plan or architectural layout</p>
+        </div>
+
+        <form action="{{ route('admin.tours.site-plans.store', $tour) }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-6">
+            @csrf
+            
+            <div class="space-y-1.5">
+                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-0.5">Map Name</label>
+                <input type="text" name="name" required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-sm font-bold text-slate-900 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 transition-all outline-none" placeholder="e.g. Ground Floor, Building A...">
+                @error('name') <p class="text-rose-500 text-[10px] font-bold uppercase mt-1">{{ $message }}</p> @enderror
+            </div>
+
+            <div class="space-y-1.5">
+                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-0.5">Plan Image (2D)</label>
+                <div class="relative group">
+                    <input type="file" name="image" required accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                    <div class="border-2 border-dashed border-slate-200 rounded-xl p-8 text-center group-hover:border-blue-400 group-hover:bg-blue-50/50 transition-all">
+                        <i class="fas fa-cloud-upload-alt text-3xl text-slate-300 group-hover:text-blue-500 mb-3"></i>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest group-hover:text-blue-600">Drag & Drop or Click to Upload</p>
+                        <p class="text-[8px] text-slate-400 mt-1 uppercase">Supports JPG, PNG (Max 10MB)</p>
+                    </div>
+                </div>
+                @error('image') <p class="text-rose-500 text-[10px] font-bold uppercase mt-1">{{ $message }}</p> @enderror
+            </div>
+
+            <div class="pt-4 flex items-center gap-3">
+                <button type="submit" class="flex-1 bg-blue-600 text-white font-black py-4 rounded-lg text-xs uppercase tracking-[2px] shadow-lg shadow-blue-500/20 hover:bg-blue-700 transition-all">
+                    Register Site Plan
+                </button>
+                <a href="{{ route('admin.tours.site-plans.index', $tour) }}" class="px-8 bg-slate-100 text-slate-400 font-bold py-4 rounded-lg text-xs uppercase tracking-[2px] hover:bg-slate-200 hover:text-slate-600 transition-all text-center">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+@endsection

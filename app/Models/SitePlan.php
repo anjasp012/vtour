@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Scene extends Model
+class SitePlan extends Model
 {
     protected $guarded = [];
 
@@ -13,12 +13,7 @@ class Scene extends Model
         return $this->belongsTo(Tour::class);
     }
 
-    public function infospots()
-    {
-        return $this->hasMany(Infospot::class);
-    }
-
-    public function sitePlanHotspots()
+    public function hotspots()
     {
         return $this->hasMany(SitePlanHotspot::class);
     }
