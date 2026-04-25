@@ -735,7 +735,7 @@
                 if (pano.loadStage >= 2) return;
                 
                 const isCurrent = (typeof viewer !== 'undefined' && viewer.panorama === pano) || (typeof viewer === 'undefined' || !viewer.panorama);
-                if (isCurrent) hdLoader.classList.add('visible');
+                // Removed immediate show here to wait for scene transition completion
 
                 if (midUrl) {
                     textureLoader.load(midUrl, (texMid) => {
@@ -1059,12 +1059,7 @@
                         if (!pano.parent) viewer.add(pano);
                         viewer.setPanorama(pano);
                         
-                        // Force check HD loader when switching
-                        if (pano.loadStage < 2) {
-                            hdLoader.classList.add('visible');
-                        } else {
-                            hdLoader.classList.remove('visible');
-                        }
+                        // Removed immediate check here, moved to pano 'enter-fade-start' event for better sync
                         
                         // Pastikan visibilitas ikon di panorama baru sesuai dengan tombol toggle
                         const markersBtn = document.getElementById('toggle-markers');
