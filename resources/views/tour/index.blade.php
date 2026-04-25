@@ -491,7 +491,7 @@
             <!-- Multi-Product Grid Wrapper -->
             <div id="multi-product-grid-wrapper"
                 class="hidden w-full overflow-y-auto max-h-[60vh] scrollbar-none pb-2 animate-fade-in">
-                <div id="multi-product-grid" class="grid grid-cols-2 md:grid-cols-4 gap-3 lg:gap-4"></div>
+                <div id="multi-product-grid" class="w-full grid grid-cols-2 md:grid-cols-4 gap-3 lg:gap-4"></div>
             </div>
 
             <!-- Wrapper Layout -->
@@ -1054,7 +1054,7 @@
 
                             console.log(
                                 `[Icon-Load] Spot: ${ispotData.id}, Type: ${ispotData.type}, URL: ${textureUrl}`
-                                );
+                            );
 
                             if (ispotData.is_perspective) {
                                 // ASYNC Texture Loading for Perspective Mesh
@@ -2113,7 +2113,7 @@
 
                 gridContainer.innerHTML = '';
                 products.forEach(p => {
-                    let imgHtml = `<div class="w-12 h-12 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+                    let imgHtml = `<div class="w-full h-full flex items-center justify-center text-primary text-3xl group-hover:scale-110 transition-transform duration-500 bg-black/40">
                         <i class="fas fa-box-open"></i>
                     </div>`;
                     if (p.assets && p.assets.length > 0) {
@@ -2121,20 +2121,22 @@
                         const firstImg = p.assets.find(a => a.file_type === '2d');
                         if (firstImg) {
                             imgHtml =
-                                `<img src="${firstImg.url}" class="w-12 h-12 object-cover rounded-full group-hover:scale-110 transition-transform flex-shrink-0 bg-black/40">`;
+                                `<img src="${firstImg.url}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">`;
                         } else if (firstVid) {
                             imgHtml =
-                                `<div class="w-12 h-12 rounded-full bg-primary/20 text-white flex items-center justify-center text-xl group-hover:scale-110 transition-transform flex-shrink-0"><i class="fas fa-video"></i></div>`;
+                                `<div class="w-full h-full flex items-center justify-center text-white/80 text-3xl group-hover:scale-110 transition-transform duration-500 bg-black/40"><i class="fas fa-video"></i></div>`;
                         }
                     }
 
                     const card = document.createElement('div');
                     card.className =
-                        'bg-white/5 border border-white/10 rounded-xl p-3 cursor-pointer hover:bg-white/10 hover:border-primary/50 transition-all text-center flex flex-col items-center justify-start gap-2 group';
+                        'relative w-full aspect-[4/3] rounded-lg overflow-hidden border-2 border-transparent hover:border-white/30 hover:shadow-[0_10px_20px_rgba(0,0,0,0.4)] cursor-pointer transition-all duration-300 bg-black/50 group flex-shrink-0';
                     card.onclick = () => chooseProduct(p.id);
                     card.innerHTML = `
                         ${imgHtml}
-                        <span class="text-[10px] sm:text-xs font-bold text-white/80 line-clamp-2 leading-tight">${p.name}</span>
+                        <div class="absolute bottom-0 left-0 w-full p-[6px_8px] bg-gradient-to-t from-black/90 to-transparent text-white text-[8px] md:text-[10px] font-bold whitespace-nowrap overflow-hidden text-ellipsis uppercase tracking-[0.5px]">
+                            ${p.name}
+                        </div>
                     `;
                     gridContainer.appendChild(card);
                 });
