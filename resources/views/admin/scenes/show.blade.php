@@ -407,12 +407,12 @@
                                 
                                 <div class="grid grid-cols-2 gap-3 border-t border-slate-200 pt-3 mt-1">
                                     <div class="space-y-1.5">
-                                        <div class="flex justify-between text-[8px] font-bold text-slate-500 uppercase"><span>Scale X</span><span id="label-sx" class="text-emerald-600 font-mono">1.0</span></div>
-                                        <input type="range" name="scale_x" id="input-sx" min="0.1" max="5" step="0.1" value="1" class="inspector-slider">
+                                        <div class="flex justify-between text-[8px] font-bold text-slate-500 uppercase"><span>Scale X</span><span id="label-sx" class="text-emerald-600 font-mono">0.1</span></div>
+                                        <input type="range" name="scale_x" id="input-sx" min="0.01" max="20" step="0.01" value="0.1" class="inspector-slider">
                                     </div>
                                     <div class="space-y-1.5">
-                                        <div class="flex justify-between text-[8px] font-bold text-slate-500 uppercase"><span>Scale Y</span><span id="label-sy" class="text-emerald-600 font-mono">1.0</span></div>
-                                        <input type="range" name="scale_y" id="input-sy" min="0.1" max="5" step="0.1" value="1" class="inspector-slider">
+                                        <div class="flex justify-between text-[8px] font-bold text-slate-500 uppercase"><span>Scale Y</span><span id="label-sy" class="text-emerald-600 font-mono">0.1</span></div>
+                                        <input type="range" name="scale_y" id="input-sy" min="0.01" max="20" step="0.01" value="0.1" class="inspector-slider">
                                     </div>
                                 </div>
                             </div>
@@ -1990,7 +1990,7 @@
             inputPerspective.checked = !!spot.is_perspective;
             inputPerspective.dispatchEvent(new Event('change'));
             inputRx.value = spot.rotation_x || 0; inputRy.value = spot.rotation_y || 0; inputRz.value = spot.rotation_z || 0;
-            inputSx.value = spot.scale_x || 1; inputSy.value = spot.scale_y || 1;
+            inputSx.value = spot.scale_x || 0.1; inputSy.value = spot.scale_y || 0.1;
             updateLabels();
             
             document.getElementById('input-title').value = spot.title || '';
@@ -2014,7 +2014,7 @@
             inputRx.value = spot.rotation_x || 0;
             inputRy.value = spot.rotation_y || 0;
             inputRz.value = spot.rotation_z || 0;
-            inputSx.value = spot.scale_x || 1;
+            inputSx.value = spot.scale_x || 0.1;
             inputSy.value = spot.scale_y || 1;
 
             // Trigger preview update

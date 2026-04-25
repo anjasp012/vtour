@@ -788,9 +788,9 @@
                     model.rotation.set(spotData.rotation_x || 0, spotData.rotation_y || 0, spotData
                         .rotation_z || 0);
                     model.scale.set(
-                        (spotData.scale_x || 1) * s,
-                        (spotData.scale_y || 1) * s,
-                        (spotData.scale_z || spotData.scale_x || 1) * s
+                        (spotData.scale_x || 0.1) * s,
+                        (spotData.scale_y || 0.1) * s,
+                        (spotData.scale_z || spotData.scale_x || 0.1) * s
                     );
 
                     model.is3DModel = true;
@@ -1065,7 +1065,7 @@
                                 ispot.renderOrder = 1000;
                                 ispot.rotation.order = 'YXZ';
                                 ispot.rotation.set(ispotData.rotation_x || 0, ispotData.rotation_y || 0, ispotData.rotation_z || 0);
-                                ispot.scale.set(ispotData.scale_x || 1, ispotData.scale_y || 1, 1);
+                                ispot.scale.set(ispotData.scale_x || 0.1, ispotData.scale_y || 0.1, 1);
                                 ispot.isPerspectiveMesh = true;
                             } else {
                                 // Standard Billboard (Also for non-perspective 2D images)
@@ -1088,14 +1088,14 @@
                             if (ispot.is3DModel) {
                                 const s = 1000 * 1.2;
                                 new TWEEN.Tween(ispot.modelObj.scale).to({
-                                    x: (ispotData.scale_x || 1) * s,
-                                    y: (ispotData.scale_y || 1) * s,
-                                    z: (ispotData.scale_z || ispotData.scale_x || 1) * s
+                                    x: (ispotData.scale_x || 0.1) * s,
+                                    y: (ispotData.scale_y || 0.1) * s,
+                                    z: (ispotData.scale_z || ispotData.scale_x || 0.1) * s
                                 }, 300).easing(TWEEN.Easing.Back.Out).start();
                             } else if (ispot.isPerspectiveMesh) {
                                 new TWEEN.Tween(ispot.scale).to({
-                                    x: (ispotData.scale_x || 1) * 1.2,
-                                    y: (ispotData.scale_y || 1) * 1.2,
+                                    x: (ispotData.scale_x || 0.1) * 1.2,
+                                    y: (ispotData.scale_y || 0.1) * 1.2,
                                     z: 1.2
                                 }, 300).easing(TWEEN.Easing.Back.Out).start();
                             } else {
@@ -1107,14 +1107,14 @@
                             if (ispot.is3DModel) {
                                 const s = 1000;
                                 new TWEEN.Tween(ispot.modelObj.scale).to({
-                                    x: (ispotData.scale_x || 1) * s,
-                                    y: (ispotData.scale_y || 1) * s,
-                                    z: (ispotData.scale_z || ispotData.scale_x || 1) * s
+                                    x: (ispotData.scale_x || 0.1) * s,
+                                    y: (ispotData.scale_y || 0.1) * s,
+                                    z: (ispotData.scale_z || ispotData.scale_x || 0.1) * s
                                 }, 300).easing(TWEEN.Easing.Back.Out).start();
                             } else if (ispot.isPerspectiveMesh) {
                                 new TWEEN.Tween(ispot.scale).to({
-                                    x: ispotData.scale_x || 1,
-                                    y: ispotData.scale_y || 1,
+                                    x: ispotData.scale_x || 0.1,
+                                    y: ispotData.scale_y || 0.1,
                                     z: 1
                                 }, 300).easing(TWEEN.Easing.Back.Out).start();
                             } else {
