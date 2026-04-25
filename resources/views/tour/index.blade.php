@@ -352,13 +352,18 @@
             font-size: 10px;
             font-weight: 800;
             letter-spacing: 1px;
-            display: flex;
+            display: none;
             align-items: center;
             gap: 8px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             opacity: 0;
             transition: opacity 0.5s ease;
             white-space: nowrap;
+        }
+
+        .hd-loader.visible {
+            display: flex;
+            opacity: 1;
         }
 
         /* Resolution Selector */
@@ -906,6 +911,8 @@
 
             pano.isLoading = false;
             const startLoading = () => {
+                // IMPORTANT: Recalculate targetStage every time startLoading is called
+                // to respect global resolution changes since the pano was created.
                 const targetStage = selectedResolution === 'low' ? 0 : (selectedResolution === 'medium' ? 1 : 2);
 
                 // If already at target or higher, or currently working, stop.
@@ -1028,10 +1035,11 @@
 
                         if (!ispot) {
                             // Determine the texture/icon URL
-                            let textureUrl = (spot.type === 'info') ? infoUrl : (spot.type === '3d' ? threedUrl :
-                                arrowUrl);
+                            let textureUrl = (spot.type === 'info') ? infoUrl : (spot.type === '3d' ? threedUrl : arrowUrl);
+                            
+                            // If it's a custom icon or a 2D floating image
                             if (spot.model_path && !spot.model_path.toLowerCase().endsWith('.glb')) {
-                                textureUrl = '/storage/' + spot.model_path;
+                                textureUrl = STORAGE_BASE + normalizePath(spot.model_path);
                             }
 
                             if (spot.is_perspective || spot.type === 'image') {
@@ -1143,10 +1151,11 @@
                         label: a.label || null
                     }));
                 } else if (spot.model_path) {
+                    const isGlb = spot.model_path.toLowerCase().endsWith('.glb');
                     assets = [{
-                        file_type: '3d',
-                        url: '/storage/' + spot.model_path,
-                        label: null
+                        file_type: isGlb ? '3d' : 'image',
+                        url: STORAGE_BASE + normalizePath(spot.model_path),
+                        label: isGlb ? '3D Model' : 'Original Image'
                     }];
                 }
                 let products = [];
@@ -1160,7 +1169,7 @@
                         contact_person: p.contact_person,
                         assets: (p.assets || []).map(a => ({
                             file_type: a.file_type,
-                            url: '/storage/' + a.file_path,
+                            url: STORAGE_BASE + normalizePath(a.file_path),
                             label: a.label || null
                         }))
                     }));
