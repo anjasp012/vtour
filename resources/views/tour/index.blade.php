@@ -580,44 +580,48 @@
             }
         }
 
+        const STORAGE_BASE = "{{ Storage::url('') }}".replace(/\/$/, '') + '/';
         const textureLoader = new THREE.TextureLoader();
+
         function getOrCreatePanorama(sceneId) {
             if (panoramas[sceneId]) return panoramas[sceneId];
 
             const sceneData = tourData.scenes.find(s => s.id == sceneId);
             if (!sceneData) return null;
 
-            const imageUrl = '/storage/' + sceneData.image_path;
-            const thumbUrl = sceneData.thumbnail_path ? '/storage/' + sceneData.thumbnail_path : imageUrl;
+            // Normalize paths: remove leading slash if present then prefix with base
+            const normalizePath = (path) => path ? (path.startsWith('/') ? path.substring(1) : path) : '';
+            const imageUrl = STORAGE_BASE + normalizePath(sceneData.image_path);
+            const thumbUrl = sceneData.thumbnail_path ? (STORAGE_BASE + normalizePath(sceneData.thumbnail_path)) : imageUrl;
 
-            // Load low-res first (or high-res if no thumb)
+            console.log(`Initializing panorama for ${sceneData.name} (ID: ${sceneId})`);
+            console.log(`- Thumb: ${thumbUrl}`);
+
+            // Load low-res first
             const pano = new PANOLENS.ImagePanorama(thumbUrl);
             pano.isHD = !sceneData.thumbnail_path;
             panoramas[sceneId] = pano;
 
-            // If we started with a thumbnail, load high-res in background
+            // If we have a thumbnail version, load high-res HD in the background
             if (sceneData.thumbnail_path) {
                 const hdLoader = document.getElementById('hd-loader');
                 
-                // Show loader if this is the active scene OR if it's the first scene
+                // Show loader if this is the active scene
                 const isCurrent = (typeof viewer !== 'undefined' && viewer.panorama === pano) || (typeof viewer === 'undefined' || !viewer.panorama);
                 if (isCurrent) hdLoader.classList.add('visible');
 
+                console.log(`- HD loading started: ${imageUrl}`);
                 textureLoader.load(imageUrl, (texture) => {
+                    console.log(`- HD loaded for ${sceneData.name}`);
                     texture.minFilter = THREE.LinearFilter;
                     texture.magFilter = THREE.LinearFilter;
                     texture.generateMipmaps = false;
                     
-                    // Handle encoding for older Three.js (v0.105.0)
                     if (typeof THREE.sRGBEncoding !== 'undefined') texture.encoding = THREE.sRGBEncoding;
-                    else if (typeof THREE.SRGBColorSpace !== 'undefined') texture.colorSpace = THREE.SRGBColorSpace;
 
                     const updateMaterial = (mat) => {
                         if (!mat) return;
-                        if (Array.isArray(mat)) {
-                            mat.forEach(m => updateMaterial(m));
-                            return;
-                        }
+                        if (Array.isArray(mat)) { mat.forEach(m => updateMaterial(m)); return; }
                         if (mat.map !== undefined) mat.map = texture;
                         if (mat.uniforms) {
                             if (mat.uniforms.tDiffuse) mat.uniforms.tDiffuse.value = texture;
@@ -627,30 +631,30 @@
                     };
 
                     pano.isHD = true;
-                    pano.texture = texture; // Internal Panolens ref
+                    pano.texture = texture; 
                     updateMaterial(pano.material);
-                    pano.traverse((node) => {
-                        if (node.isMesh) updateMaterial(node.material);
-                    });
+                    pano.traverse((node) => { if (node.isMesh) updateMaterial(node.material); });
 
-                    // Hide loader if this is the active pano
                     if (typeof viewer !== 'undefined' && viewer.panorama === pano) {
                         hdLoader.classList.remove('visible');
                     }
                 }, undefined, (err) => {
+                    console.error(`- HD Load FAILED for ${sceneData.name}:`, err);
                     if (typeof viewer !== 'undefined' && viewer.panorama === pano) {
                         hdLoader.classList.remove('visible');
                     }
                 });
                 
-                // Update loader visibility when entering pano
                 pano.addEventListener('enter-fade-start', () => {
-                    if (!pano.isHD) {
-                        hdLoader.classList.add('visible');
-                    }
+                    if (!pano.isHD) hdLoader.classList.add('visible');
                 });
                 pano.addEventListener('leave', () => {
                     hdLoader.classList.remove('visible');
+                });
+            } else {
+                // If it's already HD (directly image_path), hide loader on enter if it was stuck
+                pano.addEventListener('enter-fade-start', () => {
+                    document.getElementById('hd-loader').classList.remove('visible');
                 });
             }
 
@@ -992,7 +996,8 @@
                 card.className = `scene-card ${scene.id == currentSceneData?.id ? 'active' : ''}`;
                 card.dataset.id = scene.id;
                 
-                const thumbUrl = scene.thumbnail_path ? ('/storage/' + scene.thumbnail_path) : ('/storage/' + scene.image_path);
+                const normalizePath = (path) => path ? (path.startsWith('/') ? path.substring(1) : path) : '';
+                const thumbUrl = scene.thumbnail_path ? (STORAGE_BASE + normalizePath(scene.thumbnail_path)) : (STORAGE_BASE + normalizePath(scene.image_path));
                 card.innerHTML = `
                     <img src="${thumbUrl}" alt="${scene.name}">
                     <div class="scene-card-label">${scene.name}</div>
