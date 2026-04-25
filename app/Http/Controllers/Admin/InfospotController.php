@@ -125,6 +125,14 @@ class InfospotController extends Controller
             $validated['model_path'] = $request->file('marker_image')->store('infospots/markers', 'public');
         }
 
+        // If type is switched to icon/nav, clear the old model_path
+        if (in_array($validated['type'], ['info', 'nav'])) {
+            if ($infospot->model_path && Storage::disk('public')->exists($infospot->model_path)) {
+                Storage::disk('public')->delete($infospot->model_path);
+            }
+            $validated['model_path'] = null;
+        }
+
         // Handle checkbox (if unchecked, and not in validated array)
         $validated['is_perspective'] = $request->has('is_perspective');
         $isMulti = $request->boolean('is_multi');
