@@ -474,11 +474,21 @@
             class="bg-bg-glass border border-border-glass py-5 px-6 md:py-[20px] md:px-[25px] rounded-[25px] max-w-[1000px] w-[90%] max-h-[85vh] flex flex-col text-white transform scale-80 transition-transform duration-400 text-left relative scrollbar-none group-[.active]:scale-100 overflow-hidden">
 
             <div class="flex items-center justify-between mb-[15px]">
-                <h2 id="modal-title" class="m-0 text-2xl">Info</h2>
+                <div class="flex items-center gap-3">
+                    <button id="btn-back-grid" class="hidden text-white/50 hover:text-white bg-white/5 hover:bg-white/20 w-8 h-8 rounded-full flex items-center justify-center transition-all bg-black" onclick="backToGrid()">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <h2 id="modal-title" class="m-0 text-2xl">Info</h2>
+                </div>
                 <div class="text-[1.2rem] text-white/40 cursor-pointer transition-all duration-300 z-10 w-[36px] h-[36px] flex items-center justify-center rounded-full bg-white/10 shrink-0 hover:text-white hover:bg-accent hover:rotate-90"
                     onclick="closeModal()">
                     <i class="fas fa-times"></i>
                 </div>
+            </div>
+
+            <!-- Multi-Product Grid Wrapper -->
+            <div id="multi-product-grid-wrapper" class="hidden w-full overflow-y-auto max-h-[60vh] scrollbar-none pb-2 animate-fade-in">
+                <div id="multi-product-grid" class="grid grid-cols-2 md:grid-cols-4 gap-3 lg:gap-4"></div>
             </div>
 
             <!-- Wrapper Layout -->
@@ -503,10 +513,6 @@
                         </button>
 
                         <div class="vc-dots" id="vc-dots"></div>
-                    </div>
-
-                    <!-- Product Tabs -->
-                    <div id="product-tabs" class="product-tabs-container hidden"></div>
                 </div>
 
                 <!-- Text Pane -->
@@ -2063,47 +2069,75 @@
             });
         })();
 
+        let _currentInfospotTitle = '';
+
         function openModal(title, textId, textEn, assets = [], products = []) {
             _currentAssets = assets;
             _currentProducts = products;
             _activeProductId = null;
             _spotTextId = textId;
             _spotTextEn = textEn;
+            _currentInfospotTitle = title || 'Info';
 
-            // Title Logic: If 1 product, use product name as title
             let displayTitle = title;
             if (products && products.length === 1) {
                 displayTitle = products[0].name;
             }
             document.getElementById('modal-title').innerText = displayTitle;
 
-            // Handle Product Tabs
-            const tabsContainer = document.getElementById('product-tabs');
-            tabsContainer.innerHTML = '';
+            const gridWrapper = document.getElementById('multi-product-grid-wrapper');
+            const layoutWrapper = document.getElementById('modal-layout-wrapper');
+            const gridContainer = document.getElementById('multi-product-grid');
+            const btnBackGrid = document.getElementById('btn-back-grid');
+
             if (products && products.length > 1) {
-                tabsContainer.classList.remove('hidden');
-                products.forEach((p, i) => {
-                    const btn = document.createElement('button');
-                    btn.className = 'product-tab' + (i === 0 ? ' active' : '');
-                    btn.dataset.id = p.id;
-                    btn.innerText = p.name;
-                    btn.onclick = () => switchProduct(p.id);
-                    tabsContainer.appendChild(btn);
+                // Show Grid Mode
+                gridWrapper.classList.remove('hidden');
+                gridWrapper.classList.add('flex');
+                layoutWrapper.classList.add('hidden');
+                btnBackGrid.classList.add('hidden');
+                
+                gridContainer.innerHTML = '';
+                products.forEach(p => {
+                    let imgHtml = `<div class="w-12 h-12 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+                        <i class="fas fa-box-open"></i>
+                    </div>`;
+                    if (p.assets && p.assets.length > 0) {
+                        const firstVid = p.assets.find(a => a.file_type === 'video');
+                        const firstImg = p.assets.find(a => a.file_type === '2d');
+                        if (firstImg) {
+                            imgHtml = `<img src="${firstImg.url}" class="w-12 h-12 object-cover rounded-full group-hover:scale-110 transition-transform flex-shrink-0 bg-black/40">`;
+                        } else if (firstVid) {
+                            imgHtml = `<div class="w-12 h-12 rounded-full bg-primary/20 text-white flex items-center justify-center text-xl group-hover:scale-110 transition-transform flex-shrink-0"><i class="fas fa-video"></i></div>`;
+                        }
+                    }
+
+                    const card = document.createElement('div');
+                    card.className = 'bg-white/5 border border-white/10 rounded-xl p-3 cursor-pointer hover:bg-white/10 hover:border-primary/50 transition-all text-center flex flex-col items-center justify-start gap-2 group';
+                    card.onclick = () => chooseProduct(p.id);
+                    card.innerHTML = `
+                        ${imgHtml}
+                        <span class="text-[10px] sm:text-xs font-bold text-white/80 line-clamp-2 leading-tight">${p.name}</span>
+                    `;
+                    gridContainer.appendChild(card);
                 });
-                // Switch to first product
-                switchProduct(products[0].id);
             } else if (products && products.length === 1) {
-                tabsContainer.classList.add('hidden');
+                gridWrapper.classList.add('hidden');
+                gridWrapper.classList.remove('flex');
+                layoutWrapper.classList.remove('hidden');
+                btnBackGrid.classList.add('hidden');
                 switchProduct(products[0].id);
             } else {
-                tabsContainer.classList.add('hidden');
-                // No products, just show legacy content
+                gridWrapper.classList.add('hidden');
+                gridWrapper.classList.remove('flex');
+                layoutWrapper.classList.remove('hidden');
+                btnBackGrid.classList.add('hidden');
+                
                 document.getElementById('tab-id').innerHTML = textId || '';
                 document.getElementById('tab-en').innerHTML = textEn || '';
                 document.getElementById('tab-researcher').innerHTML = '';
                 document.getElementById('tab-contact').innerHTML = '';
                 document.getElementById('extra-tabs-wrapper').classList.add('hidden');
-                
                 buildCarousel(assets);
             }
 
@@ -2121,10 +2155,6 @@
             _activeProductId = productId;
             const product = _currentProducts.find(p => p.id === productId);
             if (product) {
-                document.querySelectorAll('.product-tab').forEach(tab => {
-                    tab.classList.toggle('active', tab.dataset.id == productId);
-                });
-                
                 // Update specific product text content
                 document.getElementById('tab-id').innerHTML = product.description_id || '';
                 document.getElementById('tab-en').innerHTML = product.description_en || '';
@@ -2150,6 +2180,82 @@
 
                 buildCarousel(product.assets);
             }
+        }
+
+        window.chooseProduct = function(productId) {
+            const product = _currentProducts.find(p => p.id === productId);
+            if (!product) return;
+            
+            document.getElementById('multi-product-grid-wrapper').classList.add('hidden');
+            document.getElementById('multi-product-grid-wrapper').classList.remove('flex');
+            
+            const layoutWrapper = document.getElementById('modal-layout-wrapper');
+            layoutWrapper.classList.remove('hidden');
+            layoutWrapper.classList.remove('animate-fade-in');
+            void layoutWrapper.offsetWidth; // trigger reflow
+            layoutWrapper.classList.add('animate-fade-in');
+            
+            document.getElementById('btn-back-grid').classList.remove('hidden');
+            document.getElementById('modal-title').innerText = product.name;
+            
+            switchProduct(productId);
+            switchTab('id');
+        }
+
+        window.backToGrid = function() {
+            document.getElementById('modal-layout-wrapper').classList.add('hidden');
+            document.getElementById('btn-back-grid').classList.add('hidden');
+            
+            const gridWrapper = document.getElementById('multi-product-grid-wrapper');
+            gridWrapper.classList.remove('hidden');
+            gridWrapper.classList.add('flex');
+            gridWrapper.classList.remove('animate-fade-in');
+            void gridWrapper.offsetWidth; // trigger reflow
+            gridWrapper.classList.add('animate-fade-in');
+            
+            document.getElementById('modal-title').innerText = _currentInfospotTitle;
+            
+            // Stop any playing videos in the old view
+            _activeProductId = null;
+            document.getElementById('vc-track').innerHTML = ''; 
+        }
+
+        window.chooseProduct = function(productId) {
+            const product = _currentProducts.find(p => p.id === productId);
+            if (!product) return;
+            
+            document.getElementById('multi-product-grid-wrapper').classList.add('hidden');
+            document.getElementById('multi-product-grid-wrapper').classList.remove('flex');
+            
+            const layoutWrapper = document.getElementById('modal-layout-wrapper');
+            layoutWrapper.classList.remove('hidden');
+            layoutWrapper.classList.remove('animate-fade-in');
+            void layoutWrapper.offsetWidth; // trigger reflow
+            layoutWrapper.classList.add('animate-fade-in');
+            
+            document.getElementById('btn-back-grid').classList.remove('hidden');
+            document.getElementById('modal-title').innerText = product.name;
+            
+            switchProduct(productId);
+            switchTab('id');
+        }
+
+        window.backToGrid = function() {
+            document.getElementById('modal-layout-wrapper').classList.add('hidden');
+            document.getElementById('btn-back-grid').classList.add('hidden');
+            
+            const gridWrapper = document.getElementById('multi-product-grid-wrapper');
+            gridWrapper.classList.remove('hidden');
+            gridWrapper.classList.add('flex');
+            gridWrapper.classList.remove('animate-fade-in');
+            void gridWrapper.offsetWidth; // trigger reflow
+            gridWrapper.classList.add('animate-fade-in');
+            
+            document.getElementById('modal-title').innerText = _currentInfospotTitle;
+            
+            // Stop active video logic correctly
+            _activeProductId = null;
+            document.getElementById('vc-track').innerHTML = '';
         }
 
         function closeModal() {
