@@ -219,6 +219,13 @@
                 width: 80px;
                 height: 55px;
             }
+            .hd-loader {
+                top: auto;
+                bottom: 20px;
+                left: auto;
+                right: 20px;
+                transform: none;
+            }
         }
         .scene-card:hover {
             border-color: rgba(255,255,255,0.3);
@@ -1119,18 +1126,31 @@
                 const fse = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
 
                 if (!fse) {
-                    if (rfs) rfs.call(docElm);
-                    this.classList.add('btn-active');
+                    if (rfs) {
+                        rfs.call(docElm);
+                    } else {
+                        // Fallback for iPhone/iOS which doesn't support Fullscreen API
+                        docElm.classList.add('pseudo-fullscreen');
+                        document.getElementById('toggle-fullscreen').classList.add('btn-active');
+                        // Trigger a resize event to ensure Panolens adjusts
+                        window.dispatchEvent(new Event('resize'));
+                    }
                 } else {
-                    if (efs) efs.call(document);
-                    this.classList.remove('btn-active');
+                    if (efs) {
+                        efs.call(document);
+                    } else {
+                        docElm.classList.remove('pseudo-fullscreen');
+                        document.getElementById('toggle-fullscreen').classList.remove('btn-active');
+                        window.dispatchEvent(new Event('resize'));
+                    }
                 }
             });
             
             // Sync button state on system fullscreen change
             const syncFS = () => {
                 const fse = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
-                document.getElementById('toggle-fullscreen').classList.toggle('btn-active', !!fse);
+                const isPseudo = document.documentElement.classList.contains('pseudo-fullscreen');
+                document.getElementById('toggle-fullscreen').classList.toggle('btn-active', !!fse || isPseudo);
             };
             document.addEventListener('fullscreenchange', syncFS);
             document.addEventListener('webkitfullscreenchange', syncFS);
