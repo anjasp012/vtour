@@ -990,61 +990,50 @@
             // Attach infospots to this new panorama
             if (sceneData.infospots) {
                 (async () => {
-                    for (const spot of sceneData.infospots) {
+                    for (const ispotData of sceneData.infospots) {
                         let ispot;
                         let modelObj = null;
 
                         // Position Handling
                         let pos;
-                        if (spot.type === '3d' || spot.type === 'image' || spot.is_perspective) {
-                            pos = new THREE.Vector3(spot.position_x, spot.position_y, spot.position_z);
+                        if (ispotData.type === '3d' || ispotData.type === 'image' || ispotData.is_perspective) {
+                            pos = new THREE.Vector3(ispotData.position_x, ispotData.position_y, ispotData.position_z);
                         } else {
-                            pos = new THREE.Vector3(spot.position_x, spot.position_y, spot.position_z).normalize()
+                            pos = new THREE.Vector3(ispotData.position_x, ispotData.position_y, ispotData.position_z).normalize()
                                 .multiplyScalar(4000);
                         }
 
                         // Check for direct 3D model (.glb only) - ENFORCE type '3d'
-                        if (spot.type === '3d' && spot.model_path && spot.model_path.toLowerCase().endsWith('.glb')) {
+                        if (ispotData.type === '3d' && ispotData.model_path && ispotData.model_path.toLowerCase().endsWith('.glb')) {
                             try {
-                                const modelUrl = '/storage/' + spot.model_path;
-                                console.log(`Attempting to load 3D model for spot ${spot.id}: ${modelUrl}`);
-                                modelObj = await loadGLB(modelUrl, spot);
-                                console.log(`3D model loaded successfully for spot ${spot.id}`);
-
-                                // Create a Proxy Infospot for interaction (Increased size for easier hover)
-                                const transparentPixel =
-                                    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+                                const modelUrl = STORAGE_BASE + normalizePath(ispotData.model_path);
+                                console.log(`[3D-Load] Spot: ${ispotData.id}, URL: ${modelUrl}`);
+                                modelObj = await loadGLB(modelUrl, ispotData);
+                                
+                                const transparentPixel = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
                                 ispot = new PANOLENS.Infospot(2000, transparentPixel);
                                 ispot.is3DModel = true;
                                 ispot.modelObj = modelObj;
 
-                                // Add model directly to panorama, not as child
                                 modelObj.position.copy(pos);
                                 pano.add(modelObj);
-
-                                // Link positions for bounce
                                 addBounce(ispot);
-                                // For 3D models, we need the model to follow the ispot's bounce
-                                // In the render loop, we can sync them
                                 ispot.syncPosition = true;
                             } catch (e) {
-                                console.error(`GLB load failed for spot ${spot.id}:`, e);
+                                console.error(`[3D-Error] Spot: ${ispotData.id}:`, e);
                             }
                         }
 
                         if (!ispot) {
                             // Determine the texture/icon URL
-                            let textureUrl = (spot.type === 'info') ? infoUrl : (spot.type === '3d' ? threedUrl : arrowUrl);
+                            let textureUrl = (ispotData.type === 'info') ? infoUrl : (ispotData.type === '3d' ? threedUrl : arrowUrl);
                             
                             // If it's a 2D floating image (custom icon override only for type 'image')
-                            if (spot.type === 'image' && spot.model_path && !spot.model_path.toLowerCase().endsWith('.glb')) {
-                                textureUrl = STORAGE_BASE + normalizePath(spot.model_path);
+                            if (ispotData.type === 'image' && ispotData.model_path && !ispotData.model_path.toLowerCase().endsWith('.glb')) {
+                                textureUrl = STORAGE_BASE + normalizePath(ispotData.model_path);
                             }
 
-                            // Debugging
-                            if (spot.type === 'image') {
-                                console.log(`[Spot] Type: ${spot.type}, Model: ${spot.model_path}, URL: ${textureUrl}`);
-                            }
+                            console.log(`[Icon-Load] Spot: ${ispotData.id}, Type: ${ispotData.type}, URL: ${textureUrl}`);
 
                             if (spot.is_perspective || spot.type === 'image') {
                                 // Render as 3D Mesh for perspective mode
@@ -1072,12 +1061,12 @@
                             }
                         }
 
-                        ispot.spotData = spot;
-                        if (spot.type === 'nav') ispot.isNavMarker = true;
+                        ispot.spotData = ispotData;
+                        if (ispotData.type === 'nav') ispot.isNavMarker = true;
 
                         ispot.position.copy(pos);
                         ispot.addEventListener('click', () => {
-                            handleSpotClick(spot);
+                            handleSpotClick(ispotData);
                         });
 
                         // Smart Hover Logic
@@ -1085,14 +1074,14 @@
                             if (ispot.is3DModel) {
                                 const s = 1000 * 1.2;
                                 new TWEEN.Tween(ispot.modelObj.scale).to({
-                                    x: (spot.scale_x || 1) * s,
-                                    y: (spot.scale_y || 1) * s,
-                                    z: (spot.scale_z || spot.scale_x || 1) * s
+                                    x: (ispotData.scale_x || 1) * s,
+                                    y: (ispotData.scale_y || 1) * s,
+                                    z: (ispotData.scale_z || ispotData.scale_x || 1) * s
                                 }, 300).easing(TWEEN.Easing.Back.Out).start();
                             } else if (ispot.isPerspectiveMesh) {
                                 new TWEEN.Tween(ispot.scale).to({
-                                    x: (spot.scale_x || 1) * 1.2,
-                                    y: (spot.scale_y || 1) * 1.2,
+                                    x: (ispotData.scale_x || 1) * 1.2,
+                                    y: (ispotData.scale_y || 1) * 1.2,
                                     z: 1.2
                                 }, 300).easing(TWEEN.Easing.Back.Out).start();
                             } else {
@@ -1104,14 +1093,14 @@
                             if (ispot.is3DModel) {
                                 const s = 1000;
                                 new TWEEN.Tween(ispot.modelObj.scale).to({
-                                    x: (spot.scale_x || 1) * s,
-                                    y: (spot.scale_y || 1) * s,
-                                    z: (spot.scale_z || spot.scale_x || 1) * s
+                                    x: (ispotData.scale_x || 1) * s,
+                                    y: (ispotData.scale_y || 1) * s,
+                                    z: (ispotData.scale_z || ispotData.scale_x || 1) * s
                                 }, 300).easing(TWEEN.Easing.Back.Out).start();
                             } else if (ispot.isPerspectiveMesh) {
                                 new TWEEN.Tween(ispot.scale).to({
-                                    x: spot.scale_x || 1,
-                                    y: spot.scale_y || 1,
+                                    x: ispotData.scale_x || 1,
+                                    y: ispotData.scale_y || 1,
                                     z: 1
                                 }, 300).easing(TWEEN.Easing.Back.Out).start();
                             } else {
