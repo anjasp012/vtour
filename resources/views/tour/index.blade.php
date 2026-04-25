@@ -905,6 +905,11 @@
             };
 
             const updatePanoTexture = (texture, stage, stageName) => {
+                texture.minFilter = THREE.LinearFilter;
+                texture.magFilter = THREE.LinearFilter;
+                texture.generateMipmaps = false;
+                texture.needsUpdate = true;
+
                 pano.cachedTextures[stage] = texture;
 
                 // Block update based on selected resolution
