@@ -592,8 +592,8 @@
             const sceneData = tourData.scenes.find(s => s.id == sceneId);
             if (!sceneData) return null;
 
-            const imageUrl = '{{ Storage::url("") }}' + sceneData.image_path;
-            const thumbUrl = sceneData.thumbnail_path ? '{{ Storage::url("") }}' + sceneData.thumbnail_path : imageUrl;
+            const imageUrl = '/storage/' + sceneData.image_path;
+            const thumbUrl = sceneData.thumbnail_path ? '/storage/' + sceneData.thumbnail_path : imageUrl;
 
             // Load low-res first (or high-res if no thumb)
             const pano = new PANOLENS.ImagePanorama(thumbUrl);
@@ -678,7 +678,7 @@
                         // Check for direct 3D model (.glb only)
                         if (spot.model_path && spot.model_path.toLowerCase().endsWith('.glb')) {
                             try {
-                                const modelUrl = '{{ Storage::url("") }}/' + spot.model_path;
+                                const modelUrl = '/storage/' + spot.model_path;
                                 console.log(`Attempting to load 3D model for spot ${spot.id}: ${modelUrl}`);
                                 modelObj = await loadGLB(modelUrl, spot);
                                 console.log(`3D model loaded successfully for spot ${spot.id}`);
@@ -707,7 +707,7 @@
                             // Determine the texture/icon URL
                             let textureUrl = (spot.type === 'info') ? infoUrl : (spot.type === '3d' ? threedUrl : arrowUrl);
                             if (spot.model_path && !spot.model_path.toLowerCase().endsWith('.glb')) {
-                                textureUrl = '{{ Storage::url("") }}/' + spot.model_path;
+                                textureUrl = '/storage/' + spot.model_path;
                             }
 
                             if (spot.is_perspective || spot.type === 'image') {
@@ -800,7 +800,7 @@
                         label: a.label || null
                     }));
                 } else if (spot.model_path) {
-                    assets = [{ file_type: '3d', url: '{{ Storage::url("") }}/' + spot.model_path, label: null }];
+                    assets = [{ file_type: '3d', url: '/storage/' + spot.model_path, label: null }];
                 }
                 let products = [];
                 if (spot.products && spot.products.length > 0) {
@@ -811,7 +811,7 @@
                         description_en: p.description_en,
                         assets: (p.assets || []).map(a => ({
                             file_type: a.file_type,
-                            url: '{{ Storage::url("") }}/' + a.file_path,
+                            url: '/storage/' + a.file_path,
                             label: a.label || null
                         }))
                     }));
@@ -998,7 +998,7 @@
                 card.className = `scene-card ${scene.id == currentSceneData?.id ? 'active' : ''}`;
                 card.dataset.id = scene.id;
                 
-                const thumbUrl = scene.thumbnail_path ? ('{{ Storage::url("") }}' + scene.thumbnail_path) : ('{{ Storage::url("") }}' + scene.image_path);
+                const thumbUrl = scene.thumbnail_path ? ('/storage/' + scene.thumbnail_path) : ('/storage/' + scene.image_path);
                 card.innerHTML = `
                     <img src="${thumbUrl}" alt="${scene.name}">
                     <div class="scene-card-label">${scene.name}</div>
