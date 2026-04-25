@@ -26,6 +26,23 @@
             --animate-spin-slow: spin 1s infinite linear;
         }
 
+        /* Fullscreen Polyfill / Pseudo-fullscreen for iOS */
+        .pseudo-fullscreen {
+            overflow: hidden !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            z-index: 999999;
+            background: black;
+        }
+
+        .pseudo-fullscreen #viewer-container {
+            height: 100vh !important;
+            width: 100vw !important;
+        }
+
         @keyframes fadeIn {
             from {
                 opacity: 0;
@@ -1567,6 +1584,8 @@
                         // Fallback for iPhone/iOS which doesn't support Fullscreen API
                         docElm.classList.add('pseudo-fullscreen');
                         document.getElementById('toggle-fullscreen').classList.add('btn-active');
+                        // Scroll hack to hide address bar on some iOS versions
+                        setTimeout(() => window.scrollTo(0, 1), 100);
                         // Trigger a resize event to ensure Panolens adjusts
                         window.dispatchEvent(new Event('resize'));
                     }
