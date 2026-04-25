@@ -963,8 +963,8 @@
             pos = new THREE.Vector3(spotData.position_x, spotData.position_y, spotData.position_z).normalize().multiplyScalar(4000);
         }
 
-        // Check for direct 3D model (.glb only)
-        if (spotData.model_path && spotData.model_path.toLowerCase().endsWith('.glb')) {
+        // Check for direct 3D model (.glb only) - ENFORCE type '3d'
+        if (spotData.type === '3d' && spotData.model_path && spotData.model_path.toLowerCase().endsWith('.glb')) {
             try {
                 const modelUrl = '{{ Storage::url("") }}/' + spotData.model_path;
                 modelObj = await loadGLB(modelUrl, spotData);
@@ -982,7 +982,8 @@
             }
         }
 
-        if (!marker && spotData.model_path && !spotData.model_path.toLowerCase().endsWith('.glb')) {
+        // Custom 2D Image - ENFORCE type 'image'
+        if (!marker && spotData.type === 'image' && spotData.model_path && !spotData.model_path.toLowerCase().endsWith('.glb')) {
              const customIconUrl = '{{ url('storage') }}/' + spotData.model_path;
              const geometry = new THREE.PlaneGeometry(600, 600);
              const texture = new THREE.TextureLoader().load(customIconUrl);
@@ -1101,7 +1102,7 @@
     inputPerspective.addEventListener('change', (e) => {
         if (e.target.checked) transformControls.classList.remove('hidden');
         else transformControls.classList.add('hidden');
-        updateRealtimePreview();
+        refreshCurrentMarkerPreview();
     });
 
     [inputRx, inputRy, inputRz, inputSx, inputSy].forEach(input => {
@@ -1182,6 +1183,48 @@
         labelSy.innerText = inputSy.value;
     }
 
+    async function refreshCurrentMarkerPreview() {
+        let spotData = null;
+        if (editingId) {
+            const originalSpot = existingSpots.find(s => s.id == editingId);
+            spotData = { 
+                ...originalSpot,
+                id: editingId,
+                type: inputType.value,
+                is_perspective: inputPerspective.checked,
+                position_x: parseFloat(pos_x.value),
+                position_y: parseFloat(pos_y.value),
+                position_z: parseFloat(pos_z.value),
+                rotation_x: parseFloat(inputRx.value),
+                rotation_y: parseFloat(inputRy.value),
+                rotation_z: parseFloat(inputRz.value),
+                scale_x: parseFloat(inputSx.value),
+                scale_y: parseFloat(inputSy.value),
+            };
+        } else {
+            spotData = {
+                id: 'ghost',
+                type: inputType.value,
+                is_perspective: inputPerspective.checked,
+                position_x: parseFloat(pos_x.value),
+                position_y: parseFloat(pos_y.value),
+                position_z: parseFloat(pos_z.value),
+                rotation_x: parseFloat(inputRx.value),
+                rotation_y: parseFloat(inputRy.value),
+                rotation_z: parseFloat(inputRz.value),
+                scale_x: parseFloat(inputSx.value),
+                scale_y: parseFloat(inputSy.value),
+            };
+            if (ghostMarker) {
+                panorama.remove(ghostMarker);
+                ghostMarker = null;
+            }
+        }
+        
+        const m = await renderMarker(spotData);
+        if (!editingId) ghostMarker = m;
+    }
+
     function updateRealtimePreview() {
         let marker = null;
         let spotData = null;
@@ -1243,6 +1286,7 @@
             if(fields3D) fields3D.classList.add('hidden');
             if(visualWrapper) visualWrapper.classList.remove('hidden');
         }
+        refreshCurrentMarkerPreview();
     });
 
     const ctxMenu = document.getElementById('context-menu');
