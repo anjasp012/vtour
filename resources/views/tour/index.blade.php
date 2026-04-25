@@ -219,13 +219,6 @@
                 width: 80px;
                 height: 55px;
             }
-            .hd-loader {
-                top: auto;
-                bottom: 20px;
-                left: auto;
-                right: 20px;
-                transform: none;
-            }
         }
         .scene-card:hover {
             border-color: rgba(255,255,255,0.3);
@@ -284,6 +277,15 @@
             pointer-events: none;
             opacity: 0;
             transition: opacity 0.5s ease;
+        }
+        @media (max-width: 640px) {
+            .hd-loader {
+                top: auto !important;
+                bottom: 20px !important;
+                left: auto !important;
+                right: 20px !important;
+                transform: none !important;
+            }
         }
         .hd-loader.visible { opacity: 1; }
         .hd-loader .spinner {
