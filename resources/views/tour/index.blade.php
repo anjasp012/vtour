@@ -491,7 +491,7 @@
             <!-- Multi-Product Grid Wrapper -->
             <div id="multi-product-grid-wrapper"
                 class="hidden w-full overflow-y-auto max-h-[60vh] scrollbar-none pb-2 animate-fade-in">
-                <div id="multi-product-grid" class="grid grid-cols-2 md:grid-cols-6 gap-3 lg:gap-4"></div>
+                <div id="multi-product-grid" class="grid grid-cols-2 md:grid-cols-4 gap-3 lg:gap-4"></div>
             </div>
 
             <!-- Wrapper Layout -->
