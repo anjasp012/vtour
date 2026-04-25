@@ -885,7 +885,10 @@
 
                 updateMaterial(pano.material);
                 pano.traverse((node) => {
-                    if (node.isMesh) updateMaterial(node.material);
+                    // Skip marker meshes — they have their own textures
+                    if (node.isMesh && !node.isPerspectiveMesh && !node.isCustomImage && !node.is3DModel) {
+                        updateMaterial(node.material);
+                    }
                 });
 
                 // Also update the internal texture reference Panolens might use
@@ -1619,7 +1622,10 @@
 
                 updateMaterial(pano.material);
                 pano.traverse((node) => {
-                    if (node.isMesh) updateMaterial(node.material);
+                    // Skip marker meshes — they have their own textures
+                    if (node.isMesh && !node.isPerspectiveMesh && !node.isCustomImage && !node.is3DModel) {
+                        updateMaterial(node.material);
+                    }
                 });
                 pano.texture = texture;
                 pano.loadStage = stage;
