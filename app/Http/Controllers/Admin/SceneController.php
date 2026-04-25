@@ -14,7 +14,7 @@ class SceneController extends Controller
     {
         return Tour::firstOrCreate(
             ['id' => 1],
-            ['name' => 'Main Virtual Tour', 'description' => 'Automatically generated primary tour.']
+            ['name' => 'Rumah Inovasi Indonesia', 'description' => 'Automatically generated primary tour.']
         );
     }
 

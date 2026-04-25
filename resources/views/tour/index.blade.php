@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>360 Virtual Tour</title>
+    <title>{{ $tour->name }}</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -902,6 +902,7 @@
                     if (mat.uniforms.tEquirect) mat.uniforms.tEquirect.value = texture;
                 }
                 mat.needsUpdate = true;
+                mat.depthWrite = false;
             };
 
             updateMaterial(pano.material);
@@ -938,15 +939,14 @@
             pano.loadStage = 0; // 0: low, 1: mid, 2: high
             pano.cachedTextures = {}; // Store textures for switching back
             panoramas[sceneId] = pano;
+            
+            textureLoader.load(lowUrl, (tex) => {
+                tex.generateMipmaps = false;
+                tex.minFilter = THREE.LinearFilter;
+                pano.cachedTextures[0] = tex;
+            });
 
-            // Capture initial texture to cache
             pano.addEventListener('load', () => {
-                if (pano.material && pano.material.map && !pano.cachedTextures[0]) {
-                    pano.cachedTextures[0] = pano.material.map;
-                    // Ensure filters are correct
-                    pano.cachedTextures[0].generateMipmaps = false;
-                    pano.cachedTextures[0].minFilter = THREE.LinearFilter;
-                }
                 if (pano.material) pano.material.depthWrite = false;
             });
 
