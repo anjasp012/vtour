@@ -836,6 +836,7 @@
         }
 
         const STORAGE_BASE = "{{ Storage::url('') }}".replace(/\/$/, '') + '/';
+        const normalizePath = (path) => path ? (path.startsWith('/') ? path.substring(1) : path) : '';
         const textureLoader = new THREE.TextureLoader();
         const hdLoader = document.getElementById('hd-loader');
         let selectedResolution = localStorage.getItem('vtour_res') || 'high'; // low, medium, high
@@ -845,8 +846,6 @@
 
             const sceneData = tourData.scenes.find(s => s.id == sceneId);
             if (!sceneData) return null;
-
-            const normalizePath = (path) => path ? (path.startsWith('/') ? path.substring(1) : path) : '';
             const lowUrl = sceneData.low_res_path ? (STORAGE_BASE + normalizePath(sceneData.low_res_path)) : (STORAGE_BASE +
                 normalizePath(sceneData.high_res_path));
             const midUrl = sceneData.medium_res_path ? (STORAGE_BASE + normalizePath(sceneData.medium_res_path)) : null;
@@ -1040,6 +1039,11 @@
                             // If it's a custom icon or a 2D floating image
                             if (spot.model_path && !spot.model_path.toLowerCase().endsWith('.glb')) {
                                 textureUrl = STORAGE_BASE + normalizePath(spot.model_path);
+                            }
+
+                            // Debugging
+                            if (spot.type === 'image') {
+                                console.log(`[Spot] Type: ${spot.type}, Model: ${spot.model_path}, URL: ${textureUrl}`);
                             }
 
                             if (spot.is_perspective || spot.type === 'image') {
