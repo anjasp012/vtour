@@ -967,6 +967,8 @@
                         name: p.name,
                         description_id: p.description_id,
                         description_en: p.description_en,
+                        researcher: p.researcher,
+                        contact_person: p.contact_person,
                         assets: (p.assets || []).map(a => ({
                             file_type: a.file_type,
                             url: '/storage/' + a.file_path,
