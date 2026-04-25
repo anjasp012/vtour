@@ -981,6 +981,13 @@
 
             pano.addEventListener('load', () => {
                 if (pano.material) pano.material.depthWrite = false;
+                
+                // CRITICAL: Panolens' internal loader might finish LATER than our custom upgrade.
+                // We must re-apply the target texture after the 'load' event to ensure it isn't overwritten.
+                const targetStage = selectedResolution === 'low' ? 0 : (selectedResolution === 'medium' ? 1 : 2);
+                if (pano.cachedTextures && pano.cachedTextures[targetStage]) {
+                    _applyCachedTexture(pano, targetStage);
+                }
             });
 
             const _updatePanoTexture = (texture, stage, stageName) => {
@@ -1418,9 +1425,9 @@
                         } else if (pano.loadStage > targetStage) {
                             // If we already have a better texture than target (e.g. from previous high-res session)
                             // but user wants SD, we should swap back here just to be sure
-                            if (pano.loadStage > targetStage) {
-                                _applyCachedTexture(pano, targetStage);
-                            }
+                            _applyCachedTexture(pano, targetStage);
+                            hdLoader.classList.remove('visible');
+                        } else {
                             hdLoader.classList.remove('visible');
                         }
 
