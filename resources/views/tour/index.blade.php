@@ -1032,15 +1032,25 @@
                             
                             // If it's a 2D floating image (custom icon override only for type 'image')
                             if (ispotData.type === 'image' && ispotData.model_path && !ispotData.model_path.toLowerCase().endsWith('.glb')) {
-                                textureUrl = "{{ url('storage') }}/" + ispotData.model_path + "?v={{ time() }}";
+                                textureUrl = "{{ url('storage') }}/" + ispotData.model_path;
                             }
 
                             console.log(`[Icon-Load] Spot: ${ispotData.id}, Type: ${ispotData.type}, URL: ${textureUrl}`);
 
                             if (ispotData.is_perspective || ispotData.type === 'image') {
-                                // Render as 3D Mesh for perspective mode
+                                // ASYNC Texture Loading to prevent race conditions or incorrect mapping
+                                const texture = await new Promise((resolve) => {
+                                    new THREE.TextureLoader().load(textureUrl, (tex) => {
+                                        tex.minFilter = THREE.LinearFilter;
+                                        tex.needsUpdate = true;
+                                        resolve(tex);
+                                    }, undefined, () => {
+                                        // Fallback to error texture or standard icon
+                                        new THREE.TextureLoader().load(infoUrl, resolve);
+                                    });
+                                });
+
                                 const geometry = new THREE.PlaneGeometry(600, 600);
-                                const texture = new THREE.TextureLoader().load(textureUrl);
                                 const material = new THREE.MeshBasicMaterial({
                                     map: texture,
                                     transparent: true,
