@@ -395,25 +395,31 @@
 
         .res-menu {
             position: absolute;
-            bottom: calc(100% + 10px);
+            bottom: calc(100% + 12px);
             right: 0;
             background: rgba(15, 23, 42, 0.95);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 12px;
-            z-index: 10002;
-            transform: translateZ(0);
+            border-radius: 14px;
+            z-index: 20000;
             overflow: hidden;
-            display: none;
+            display: flex;
             flex-direction: column;
-            min-width: 140px;
-            pointer-events: auto;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            min-width: 150px;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transform: translateY(10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
         }
 
         .res-menu.show {
-            display: flex;
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transform: translateY(0);
         }
 
         .res-menu button {
@@ -556,12 +562,12 @@
                                 <button id="btn-tab-researcher"
                                     class="px-3 py-2 rounded-md bg-white/5 border border-white/10 text-[9px] font-bold text-slate-400 uppercase tracking-widest hover:bg-white/10 transition-all [&.active]:bg-emerald-500/20 [&.active]:border-emerald-500/50 [&.active]:text-emerald-400"
                                     onclick="switchTab('researcher')">
-                                    <i class="fas fa-user-tie mr-1"></i> Researcher
+                                    <i class="fas fa-user-tie md:mr-1"></i> <span class="hidden md:inline">Researcher</span>
                                 </button>
                                 <button id="btn-tab-contact"
                                     class="px-3 py-2 rounded-md bg-white/5 border border-white/10 text-[9px] font-bold text-slate-400 uppercase tracking-widest hover:bg-white/10 transition-all [&.active]:bg-sky-500/20 [&.active]:border-sky-500/50 [&.active]:text-sky-400"
                                     onclick="switchTab('contact')">
-                                    <i class="fas fa-address-book mr-1"></i> Contact
+                                    <i class="fas fa-address-book md:mr-1"></i> <span class="hidden md:inline">Contact</span>
                                 </button>
                             </div>
 
