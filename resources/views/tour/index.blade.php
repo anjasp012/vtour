@@ -664,26 +664,7 @@
         const STORAGE_BASE = "{{ Storage::url('') }}".replace(/\/$/, '') + '/';
         const textureLoader = new THREE.TextureLoader();
         const hdLoader = document.getElementById('hd-loader');
-        let selectedResolution = 'high'; // low, medium, high
-
-        function changeResolution(res) {
-            selectedResolution = res;
-            if (viewer && viewer.panorama) {
-                const currentId = Object.keys(panoramas).find(key => panoramas[key] === viewer.panorama);
-                if (currentId) {
-                    // Force reload current panorama
-                    const pano = panoramas[currentId];
-                    pano.loadStage = 0;
-                    // Trigger reload logic
-                    const sceneData = tourData.scenes.find(s => s.id == currentId);
-                    const normalizePath = (path) => path ? (path.startsWith('/') ? path.substring(1) : path) : '';
-                    const highUrl = STORAGE_BASE + normalizePath(sceneData.high_res_path);
-                    textureLoader.load(highUrl, (tex) => {
-                        // Update logic here
-                    });
-                }
-            }
-        }
+        let selectedResolution = localStorage.getItem('vtour_res') || 'high'; // low, medium, high
 
         function getOrCreatePanorama(sceneId) {
             if (panoramas[sceneId]) return panoramas[sceneId];
@@ -698,22 +679,10 @@
 
             const pano = new PANOLENS.ImagePanorama(lowUrl);
             pano.loadStage = 0; // 0: low, 1: mid, 2: high
+            pano.cachedTextures = {}; // Store textures for switching back
             panoramas[sceneId] = pano;
 
-            const updatePanoTexture = (texture, stage, stageName) => {
-                if (pano.loadStage >= stage) return;
-                
-                // Block update based on selected resolution
-                if (selectedResolution === 'low' && stage >= 1) return;
-                if (selectedResolution === 'medium' && stage >= 2) return;
-
-                console.log(`- ${stageName} loaded for ${sceneData.name}`);
-                
-                texture.minFilter = THREE.LinearFilter;
-                texture.magFilter = THREE.LinearFilter;
-                texture.generateMipmaps = false;
-                if (typeof THREE.sRGBEncoding !== 'undefined') texture.encoding = THREE.sRGBEncoding;
-
+            const applyTextureToPano = (texture, stage) => {
                 const updateMaterial = (mat) => {
                     if (!mat) return;
                     if (Array.isArray(mat)) { mat.forEach(m => updateMaterial(m)); return; }
@@ -731,8 +700,25 @@
                 pano.loadStage = stage;
             };
 
+            const updatePanoTexture = (texture, stage, stageName) => {
+                pano.cachedTextures[stage] = texture;
+                
+                // Block update based on selected resolution
+                if (selectedResolution === 'low' && stage >= 1) return;
+                if (selectedResolution === 'medium' && stage >= 2) return;
+
+                // Only apply if it's an UPGRADE or the EXACT same as target
+                // If we want to allow downgrades, we'll handle that in a separate function
+                if (pano.loadStage < stage) {
+                   console.log(`- ${stageName} applied for ${sceneData.name}`);
+                   applyTextureToPano(texture, stage);
+                }
+            };
+
+            let isLoading = false;
             const startLoading = () => {
-                if (pano.loadStage >= 2) return;
+                if (pano.loadStage >= 2 || isLoading) return;
+                isLoading = true;
                 
                 const isCurrent = (typeof viewer !== 'undefined' && viewer.panorama === pano) || (typeof viewer === 'undefined' || !viewer.panorama);
                 // Removed immediate show here to wait for scene transition completion
@@ -742,9 +728,11 @@
                         updatePanoTexture(texMid, 1, 'MEDIUM');
                         textureLoader.load(highUrl, (texHigh) => {
                             updatePanoTexture(texHigh, 2, 'HIGH');
+                            isLoading = false;
                             if (viewer.panorama === pano) hdLoader.classList.remove('visible');
                         }, undefined, (err) => {
                             console.error("High Res Load Failed", err);
+                            isLoading = false;
                             if (viewer.panorama === pano) hdLoader.classList.remove('visible');
                         });
                     }, undefined, (err) => {
@@ -752,15 +740,21 @@
                         // Fallback: try High res directly
                         textureLoader.load(highUrl, (texHigh) => {
                             updatePanoTexture(texHigh, 2, 'HIGH');
+                            isLoading = false;
+                            if (viewer.panorama === pano) hdLoader.classList.remove('visible');
+                        }, undefined, (err) => {
+                            isLoading = false;
                             if (viewer.panorama === pano) hdLoader.classList.remove('visible');
                         });
                     });
                 } else {
                     textureLoader.load(highUrl, (texHigh) => {
                         updatePanoTexture(texHigh, 2, 'HIGH');
+                        isLoading = false;
                         if (viewer.panorama === pano) hdLoader.classList.remove('visible');
                     }, undefined, (err) => {
                         console.error("High Res Load Failed", err);
+                        isLoading = false;
                         if (viewer.panorama === pano) hdLoader.classList.remove('visible');
                     });
                 }
@@ -771,7 +765,10 @@
             startLoading();
 
             pano.addEventListener('enter-fade-start', () => {
-                if (pano.loadStage < 2) hdLoader.classList.add('visible');
+                if (pano.loadStage < 2) {
+                    hdLoader.classList.add('visible');
+                    startLoading(); // Retry/Resume loading if it was stuck
+                }
             });
             pano.addEventListener('leave', () => {
                 hdLoader.classList.remove('visible');
@@ -1281,9 +1278,17 @@
             document.addEventListener('click', () => resMenu.classList.remove('show'));
 
             resMenu.querySelectorAll('button').forEach(btn => {
+                // Initialize UI based on stored resolution
+                if (btn.dataset.res === selectedResolution) {
+                    resMenu.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    resLabel.textContent = btn.textContent.split(' ')[0];
+                }
+
                 btn.onclick = () => {
                     const res = btn.dataset.res;
                     selectedResolution = res;
+                    localStorage.setItem('vtour_res', res); // Save to cache
                     
                     // UI Update
                     resMenu.querySelectorAll('button').forEach(b => b.classList.remove('active'));
@@ -1293,21 +1298,49 @@
                     // Trigger upgrade if we upped the res to existing pano
                     if (viewer && viewer.panorama) {
                         const curPano = viewer.panorama;
-                        // Force a re-load sequence for current pano if it's below targets
+                        
+                        // Handle Downgrade: Switch back to cached textures
+                        if (res === 'low' && curPano.cachedTextures[0]) {
+                            _applyCachedTexture(curPano, 0);
+                        } else if (res === 'medium' && curPano.cachedTextures[1]) {
+                             _applyCachedTexture(curPano, 1);
+                        } else if (res === 'high' && curPano.cachedTextures[2]) {
+                             _applyCachedTexture(curPano, 2);
+                        }
+
+                        // Handle Upgrade: Trigger download if not yet at target
                         if ((res === 'medium' && curPano.loadStage < 1) || (res === 'high' && curPano.loadStage < 2)) {
-                            // We don't have an easy way to restart the private startLoading 
-                            // but our updatePanoTexture callbacks are already waiting or will be triggered
-                            // In this simple implementation, the user can just switch scenes or we can re-trigger current
                             _forceUpgrade(curPano);
                         }
                         
-                        // Hide loader if downgrading
-                        if ((res === 'low') || (res === 'medium' && curPano.loadStage >= 1)) {
+                        // Hide loader if downgrading or already reached
+                        if ((res === 'low') || (res === 'medium' && curPano.loadStage >= 1) || (res === 'high' && curPano.loadStage >= 2)) {
                             hdLoader.classList.remove('visible');
                         }
                     }
                 };
             });
+
+            function _applyCachedTexture(pano, stage) {
+                const texture = pano.cachedTextures[stage];
+                if (!texture) return;
+
+                const updateMaterial = (mat) => {
+                    if (!mat) return;
+                    if (Array.isArray(mat)) { mat.forEach(m => updateMaterial(m)); return; }
+                    if (mat.map !== undefined) mat.map = texture;
+                    if (mat.uniforms) {
+                        if (mat.uniforms.tDiffuse) mat.uniforms.tDiffuse.value = texture;
+                        if (mat.uniforms.tEquirect) mat.uniforms.tEquirect.value = texture;
+                    }
+                    mat.needsUpdate = true;
+                };
+
+                updateMaterial(pano.material);
+                pano.traverse((node) => { if (node.isMesh) updateMaterial(node.material); });
+                pano.texture = texture;
+                pano.loadStage = stage;
+            }
 
             function _forceUpgrade(pano) {
                 if (pano && pano.retryLoading) {
