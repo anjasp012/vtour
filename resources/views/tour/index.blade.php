@@ -847,6 +847,53 @@
         const hdLoader = document.getElementById('hd-loader');
         let selectedResolution = localStorage.getItem('vtour_res') || 'high'; // low, medium, high
 
+        function _applyInitialView(lon, lat) {
+            const toRad = Math.PI / 180;
+            const phi = (90 - lat) * toRad;
+            const theta = lon * toRad;
+            const target = new THREE.Vector3(
+                Math.sin(phi) * Math.cos(theta),
+                Math.cos(phi),
+                Math.sin(phi) * Math.sin(theta)
+            ).multiplyScalar(500);
+            viewer.tweenControlCenter(target, 0);
+        }
+
+        function _applyCachedTexture(pano, stage) {
+            const texture = pano.cachedTextures[stage];
+            if (!texture) return;
+
+            const updateMaterial = (mat) => {
+                if (!mat) return;
+                if (Array.isArray(mat)) {
+                    mat.forEach(m => updateMaterial(m));
+                    return;
+                }
+                if (mat.map !== undefined) mat.map = texture;
+                if (mat.uniforms) {
+                    if (mat.uniforms.tDiffuse) mat.uniforms.tDiffuse.value = texture;
+                    if (mat.uniforms.tEquirect) mat.uniforms.tEquirect.value = texture;
+                }
+                mat.needsUpdate = true;
+            };
+
+            updateMaterial(pano.material);
+            pano.traverse((node) => {
+                if (node.isMesh && !node.isPerspectiveMesh && !node.isCustomImage && !node.is3DModel) {
+                    updateMaterial(node.material);
+                    node.material.depthWrite = false;
+                }
+            });
+            pano.texture = texture;
+            pano.loadStage = stage;
+        }
+
+        function _forceUpgrade(pano) {
+            if (pano && pano.retryLoading) {
+                pano.retryLoading();
+            }
+        }
+
         function getOrCreatePanorama(sceneId) {
             if (panoramas[sceneId]) return panoramas[sceneId];
 
@@ -1498,20 +1545,7 @@
             }
 
             // Convert saved lon/lat back to a THREE.Vector3 and apply via tweenControlCenter
-            function _applyInitialView(lon, lat) {
-                // Inverse of: lon=atan2(dir.z,dir.x), lat=asin(dir.y)
-                // Panolens: target = (sin(phi)*cos(theta), cos(phi), sin(phi)*sin(theta))
-                //           phi = 90-lat (degrees), theta = lon (degrees)
-                const toRad = Math.PI / 180;
-                const phi = (90 - lat) * toRad;
-                const theta = lon * toRad;
-                const target = new THREE.Vector3(
-                    Math.sin(phi) * Math.cos(theta),
-                    Math.cos(phi),
-                    Math.sin(phi) * Math.sin(theta)
-                ).multiplyScalar(500);
-                viewer.tweenControlCenter(target, 0);
-            }
+
 
 
 
@@ -1621,41 +1655,9 @@
                 };
             });
 
-            function _applyCachedTexture(pano, stage) {
-                const texture = pano.cachedTextures[stage];
-                if (!texture) return;
 
-                const updateMaterial = (mat) => {
-                    if (!mat) return;
-                    if (Array.isArray(mat)) {
-                        mat.forEach(m => updateMaterial(m));
-                        return;
-                    }
-                    if (mat.map !== undefined) mat.map = texture;
-                    if (mat.uniforms) {
-                        if (mat.uniforms.tDiffuse) mat.uniforms.tDiffuse.value = texture;
-                        if (mat.uniforms.tEquirect) mat.uniforms.tEquirect.value = texture;
-                    }
-                    mat.needsUpdate = true;
-                };
 
-                updateMaterial(pano.material);
-                pano.traverse((node) => {
-                    // Skip marker meshes — they have their own textures
-                    if (node.isMesh && !node.isPerspectiveMesh && !node.isCustomImage && !node.is3DModel) {
-                        updateMaterial(node.material);
-                        node.material.depthWrite = false; // Prevent clipping
-                    }
-                });
-                pano.texture = texture;
-                pano.loadStage = stage;
-            }
 
-            function _forceUpgrade(pano) {
-                if (pano && pano.retryLoading) {
-                    pano.retryLoading();
-                }
-            }
             document.addEventListener('webkitfullscreenchange', syncFS);
             document.addEventListener('mozfullscreenchange', syncFS);
             document.addEventListener('msfullscreenchange', syncFS);
