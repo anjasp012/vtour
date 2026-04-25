@@ -1436,8 +1436,8 @@
                 : `{{ url('admin/infospots') }}/${currentUploadInfospotId}/products`;
             const method = id ? 'PATCH' : 'POST';
 
-            const researcher = document.getElementById('product-researcher' + (id ? '-multi' : '')).value;
-            const contact = document.getElementById('product-contact' + (id ? '-multi' : '')).value;
+            const researcher = document.getElementById('product-researcher-multi').value;
+            const contact = document.getElementById('product-contact-multi').value;
 
             const res = await fetch(url, {
                 method: method,
@@ -1528,9 +1528,12 @@
                     document.getElementById('edit-product-id').value = p.id;
                     document.getElementById('product-desc-id').value = p.description_id || '';
                     document.getElementById('product-desc-en').value = p.description_en || '';
+                    document.getElementById('product-researcher').value = p.researcher || '';
+                    document.getElementById('product-contact').value = p.contact_person || '';
                     
-                    window._updateNarasiPreview('id', p.description_id || '', 'single');
-                    window._updateNarasiPreview('en', p.description_en || '', 'single');
+                    _updateSidebarPreview('desc', 'single');
+                    _updateSidebarPreview('researcher', 'single');
+                    _updateSidebarPreview('contact', 'single');
                     
                     // Set as active upload product for assets
                     currentUploadInfospotId = infospotId;
@@ -1539,31 +1542,18 @@
                     // Create placeholder if none exists yet
                     document.getElementById('product-desc-id').value = '';
                     document.getElementById('product-desc-en').value = '';
-                    window._updateNarasiPreview('id', '', 'single');
-                    window._updateNarasiPreview('en', '', 'single');
+                    document.getElementById('product-researcher').value = '';
+                    document.getElementById('product-contact').value = '';
+                    _updateSidebarPreview('desc', 'single');
+                    _updateSidebarPreview('researcher', 'single');
+                    _updateSidebarPreview('contact', 'single');
                 }
             }
         } catch(e) { console.error('Error loading products:', e); }
     }
 
     // Helper: update preview button text
-    window._updateNarasiPreview = function(lang, html, mode = 'single') {
-        const suffix = mode === 'multi' ? '-multi' : '';
-        const tmp   = document.createElement('div');
-        tmp.innerHTML = html || '';
-        const plain = (tmp.innerText || '').trim();
-        const btn   = document.getElementById('btn-open-editor-' + lang + suffix);
-        const prev  = document.getElementById('preview-' + lang + suffix);
-        if (!prev) return;
-        
-        if (plain) {
-            prev.innerText = plain.substring(0, 80) + (plain.length > 80 ? '...' : '');
-            if (btn) btn.classList.add('has-content');
-        } else {
-            prev.innerText = lang === 'id' ? 'Klik untuk menulis narasi...' : 'Click to write narration...';
-            if (btn) btn.classList.remove('has-content');
-        }
-    }
+
 
 
     window.editProduct = function(id, name, descId, descEn, researcher, contact) {
