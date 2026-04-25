@@ -366,79 +366,60 @@
             opacity: 1;
         }
 
-        /* Resolution Selector */
-        .res-panel {
+        /* Resolution Sub-Panel (Sidebar) */
+        .res-sidebar-panel {
             position: absolute;
-            bottom: calc(100% + 12px);
-            right: 0;
-            background: rgba(15, 23, 42, 0.9);
+            left: calc(100% + 10px);
+            top: 0;
+            background: rgba(15, 23, 42, 0.4);
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 14px;
-            display: flex;
-            flex-direction: column;
-            min-width: 150px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            transform-origin: bottom right;
-            z-index: 10002;
-            overflow: hidden;
-        }
-
-        .res-panel.minimized {
-            opacity: 0;
-            transform: scale(0.8) translateY(20px);
-            pointer-events: none;
-            filter: blur(10px);
-        }
-
-        .res-toggle-btn {
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            color: white;
-            padding: 8px 12px;
+            padding: 5px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: row;
+            gap: 5px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-origin: left center;
+            z-index: 100;
+        }
+
+        .res-sidebar-panel.minimized {
+            opacity: 0;
+            transform: scale(0.8) translateX(-15px);
+            pointer-events: none;
+            filter: blur(8px);
+        }
+
+        .res-sidebar-panel button {
+            width: 38px;
+            height: 38px;
             border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.5);
             font-size: 10px;
             font-weight: 800;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 6px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            justify-content: center;
             transition: all 0.3s;
-        }
-
-        .res-toggle-btn:hover {
-            background: rgba(15, 23, 42, 0.8);
-            transform: scale(1.05);
-        }
-
-        .res-panel button {
-            background: transparent;
-            border: none;
-            color: rgba(255, 255, 255, 0.6);
-            padding: 12px 16px;
-            text-align: left;
-            font-size: 10px;
-            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            cursor: pointer;
-            transition: all 0.2s;
         }
 
-        .res-panel button:hover {
-            background: rgba(255, 255, 255, 0.1);
+        .res-sidebar-panel button:hover {
+            background: rgba(255, 255, 255, 0.15);
             color: white;
         }
 
-        .res-panel button.active {
-            color: #6366f1;
-            background: rgba(99, 102, 241, 0.1);
+        .res-sidebar-panel button.active {
+            background: rgba(99, 102, 241, 0.3);
+            border-color: rgba(99, 102, 241, 0.6);
+            color: white;
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
         }
 
         .hd-loader.visible {
@@ -598,19 +579,6 @@
     <div id="viewer-container" class="w-full h-screen bg-black">
         <!-- Bottom Right UI Controls -->
         <div class="bottom-right-controls">
-            <!-- Resolution Selector -->
-            <div class="res-container" style="position: relative;">
-                <div class="res-panel minimized" id="res-panel">
-                    <button data-res="low">SD (Low)</button>
-                    <button data-res="medium">HD (Medium)</button>
-                    <button data-res="high">ULTRA (High)</button>
-                </div>
-                <button class="res-toggle-btn" id="res-toggle-btn">
-                    <i class="fas fa-signal"></i>
-                    <span id="res-label">SD</span>
-                </button>
-            </div>
-
             <!-- HD Loader -->
             <div id="hd-loader" class="hd-loader">
                 <div class="spinner"></div>
@@ -651,6 +619,20 @@
                         <button id="toggle-fullscreen"
                             class="btn-action bg-white/5 hover:bg-white/15 [&.btn-active]:bg-primary/35 border border-border-glass [&.btn-active]:border-primary/80 text-white/90 w-[38px] h-[38px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95"
                             title="Full Screen"><i class="fas fa-expand text-[14px] text-primary"></i></button>
+
+                        <div class="relative">
+                            <button id="res-sidebar-toggle"
+                                class="btn-action bg-white/5 hover:bg-white/15 border border-border-glass text-white/90 w-[38px] h-[38px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95"
+                                title="Quality Selection">
+                                <span id="res-active-label" class="text-[10px] font-black text-primary">SD</span>
+                            </button>
+                            
+                            <div id="res-sidebar-panel" class="res-sidebar-panel minimized">
+                                <button data-res="low">SD</button>
+                                <button data-res="medium">MD</button>
+                                <button data-res="high">HD</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -1509,23 +1491,9 @@
             controls.dollyIn = controls.dollyOut;
             controls.dollyOut = originalDollyIn;
 
-
-
-
-
-
-
-
-
-
-
-
-
             // Inisialisasi awal: Scene dengan urutan (order) terkecil otomatis jadi Start Scene
             let startSceneData = tourData.scenes[0];
             let startScene = startSceneData ? getOrCreatePanorama(startSceneData.id) : null;
-
-
 
             if (startScene) {
                 viewer.add(startScene);
@@ -1548,11 +1516,6 @@
                 loader.style.opacity = '0';
                 setTimeout(() => loader.style.display = 'none', 1000);
             }
-
-            // Convert saved lon/lat back to a THREE.Vector3 and apply via tweenControlCenter
-
-
-
 
             document.getElementById('toggle-rotate').addEventListener('click', function() {
                 const isAutoRotate = !viewer.getControl().autoRotate;
@@ -1603,20 +1566,22 @@
             document.addEventListener('mozfullscreenchange', syncFS);
             document.addEventListener('msfullscreenchange', syncFS);
 
-            // Resolution Toggle Logic (Same as UI Toggle)
-            const resToggle = document.getElementById('res-toggle-btn');
-            const resPanel = document.getElementById('res-panel');
-            const resLabel = document.getElementById('res-label');
+            // Resolution Sidebar Logic (Integrated into top-left panel)
+            const resToggle = document.getElementById('res-sidebar-toggle');
+            const resPanel = document.getElementById('res-sidebar-panel');
+            const resActiveLabel = document.getElementById('res-active-label');
 
             if (resToggle && resPanel) {
                 resToggle.addEventListener('click', (e) => {
                     e.stopPropagation();
                     resPanel.classList.toggle('minimized');
+                    resToggle.classList.toggle('btn-active', !resPanel.classList.contains('minimized'));
                 });
 
                 document.addEventListener('click', (e) => {
                     if (!resPanel.contains(e.target) && !resToggle.contains(e.target)) {
                         resPanel.classList.add('minimized');
+                        resToggle.classList.remove('btn-active');
                     }
                 });
 
@@ -1624,7 +1589,7 @@
                     // Initialize
                     if (btn.dataset.res === selectedResolution) {
                         btn.classList.add('active');
-                        resLabel.textContent = btn.textContent.split(' ')[0];
+                        if (resActiveLabel) resActiveLabel.textContent = btn.textContent;
                     }
 
                     btn.addEventListener('click', () => {
@@ -1634,8 +1599,9 @@
 
                         resPanel.querySelectorAll('button').forEach(b => b.classList.remove('active'));
                         btn.classList.add('active');
-                        resLabel.textContent = btn.textContent.split(' ')[0];
+                        if (resActiveLabel) resActiveLabel.textContent = btn.textContent;
                         resPanel.classList.add('minimized');
+                        resToggle.classList.remove('btn-active');
 
                         if (viewer && viewer.panorama) {
                             const curPano = viewer.panorama;
