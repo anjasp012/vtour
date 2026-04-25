@@ -1657,7 +1657,7 @@
                             hdLoader.classList.add('visible');
                         }
                     }
-                };
+                });
             });
 
 
