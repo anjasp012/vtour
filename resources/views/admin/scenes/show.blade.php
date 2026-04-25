@@ -998,7 +998,7 @@
              marker.renderOrder = 999;
              marker.rotation.order = 'YXZ';
              marker.rotation.set(spotData.rotation_x || 0, spotData.rotation_y || 0, spotData.rotation_z || 0);
-             marker.scale.set(spotData.scale_x || 1, spotData.scale_y || 1, 1);
+             marker.scale.set(spotData.scale_x || 0.1, spotData.scale_y || 0.1, 1);
              marker.isPerspectiveMesh = true;
              marker.isCustomImage = true;
         }
@@ -1016,7 +1016,7 @@
                 marker.renderOrder = 999;
                 marker.rotation.order = 'YXZ';
                 marker.rotation.set(spotData.rotation_x || 0, spotData.rotation_y || 0, spotData.rotation_z || 0);
-                marker.scale.set(spotData.scale_x || 1, spotData.scale_y || 1, 1);
+                marker.scale.set(spotData.scale_x || 0.1, spotData.scale_y || 0.1, 1);
                 marker.isPerspectiveMesh = true;
             } else {
                 marker = new PANOLENS.Infospot(600, iconUrl);
@@ -1964,7 +1964,7 @@
             inputModelFile.value = '';
             currentModelInfo.classList.add('hidden');
             if (inputType.value === '3d') {
-                inputPerspective.checked = true;
+                inputPerspective.checked = false;
             } else {
                 inputPerspective.checked = false;
             }
@@ -2025,7 +2025,7 @@
             inputRy.value = spot.rotation_y || 0;
             inputRz.value = spot.rotation_z || 0;
             inputSx.value = spot.scale_x || 0.1;
-            inputSy.value = spot.scale_y || 1;
+            inputSy.value = spot.scale_y || 0.1;
 
             // Trigger preview update
             updateRealtimePreview();
@@ -2049,8 +2049,8 @@
             rotation_x: spotData.rotation_x || 0,
             rotation_y: spotData.rotation_y || 0,
             rotation_z: spotData.rotation_z || 0,
-            scale_x: spotData.scale_x || 1,
-            scale_y: spotData.scale_y || 1,
+            scale_x: spotData.scale_x || 0.1,
+            scale_y: spotData.scale_y || 0.1,
             is_perspective: !!spotData.is_perspective
         };
 
