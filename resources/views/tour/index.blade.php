@@ -395,31 +395,24 @@
 
         .res-menu {
             position: absolute;
-            bottom: calc(100% + 12px);
+            bottom: 50px;
             right: 0;
-            background: rgba(15, 23, 42, 0.95);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 14px;
-            z-index: 20000;
+            background: #0f172a;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            z-index: 99999;
             overflow: hidden;
-            display: flex;
+            display: none;
             flex-direction: column;
             min-width: 150px;
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-            transform: translateY(10px);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
+            /* Force hardware acceleration */
+            -webkit-transform: translateZ(0);
+            transform: translateZ(0);
         }
 
         .res-menu.show {
-            opacity: 1;
-            visibility: visible;
-            pointer-events: auto;
-            transform: translateY(0);
+            display: flex !important;
         }
 
         .res-menu button {
@@ -1611,11 +1604,16 @@
             const resLabel = document.getElementById('current-res-label');
 
             resBtn.addEventListener('click', (e) => {
+                e.preventDefault();
                 e.stopPropagation();
                 resMenu.classList.toggle('show');
             });
 
-            document.addEventListener('click', () => resMenu.classList.remove('show'));
+            document.addEventListener('click', (e) => {
+                if (!resMenu.contains(e.target) && !resBtn.contains(e.target)) {
+                    resMenu.classList.remove('show');
+                }
+            });
 
             resMenu.querySelectorAll('button').forEach(btn => {
                 // Initialize UI based on stored resolution
