@@ -1037,15 +1037,14 @@
 
                             console.log(`[Icon-Load] Spot: ${ispotData.id}, Type: ${ispotData.type}, URL: ${textureUrl}`);
 
-                            if (ispotData.is_perspective || ispotData.type === 'image') {
-                                // ASYNC Texture Loading to prevent race conditions or incorrect mapping
+                            if (ispotData.is_perspective) {
+                                // ASYNC Texture Loading for Perspective Mesh
                                 const texture = await new Promise((resolve) => {
                                     new THREE.TextureLoader().load(textureUrl, (tex) => {
                                         tex.minFilter = THREE.LinearFilter;
                                         tex.needsUpdate = true;
                                         resolve(tex);
                                     }, undefined, () => {
-                                        // Fallback to error texture or standard icon
                                         new THREE.TextureLoader().load(infoUrl, resolve);
                                     });
                                 });
@@ -1066,9 +1065,10 @@
                                 ispot.scale.set(ispotData.scale_x || 1, ispotData.scale_y || 1, 1);
                                 ispot.isPerspectiveMesh = true;
                             } else {
-                                // Standard Billboard
+                                // Standard Billboard (Also for non-perspective 2D images)
+                                // Standard Infospot is more stable and better handled by the engine
                                 ispot = new PANOLENS.Infospot(UNIFORM_SIZE, textureUrl);
-                                ispot.renderOrder = 1000;
+                                ispot.renderOrder = 1001;
                             }
                         }
 
