@@ -281,11 +281,70 @@
         @media (max-width: 640px) {
             .hd-loader {
                 top: auto !important;
-                bottom: 20px !important;
+                bottom: 65px !important; /* Raised to avoid resolution selector */
                 left: auto !important;
                 right: 20px !important;
                 transform: none !important;
             }
+        }
+        
+        /* Resolution Selector */
+        .res-selector {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 10001;
+        }
+        .res-btn {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+        }
+        .res-btn:hover { background: rgba(15, 23, 42, 0.8); }
+        .res-menu {
+            position: absolute;
+            bottom: calc(100% + 10px);
+            right: 0;
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+            display: none;
+            flex-direction: column;
+            min-width: 140px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .res-menu.show { display: flex; }
+        .res-menu button {
+            background: transparent;
+            border: none;
+            color: rgba(255,255,255,0.6);
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .res-menu button:hover { background: rgba(255,255,255,0.1); color: white; }
+        .res-menu button.active {
+            color: #6366f1;
+            background: rgba(99, 102, 241, 0.1);
         }
         .hd-loader.visible { opacity: 1; }
         .hd-loader .spinner {
@@ -384,7 +443,20 @@
     <div id="viewer-container" class="w-full h-screen bg-black">
         <div id="hd-loader" class="hd-loader">
             <div class="spinner"></div>
-            <span>LOADING HD SCENE...</span>
+            <span>UPGRADING QUALITY...</span>
+        </div>
+
+        <!-- Resolution Selector -->
+        <div class="res-selector" id="res-selector">
+            <button class="res-btn" id="active-res-btn">
+                <i class="fas fa-signal"></i>
+                <span id="current-res-label">AUTO</span>
+            </button>
+            <div class="res-menu" id="res-menu">
+                <button data-res="low">SD (15%)</button>
+                <button data-res="medium">HD (40%)</button>
+                <button data-res="high" class="active">ULTRA (AUTO)</button>
+            </div>
         </div>
     </div>
 
@@ -592,6 +664,26 @@
         const STORAGE_BASE = "{{ Storage::url('') }}".replace(/\/$/, '') + '/';
         const textureLoader = new THREE.TextureLoader();
         const hdLoader = document.getElementById('hd-loader');
+        let selectedResolution = 'high'; // low, medium, high
+
+        function changeResolution(res) {
+            selectedResolution = res;
+            if (viewer && viewer.panorama) {
+                const currentId = Object.keys(panoramas).find(key => panoramas[key] === viewer.panorama);
+                if (currentId) {
+                    // Force reload current panorama
+                    const pano = panoramas[currentId];
+                    pano.loadStage = 0;
+                    // Trigger reload logic
+                    const sceneData = tourData.scenes.find(s => s.id == currentId);
+                    const normalizePath = (path) => path ? (path.startsWith('/') ? path.substring(1) : path) : '';
+                    const highUrl = STORAGE_BASE + normalizePath(sceneData.high_res_path);
+                    textureLoader.load(highUrl, (tex) => {
+                        // Update logic here
+                    });
+                }
+            }
+        }
 
         function getOrCreatePanorama(sceneId) {
             if (panoramas[sceneId]) return panoramas[sceneId];
@@ -608,10 +700,13 @@
             pano.loadStage = 0; // 0: low, 1: mid, 2: high
             panoramas[sceneId] = pano;
 
-
-
             const updatePanoTexture = (texture, stage, stageName) => {
                 if (pano.loadStage >= stage) return;
+                
+                // Block update based on selected resolution
+                if (selectedResolution === 'low' && stage >= 1) return;
+                if (selectedResolution === 'medium' && stage >= 2) return;
+
                 console.log(`- ${stageName} loaded for ${sceneData.name}`);
                 
                 texture.minFilter = THREE.LinearFilter;
@@ -672,6 +767,7 @@
             };
 
             // Start loading process
+            pano.retryLoading = startLoading;
             startLoading();
 
             pano.addEventListener('enter-fade-start', () => {
@@ -1176,6 +1272,53 @@
                 document.getElementById('toggle-fullscreen').classList.toggle('btn-active', !!fse || isPseudo);
             };
             document.addEventListener('fullscreenchange', syncFS);
+
+            // Resolution Menu Logic
+            const resBtn = document.getElementById('active-res-btn');
+            const resMenu = document.getElementById('res-menu');
+            const resLabel = document.getElementById('current-res-label');
+
+            resBtn.onclick = (e) => {
+                e.stopPropagation();
+                resMenu.classList.toggle('show');
+            };
+
+            document.addEventListener('click', () => resMenu.classList.remove('show'));
+
+            resMenu.querySelectorAll('button').forEach(btn => {
+                btn.onclick = () => {
+                    const res = btn.dataset.res;
+                    selectedResolution = res;
+                    
+                    // UI Update
+                    resMenu.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    resLabel.textContent = btn.textContent.split(' ')[0]; // Show SD, HD, or ULTRA
+
+                    // Trigger upgrade if we upped the res to existing pano
+                    if (viewer && viewer.panorama) {
+                        const curPano = viewer.panorama;
+                        // Force a re-load sequence for current pano if it's below targets
+                        if ((res === 'medium' && curPano.loadStage < 1) || (res === 'high' && curPano.loadStage < 2)) {
+                            // We don't have an easy way to restart the private startLoading 
+                            // but our updatePanoTexture callbacks are already waiting or will be triggered
+                            // In this simple implementation, the user can just switch scenes or we can re-trigger current
+                            _forceUpgrade(curPano);
+                        }
+                        
+                        // Hide loader if downgrading
+                        if ((res === 'low') || (res === 'medium' && curPano.loadStage >= 1)) {
+                            hdLoader.classList.remove('visible');
+                        }
+                    }
+                };
+            });
+
+            function _forceUpgrade(pano) {
+                if (pano && pano.retryLoading) {
+                    pano.retryLoading();
+                }
+            }
             document.addEventListener('webkitfullscreenchange', syncFS);
             document.addEventListener('mozfullscreenchange', syncFS);
             document.addEventListener('msfullscreenchange', syncFS);

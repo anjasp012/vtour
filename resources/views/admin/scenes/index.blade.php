@@ -21,9 +21,13 @@
     </div>
 
     <!-- Ultra-Dense Scene Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-4">
+    <div id="scenes-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-4">
         @forelse($tour->scenes as $scene)
-            <div class="bg-white border border-slate-200 rounded overflow-hidden flex flex-col shadow-sm hover:shadow transition-all group">
+            <div dir="ltr" data-id="{{ $scene->id }}" class="bg-white border border-slate-200 rounded overflow-hidden flex flex-col shadow-sm hover:shadow transition-all group relative">
+                <!-- Drag Handle -->
+                <div class="drag-handle absolute top-1.5 right-1.5 z-20 w-6 h-6 bg-black/40 backdrop-blur-sm rounded flex items-center justify-center text-white/60 cursor-move hover:text-white hover:bg-black/60 transition-all opacity-0 group-hover:opacity-100">
+                    <i class="fas fa-grip-vertical text-[10px]"></i>
+                </div>
                 <!-- Compact Thumbnail -->
                 <div class="relative aspect-video overflow-hidden border-b border-slate-100">
                     <img src="{{ Storage::url($scene->low_res_path ?? $scene->high_res_path) }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="{{ $scene->name }}">
@@ -69,4 +73,47 @@
         @endforelse
     </div>
 </div>
+</div>
+
+<!-- Sortable.js -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const el = document.getElementById('scenes-grid');
+    if (!el) return;
+
+    Sortable.create(el, {
+        handle: '.drag-handle',
+        animation: 150,
+        ghostClass: 'opacity-50',
+        onEnd: function() {
+            const order = [];
+            el.querySelectorAll('[data-id]').forEach(item => {
+                order.push(item.dataset.id);
+            });
+
+            // Send to server
+            fetch('{{ route('admin.scenes.reorder') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ order: order })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    // Optional: show a small toast or toast-like indicator
+                    console.log('Order updated');
+                }
+            })
+            .catch(err => {
+                console.error('Failed to update order', err);
+                alert('Gagal mengupdate urutan scene.');
+            });
+        }
+    });
+});
+</script>
 @endsection

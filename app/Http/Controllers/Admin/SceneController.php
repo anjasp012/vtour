@@ -21,8 +21,24 @@ class SceneController extends Controller
     public function index()
     {
         $tour = $this->getTour();
-        $tour->load('scenes');
+        $tour->load(['scenes' => function($q) {
+            $q->orderBy('order', 'asc')->orderBy('id', 'desc');
+        }]);
         return view('admin.scenes.index', compact('tour'));
+    }
+
+    public function reorder(Request $request)
+    {
+        $request->validate([
+            'order' => 'required|array',
+            'order.*' => 'exists:scenes,id'
+        ]);
+
+        foreach ($request->order as $index => $id) {
+            Scene::where('id', $id)->update(['order' => $index]);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Order updated successfully.']);
     }
 
     public function create()

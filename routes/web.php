@@ -27,6 +27,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         ->name('site-plans.hotspots.save');
 
     // Admin Scene CRUD
+    Route::post('scenes/reorder', [AdminSceneController::class, 'reorder'])->name('scenes.reorder');
     Route::resource('scenes', AdminSceneController::class);
     Route::post('scenes/{scene}/lock-view', [AdminSceneController::class, 'lockView'])
         ->name('scenes.lockView');
