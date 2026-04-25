@@ -256,44 +256,41 @@
         .scrollbar-none::-webkit-scrollbar { display: none; }
         .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
         /* HD Loader */
-        .hd-loader {
+        /* Bottom Right Controls Group */
+        .bottom-right-controls {
             position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
+            bottom: 20px;
+            right: 20px;
+            z-index: 10001;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-direction: row-reverse;
+            pointer-events: none;
+        }
+        .bottom-right-controls > * { pointer-events: auto; }
+
+        .hd-loader {
             background: rgba(15, 23, 42, 0.6);
             backdrop-filter: blur(8px);
             color: white;
             padding: 8px 16px;
             border-radius: 100px;
-            font-size: 11px;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            z-index: 1000;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 1px;
             display: flex;
             align-items: center;
             gap: 8px;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            pointer-events: none;
             opacity: 0;
             transition: opacity 0.5s ease;
+            white-space: nowrap;
         }
-        @media (max-width: 640px) {
-            .hd-loader {
-                top: auto !important;
-                bottom: 65px !important; /* Raised to avoid resolution selector */
-                left: auto !important;
-                right: 20px !important;
-                transform: none !important;
-            }
-        }
-        
+
         /* Resolution Selector */
         .res-selector {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            z-index: 10001;
+            position: relative;
         }
         .res-btn {
             background: rgba(15, 23, 42, 0.6);
@@ -441,21 +438,25 @@
 
     <!-- 3D Canvas -->
     <div id="viewer-container" class="w-full h-screen bg-black">
-        <div id="hd-loader" class="hd-loader">
-            <div class="spinner"></div>
-            <span>UPGRADING QUALITY...</span>
-        </div>
+        <!-- Bottom Right UI Controls -->
+        <div class="bottom-right-controls">
+            <!-- Resolution Selector -->
+            <div class="res-selector" id="res-selector">
+                <button class="res-btn" id="active-res-btn">
+                    <i class="fas fa-signal"></i>
+                    <span id="current-res-label">AUTO</span>
+                </button>
+                <div class="res-menu" id="res-menu">
+                    <button data-res="low">SD (15%)</button>
+                    <button data-res="medium">HD (40%)</button>
+                    <button data-res="high" class="active">ULTRA (AUTO)</button>
+                </div>
+            </div>
 
-        <!-- Resolution Selector -->
-        <div class="res-selector" id="res-selector">
-            <button class="res-btn" id="active-res-btn">
-                <i class="fas fa-signal"></i>
-                <span id="current-res-label">AUTO</span>
-            </button>
-            <div class="res-menu" id="res-menu">
-                <button data-res="low">SD (15%)</button>
-                <button data-res="medium">HD (40%)</button>
-                <button data-res="high" class="active">ULTRA (AUTO)</button>
+            <!-- HD Loader -->
+            <div id="hd-loader" class="hd-loader">
+                <div class="spinner"></div>
+                <span>UPGRADING QUALITY...</span>
             </div>
         </div>
     </div>
@@ -715,48 +716,62 @@
                 }
             };
 
-            let isLoading = false;
+            pano.isLoading = false;
             const startLoading = () => {
-                if (pano.loadStage >= 2 || isLoading) return;
-                isLoading = true;
+                const targetStage = selectedResolution === 'low' ? 0 : (selectedResolution === 'medium' ? 1 : 2);
                 
-                const isCurrent = (typeof viewer !== 'undefined' && viewer.panorama === pano) || (typeof viewer === 'undefined' || !viewer.panorama);
-                // Removed immediate show here to wait for scene transition completion
+                // If already at target or higher, or currently working, stop.
+                if (pano.loadStage >= targetStage || pano.isLoading) return;
 
-                if (midUrl) {
+                // Priority 1: Check Cache first for target stage
+                if (pano.cachedTextures[targetStage]) {
+                    console.log(`[Cache] Applying stage ${targetStage} immediately for ${sceneData.name}`);
+                    applyTextureToPano(pano.cachedTextures[targetStage], targetStage);
+                    hdLoader.classList.remove('visible');
+                    return;
+                }
+
+                pano.isLoading = true;
+                
+                const onFinally = () => {
+                   pano.isLoading = false;
+                   if (viewer.panorama === pano) {
+                       const currentTarget = selectedResolution === 'low' ? 0 : (selectedResolution === 'medium' ? 1 : 2);
+                       if (pano.loadStage >= currentTarget) hdLoader.classList.remove('visible');
+                   }
+                };
+
+                console.log(`[Network] Start loading for ${sceneData.name}, Target: ${selectedResolution}`);
+
+                if (midUrl && targetStage >= 1 && !pano.cachedTextures[1]) {
                     textureLoader.load(midUrl, (texMid) => {
                         updatePanoTexture(texMid, 1, 'MEDIUM');
-                        textureLoader.load(highUrl, (texHigh) => {
-                            updatePanoTexture(texHigh, 2, 'HIGH');
-                            isLoading = false;
-                            if (viewer.panorama === pano) hdLoader.classList.remove('visible');
-                        }, undefined, (err) => {
-                            console.error("High Res Load Failed", err);
-                            isLoading = false;
-                            if (viewer.panorama === pano) hdLoader.classList.remove('visible');
-                        });
+                        if (targetStage >= 2 && !pano.cachedTextures[2]) {
+                            textureLoader.load(highUrl, (texHigh) => {
+                                updatePanoTexture(texHigh, 2, 'HIGH');
+                                onFinally();
+                            }, undefined, (err) => { onFinally(); });
+                        } else {
+                            onFinally();
+                        }
                     }, undefined, (err) => {
-                        console.error("Mid Res Load Failed", err);
-                        // Fallback: try High res directly
-                        textureLoader.load(highUrl, (texHigh) => {
-                            updatePanoTexture(texHigh, 2, 'HIGH');
-                            isLoading = false;
-                            if (viewer.panorama === pano) hdLoader.classList.remove('visible');
-                        }, undefined, (err) => {
-                            isLoading = false;
-                            if (viewer.panorama === pano) hdLoader.classList.remove('visible');
-                        });
+                        // Fallback to high directly if mid fails
+                        if (targetStage >= 2) {
+                            textureLoader.load(highUrl, (texHigh) => {
+                                updatePanoTexture(texHigh, 2, 'HIGH');
+                                onFinally();
+                            }, undefined, (err) => { onFinally(); });
+                        } else {
+                            onFinally();
+                        }
                     });
-                } else {
+                } else if (targetStage >= 2 && !pano.cachedTextures[2]) {
                     textureLoader.load(highUrl, (texHigh) => {
                         updatePanoTexture(texHigh, 2, 'HIGH');
-                        isLoading = false;
-                        if (viewer.panorama === pano) hdLoader.classList.remove('visible');
-                    }, undefined, (err) => {
-                        console.error("High Res Load Failed", err);
-                        isLoading = false;
-                        if (viewer.panorama === pano) hdLoader.classList.remove('visible');
-                    });
+                        onFinally();
+                    }, undefined, (err) => { onFinally(); });
+                } else {
+                    onFinally();
                 }
             };
 
@@ -765,9 +780,12 @@
             startLoading();
 
             pano.addEventListener('enter-fade-start', () => {
-                if (pano.loadStage < 2) {
+                const targetStage = selectedResolution === 'low' ? 0 : (selectedResolution === 'medium' ? 1 : 2);
+                if (pano.loadStage < targetStage) {
                     hdLoader.classList.add('visible');
-                    startLoading(); // Retry/Resume loading if it was stuck
+                    startLoading(); 
+                } else {
+                    hdLoader.classList.remove('visible');
                 }
             });
             pano.addEventListener('leave', () => {
