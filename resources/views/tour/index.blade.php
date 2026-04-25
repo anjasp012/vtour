@@ -1006,7 +1006,7 @@
                         // Check for direct 3D model (.glb only) - ENFORCE type '3d'
                         if (ispotData.type === '3d' && ispotData.model_path && ispotData.model_path.toLowerCase().endsWith('.glb')) {
                             try {
-                                const modelUrl = STORAGE_BASE + normalizePath(ispotData.model_path);
+                                const modelUrl = "{{ url('storage') }}/" + ispotData.model_path + "?v={{ time() }}";
                                 console.log(`[3D-Load] Spot: ${ispotData.id}, URL: ${modelUrl}`);
                                 modelObj = await loadGLB(modelUrl, ispotData);
                                 
@@ -1026,11 +1026,13 @@
 
                         if (!ispot) {
                             // Determine the texture/icon URL
-                            let textureUrl = (ispotData.type === 'info') ? infoUrl : (ispotData.type === '3d' ? threedUrl : arrowUrl);
+                            let textureUrl = arrowUrl;
+                            if (ispotData.type === 'info') textureUrl = infoUrl;
+                            if (ispotData.type === '3d') textureUrl = threedUrl;
                             
                             // If it's a 2D floating image (custom icon override only for type 'image')
                             if (ispotData.type === 'image' && ispotData.model_path && !ispotData.model_path.toLowerCase().endsWith('.glb')) {
-                                textureUrl = STORAGE_BASE + normalizePath(ispotData.model_path);
+                                textureUrl = "{{ url('storage') }}/" + ispotData.model_path + "?v={{ time() }}";
                             }
 
                             console.log(`[Icon-Load] Spot: ${ispotData.id}, Type: ${ispotData.type}, URL: ${textureUrl}`);
