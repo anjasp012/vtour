@@ -428,6 +428,24 @@
                         <div class="flex-1 overflow-y-auto max-h-[250px] md:max-h-[400px] pr-2 scrollbar-none">
                             <div class="leading-[1.6] text-white/80 text-justify hidden opacity-0 [&.active]:block [&.active]:animate-fade-in [&.active]:opacity-100 [&_p]:mt-0 [&_p]:mb-[1em]" id="tab-id"></div>
                             <div class="leading-[1.6] text-white/80 text-justify hidden opacity-0 [&.active]:block [&.active]:animate-fade-in [&.active]:opacity-100 [&_p]:mt-0 [&_p]:mb-[1em]" id="tab-en"></div>
+                            
+                            <!-- Extra Info Box (Researcher & Contact) -->
+                            <div id="info-extra" class="mt-6 pt-6 border-t border-white/10 hidden animate-fade-in">
+                                <div id="wrap-researcher" class="mb-4 hidden">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <div class="w-5 h-5 rounded bg-emerald-500/20 flex items-center justify-center text-emerald-400 text-[10px]"><i class="fas fa-user-tie"></i></div>
+                                        <span class="text-[9px] font-bold text-emerald-400 uppercase tracking-widest">Peneliti / Researcher</span>
+                                    </div>
+                                    <div id="content-researcher" class="text-[11px] text-white/60 pl-7 leading-relaxed"></div>
+                                </div>
+                                <div id="wrap-contact" class="hidden">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <div class="w-5 h-5 rounded bg-sky-500/20 flex items-center justify-center text-sky-400 text-[10px]"><i class="fas fa-address-book"></i></div>
+                                        <span class="text-[9px] font-bold text-sky-400 uppercase tracking-widest">Kontak Person</span>
+                                    </div>
+                                    <div id="content-contact" class="text-[11px] text-white/60 pl-7 leading-relaxed font-mono"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1531,16 +1549,46 @@
             if (prevBtn) prevBtn.disabled = _vcIndex === 0;
             if (nextBtn) nextBtn.disabled = _vcIndex === _vcTotal - 1;
 
-            // Update Descriptions
+            // Update Descriptions & Extra Info
             const activeProduct = _currentProducts.find(p => p.id === _activeProductId);
+
+            const infoExtra = document.getElementById('info-extra');
+            const wrapResearcher = document.getElementById('wrap-researcher');
+            const wrapContact = document.getElementById('wrap-contact');
+            const contResearcher = document.getElementById('content-researcher');
+            const contContact = document.getElementById('content-contact');
 
             if (activeProduct) {
                 document.getElementById('tab-id').innerHTML = activeProduct.description_id || '';
                 document.getElementById('tab-en').innerHTML = activeProduct.description_en || activeProduct.description_id || '';
+                
+                // Set extra info
+                const hasResearcher = !!activeProduct.researcher && activeProduct.researcher !== '<p><br></p>';
+                const hasContact = !!activeProduct.contact_person && activeProduct.contact_person !== '<p><br></p>';
+
+                if (hasResearcher || hasContact) {
+                    infoExtra.classList.remove('hidden');
+                    if (hasResearcher) {
+                        wrapResearcher.classList.remove('hidden');
+                        contResearcher.innerHTML = activeProduct.researcher;
+                    } else {
+                        wrapResearcher.classList.add('hidden');
+                    }
+                    
+                    if (hasContact) {
+                        wrapContact.classList.remove('hidden');
+                        contContact.innerHTML = activeProduct.contact_person;
+                    } else {
+                        wrapContact.classList.add('hidden');
+                    }
+                } else {
+                    infoExtra.classList.add('hidden');
+                }
             } else {
-                // Fallback to spot's own description if no product is active (Legacy Mode)
+                // Fallback to spot's own description if no product is active (Legacy Group Mode)
                 document.getElementById('tab-id').innerHTML = _spotTextId || '';
                 document.getElementById('tab-en').innerHTML = _spotTextEn || '';
+                infoExtra.classList.add('hidden');
             }
 
             // reset zoom on slide change
@@ -1625,9 +1673,8 @@
             dotsEl.style.display = isSingle ? 'none' : 'flex';
 
             // Reset track position & zoom
-            _imgZoomReset();
+            vcGoto(0);
             track.style.transition = 'none';
-            track.style.transform  = 'translateX(0)';
             setTimeout(() => { track.style.transition = ''; }, 50);
 
             // Disable prev on first slide

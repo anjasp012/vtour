@@ -21,6 +21,8 @@ class InfospotProductController extends Controller
             'name' => 'required|string|max:255',
             'description_id' => 'nullable|string',
             'description_en' => 'nullable|string',
+            'researcher' => 'nullable|string',
+            'contact_person' => 'nullable|string',
         ]);
 
         $lastOrder = $infospot->products()->max('sort_order') ?? -1;
@@ -37,6 +39,8 @@ class InfospotProductController extends Controller
             'name' => 'required|string|max:255',
             'description_id' => 'nullable|string',
             'description_en' => 'nullable|string',
+            'researcher' => 'nullable|string',
+            'contact_person' => 'nullable|string',
         ]);
 
         $product->update($validated);

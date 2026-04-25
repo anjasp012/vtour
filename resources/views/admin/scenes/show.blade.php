@@ -112,26 +112,43 @@
 
                             <!-- Single Product Content Wrapper (Shown if is_multi == false) -->
                             <div id="single-product-wrapper" class="space-y-4 animate-fade-in hidden">
-                                <div class="grid grid-cols-2 gap-2">
+                                <div class="grid grid-cols-1 gap-2">
                                     <div class="space-y-1.5">
-                                        <button type="button" onclick="openQuillEditor('id')" id="btn-open-editor-id" class="w-full text-left p-2.5 bg-slate-800 border border-slate-700 rounded group transition-all hover:border-indigo-500/50">
-                                            <div class="flex items-center justify-between mb-1">
-                                                <span class="text-[7px] font-bold text-indigo-400 uppercase tracking-widest">Deskripsi (ID)</span>
-                                                <i class="fas fa-edit text-[8px] text-slate-600 group-hover:text-indigo-400"></i>
+                                        <button type="button" onclick="openTabbedQuill('desc', 'single')" id="btn-open-desc-single" class="narasi-btn group">
+                                            <div class="flex items-center gap-2">
+                                                <div class="w-6 h-6 rounded bg-indigo-50 flex items-center justify-center text-indigo-500 text-[10px]"><i class="fas fa-align-left"></i></div>
+                                                <div class="flex flex-col">
+                                                    <span class="text-[7px] font-bold text-slate-800 uppercase tracking-widest">Description (ID/EN)</span>
+                                                    <p id="preview-desc-single" class="preview-text">Klik untuk menulis narasi...</p>
+                                                </div>
                                             </div>
-                                            <p id="preview-id" class="text-[6px] text-slate-500 line-clamp-2 leading-relaxed italic">Klik untuk menulis...</p>
+                                            <i class="fas fa-chevron-right text-[8px] text-slate-300 group-hover:text-indigo-400"></i>
                                         </button>
                                         <textarea id="product-desc-id" name="product_desc_id" class="hidden"></textarea>
-                                    </div>
-                                    <div class="space-y-1.5">
-                                        <button type="button" onclick="openQuillEditor('en')" id="btn-open-editor-en" class="w-full text-left p-2.5 bg-slate-800 border border-slate-700 rounded group transition-all hover:border-indigo-500/50">
-                                            <div class="flex items-center justify-between mb-1">
-                                                <span class="text-[7px] font-bold text-indigo-400 uppercase tracking-widest">Description (EN)</span>
-                                                <i class="fas fa-edit text-[8px] text-slate-600 group-hover:text-indigo-400"></i>
-                                            </div>
-                                            <p id="preview-en" class="text-[6px] text-slate-500 line-clamp-2 leading-relaxed italic">Click to write...</p>
-                                        </button>
                                         <textarea id="product-desc-en" name="product_desc_en" class="hidden"></textarea>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <button type="button" onclick="openQuillEditor('researcher', 'single')" id="btn-open-researcher-single" class="narasi-btn group">
+                                            <div class="flex items-center gap-2">
+                                                <div class="w-6 h-6 rounded bg-emerald-50 flex items-center justify-center text-emerald-500 text-[10px]"><i class="fas fa-user-tie"></i></div>
+                                                <div class="flex flex-col">
+                                                    <span class="text-[7px] font-bold text-slate-800 uppercase tracking-widest">Peneliti</span>
+                                                    <p id="preview-researcher-single" class="preview-text">Klik...</p>
+                                                </div>
+                                            </div>
+                                        </button>
+                                        <textarea id="product-researcher" name="product_researcher" class="hidden"></textarea>
+
+                                        <button type="button" onclick="openQuillEditor('contact', 'single')" id="btn-open-contact-single" class="narasi-btn group">
+                                            <div class="flex items-center gap-2">
+                                                <div class="w-6 h-6 rounded bg-sky-50 flex items-center justify-center text-sky-500 text-[10px]"><i class="fas fa-address-book"></i></div>
+                                                <div class="flex flex-col">
+                                                    <span class="text-[7px] font-bold text-slate-800 uppercase tracking-widest">Kontak</span>
+                                                    <p id="preview-contact-single" class="preview-text">Klik...</p>
+                                                </div>
+                                            </div>
+                                        </button>
+                                        <textarea id="product-contact" name="product_contact" class="hidden"></textarea>
                                     </div>
                                 </div>
                                 
@@ -179,26 +196,42 @@
                                 <div id="product-form-wrap" class="hidden space-y-2 pt-2 border-t border-slate-800 animate-fade-in">
                                     <input type="hidden" id="edit-product-id">
                                     <input type="text" id="product-name" placeholder="Nama Produk" class="w-full bg-slate-800 border border-slate-700 text-slate-300 text-[8px] rounded px-2 py-1.5 focus:outline-none focus:border-indigo-500">
-                                    <div class="grid grid-cols-2 gap-2">
-                                        <div class="space-y-1.5">
-                                            <button type="button" onclick="openQuillEditor('id', 'multi')" id="btn-open-editor-id-multi" class="w-full text-left p-2.5 bg-slate-800 border border-slate-700 rounded group transition-all hover:border-indigo-500/50">
-                                                <div class="flex items-center justify-between mb-1">
-                                                    <span class="text-[7px] font-bold text-indigo-400 uppercase tracking-widest">Deskripsi (ID)</span>
-                                                    <i class="fas fa-edit text-[8px] text-slate-600 group-hover:text-indigo-400"></i>
+                                    <div class="space-y-2">
+                                        <button type="button" onclick="openTabbedQuill('desc', 'multi')" id="btn-open-desc-multi" class="narasi-btn group !bg-slate-800 !border-slate-700 !text-slate-300">
+                                            <div class="flex items-center gap-2">
+                                                <div class="w-6 h-6 rounded bg-slate-700 flex items-center justify-center text-indigo-400 text-[10px]"><i class="fas fa-align-left"></i></div>
+                                                <div class="flex flex-col">
+                                                    <span class="text-[7px] font-bold text-slate-400 uppercase tracking-widest">Description (ID/EN)</span>
+                                                    <p id="preview-desc-multi" class="preview-text !text-slate-500">Klik untuk menulis narasi...</p>
                                                 </div>
-                                                <p id="preview-id-multi" class="text-[6px] text-slate-500 line-clamp-2 leading-relaxed italic">Klik untuk menulis...</p>
-                                            </button>
-                                            <textarea id="product-desc-id-multi" class="hidden"></textarea>
-                                        </div>
-                                        <div class="space-y-1.5">
-                                            <button type="button" onclick="openQuillEditor('en', 'multi')" id="btn-open-editor-en-multi" class="w-full text-left p-2.5 bg-slate-800 border border-slate-700 rounded group transition-all hover:border-indigo-500/50">
-                                                <div class="flex items-center justify-between mb-1">
-                                                    <span class="text-[7px] font-bold text-indigo-400 uppercase tracking-widest">Description (EN)</span>
-                                                    <i class="fas fa-edit text-[8px] text-slate-600 group-hover:text-indigo-400"></i>
+                                            </div>
+                                            <i class="fas fa-chevron-right text-[8px] text-slate-600 group-hover:text-indigo-400"></i>
+                                        </button>
+                                        <textarea id="product-desc-id-multi" class="hidden"></textarea>
+                                        <textarea id="product-desc-en-multi" class="hidden"></textarea>
+
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <button type="button" onclick="openQuillEditor('researcher', 'multi')" id="btn-open-researcher-multi" class="narasi-btn group !bg-slate-800 !border-slate-700 !text-slate-300">
+                                                <div class="flex items-center gap-2">
+                                                    <div class="w-6 h-6 rounded bg-slate-700 flex items-center justify-center text-emerald-400 text-[10px]"><i class="fas fa-user-tie"></i></div>
+                                                    <div class="flex flex-col">
+                                                        <span class="text-[7px] font-bold text-slate-400 uppercase tracking-widest">Peneliti</span>
+                                                        <p id="preview-researcher-multi" class="preview-text !text-slate-500">Klik...</p>
+                                                    </div>
                                                 </div>
-                                                <p id="preview-en-multi" class="text-[6px] text-slate-500 line-clamp-2 leading-relaxed italic">Click to write...</p>
                                             </button>
-                                            <textarea id="product-desc-en-multi" class="hidden"></textarea>
+                                            <textarea id="product-researcher-multi" class="hidden"></textarea>
+
+                                            <button type="button" onclick="openQuillEditor('contact', 'multi')" id="btn-open-contact-multi" class="narasi-btn group !bg-slate-800 !border-slate-700 !text-slate-300">
+                                                <div class="flex items-center gap-2">
+                                                    <div class="w-6 h-6 rounded bg-slate-700 flex items-center justify-center text-sky-400 text-[10px]"><i class="fas fa-address-book"></i></div>
+                                                    <div class="flex flex-col">
+                                                        <span class="text-[7px] font-bold text-slate-400 uppercase tracking-widest">Kontak</span>
+                                                        <p id="preview-contact-multi" class="preview-text !text-slate-500">Klik...</p>
+                                                    </div>
+                                                </div>
+                                            </button>
+                                            <textarea id="product-contact-multi" class="hidden"></textarea>
                                         </div>
                                     </div>
                                     <div class="flex gap-2">
@@ -1403,10 +1436,13 @@
                 : `{{ url('admin/infospots') }}/${currentUploadInfospotId}/products`;
             const method = id ? 'PATCH' : 'POST';
 
+            const researcher = document.getElementById('product-researcher' + (id ? '-multi' : '')).value;
+            const contact = document.getElementById('product-contact' + (id ? '-multi' : '')).value;
+
             const res = await fetch(url, {
                 method: method,
                 headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-                body: JSON.stringify({ name, description_id: descId, description_en: descEn })
+                body: JSON.stringify({ name, description_id: descId, description_en: descEn, researcher, contact_person: contact })
             });
             const data = await res.json();
             if (data.success) {
@@ -1429,12 +1465,16 @@
         document.getElementById('product-desc-en').value = '';
         document.getElementById('product-desc-id-multi').value = '';
         document.getElementById('product-desc-en-multi').value = '';
+        document.getElementById('product-researcher').value = '';
+        document.getElementById('product-contact').value = '';
+        document.getElementById('product-researcher-multi').value = '';
+        document.getElementById('product-contact-multi').value = '';
         
-        // Reset previews for both modes
-        _updateNarasiPreview('id', '', 'multi');
-        _updateNarasiPreview('en', '', 'multi');
-        _updateNarasiPreview('id', '', 'single');
-        _updateNarasiPreview('en', '', 'single');
+        // Reset previews
+        ['desc', 'researcher', 'contact'].forEach(t => {
+            _updateSidebarPreview(t, 'single');
+            _updateSidebarPreview(t, 'multi');
+        });
         
         // Reset assets for product
         document.getElementById('product-assets-section').classList.add('hidden');
@@ -1475,7 +1515,7 @@
                                 <span class="text-[6px] text-slate-500 uppercase tracking-widest">${p.assets_count || 0} Assets</span>
                             </div>
                             <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button type="button" onclick="editProduct(${p.id}, '${p.name.replace(/'/g, "\\'")}', '${(p.description_id || "").replace(/'/g, "\\'")}', '${(p.description_en || "").replace(/'/g, "\\'")}')" class="text-indigo-400 hover:text-indigo-300"><i class="fas fa-edit text-[8px]"></i></button>
+                                <button type="button" onclick="editProduct(${p.id}, '${p.name.replace(/'/g, "\\'")}', '${(p.description_id || "").replace(/'/g, "\\'")}', '${(p.description_en || "").replace(/'/g, "\\'")}', '${(p.researcher || "").replace(/'/g, "\\'")}', '${(p.contact_person || "").replace(/'/g, "\\'")}')" class="text-indigo-400 hover:text-indigo-300"><i class="fas fa-edit text-[8px]"></i></button>
                                 <button type="button" onclick="deleteProduct(${p.id})" class="text-slate-500 hover:text-rose-400"><i class="fas fa-trash text-[8px]"></i></button>
                             </div>
                         </div>
@@ -1526,15 +1566,18 @@
     }
 
 
-    window.editProduct = function(id, name, descId, descEn) {
+    window.editProduct = function(id, name, descId, descEn, researcher, contact) {
         document.getElementById('edit-product-id').value = id;
         document.getElementById('product-name').value = name;
         document.getElementById('product-desc-id-multi').value = descId;
         document.getElementById('product-desc-en-multi').value = descEn;
+        document.getElementById('product-researcher-multi').value = researcher || '';
+        document.getElementById('product-contact-multi').value = contact || '';
         
         // Update previews
-        _updateNarasiPreview('id', descId, 'multi');
-        _updateNarasiPreview('en', descEn, 'multi');
+        _updateSidebarPreview('desc', 'multi');
+        _updateSidebarPreview('researcher', 'multi');
+        _updateSidebarPreview('contact', 'multi');
 
         document.getElementById('product-form-wrap').classList.remove('hidden');
         document.getElementById('product-assets-section').classList.remove('hidden');
@@ -2202,9 +2245,16 @@
 <div id="quill-popup-overlay">
     <div id="quill-popup-box">
         <div id="quill-popup-header">
-            <div id="quill-popup-title">
-                <i class="fas fa-pen-to-square" style="color:#6366f1"></i>
-                <span id="quill-popup-title-text">Edit Narration</span>
+            <div class="flex items-center">
+                <div id="quill-popup-title">
+                    <i class="fas fa-pen-to-square" style="color:#6366f1"></i>
+                    <span id="quill-popup-title-text">Edit Narration</span>
+                </div>
+                <!-- Tabs for ID/EN (Shown only for Descrition) -->
+                <div id="quill-tabs-wrap" class="hidden flex items-center bg-white/5 rounded-lg p-1 ml-6">
+                    <button type="button" onclick="switchQuillTab('id')" id="qtab-id" class="px-4 py-1.5 text-[8px] font-bold uppercase tracking-widest rounded-md transition-all">Indo</button>
+                    <button type="button" onclick="switchQuillTab('en')" id="qtab-en" class="px-4 py-1.5 text-[8px] font-bold uppercase tracking-widest rounded-md transition-all">English</button>
+                </div>
             </div>
             <button id="quill-popup-close" onclick="closeQuillEditor()">&#10005;</button>
         </div>
@@ -2241,61 +2291,137 @@
         });
     });
 
-    window.openQuillEditor = function(lang, mode = 'single') {
-        _quillLang = lang;
+    window.openTabbedQuill = function(type, mode = 'single') {
+        _isTabbed = true;
+        _quillLang = 'id'; // Default to ID
         _quillMode = mode;
-        const suffix = mode === 'multi' ? '-multi' : '';
-        const textarea = document.getElementById('product-desc-' + lang + suffix);
-        const isId = lang === 'id';
-
-        // Set popup title
-        document.getElementById('quill-popup-title-text').innerText =
-            isId ? '🇮🇩 Narasi Indonesia' : '🇬🇧 English Narration';
-
-        // Load existing content into Quill
-        const html = textarea.value || '';
-        _quill.root.innerHTML = html;
-
-        // Show popup
+        
+        document.getElementById('quill-tabs-wrap').classList.remove('hidden');
+        document.getElementById('quill-popup-title-text').innerText = 'Edit Description';
+        
+        loadQuillContent();
         document.getElementById('quill-popup-overlay').classList.add('open');
-        setTimeout(() => _quill.focus(), 100);
+        updateQuillTabUI();
+    };
+
+    window.openQuillEditor = function(field, mode = 'single') {
+        _isTabbed = false;
+        _quillLang = field; // 'researcher' or 'contact'
+        _quillMode = mode;
+        
+        document.getElementById('quill-tabs-wrap').classList.add('hidden');
+        document.getElementById('quill-popup-title-text').innerText = field === 'researcher' ? 'Edit Peneliti' : 'Edit Kontak Person';
+        
+        loadQuillContent();
+        document.getElementById('quill-popup-overlay').classList.add('open');
     };
 
     window.closeQuillEditor = function() {
         document.getElementById('quill-popup-overlay').classList.remove('open');
     };
 
-    window.applyQuillContent = function() {
-        if (!_quillLang) return;
-        const html = _quill.root.innerHTML;
+    function loadQuillContent() {
         const suffix = _quillMode === 'multi' ? '-multi' : '';
-
-        // Write to hidden textarea
-        document.getElementById('product-desc-' + _quillLang + suffix).value = html;
-
-        // Update preview button text (strip tags for preview)
-        const plain = _quill.getText().trim();
-        const btnId = 'btn-open-editor-' + _quillLang + suffix;
-        const prevId = 'preview-' + _quillLang + suffix;
-        const btn    = document.getElementById(btnId);
-        const prev   = document.getElementById(prevId);
-
-        if (prev) {
-            if (plain) {
-                prev.innerText = plain.substring(0, 80) + (plain.length > 80 ? '...' : '');
-                if (btn) btn.classList.add('has-content');
-            } else {
-                prev.innerText = _quillLang === 'id' ? 'Klik untuk menulis narasi...' : 'Click to write narration...';
-                if (btn) btn.classList.remove('has-content');
-            }
+        let targetId = '';
+        
+        if (_isTabbed) {
+            targetId = 'product-desc-' + _quillLang + suffix;
+        } else {
+            targetId = 'product-' + _quillLang + suffix; // researcher or contact
         }
 
+        const targetEl = document.getElementById(targetId);
+        const val = targetEl ? (targetEl.value || '') : '';
+        _quill.root.innerHTML = val;
+    }
+
+    window.switchQuillTab = function(lang) {
+        if (!_isTabbed) return;
+        
+        // Save current first
+        const suffix = _quillMode === 'multi' ? '-multi' : '';
+        const curId = 'product-desc-' + _quillLang + suffix;
+        const curEl = document.getElementById(curId);
+        if (curEl) curEl.value = _quill.root.innerHTML === '<p><br></p>' ? '' : _quill.root.innerHTML;
+        
+        _quillLang = lang;
+        loadQuillContent();
+        updateQuillTabUI();
+    };
+
+    function updateQuillTabUI() {
+        const tId = document.getElementById('qtab-id');
+        const tEn = document.getElementById('qtab-en');
+        if (!tId || !tEn) return;
+        [tId, tEn].forEach(t => {
+            t.classList.remove('bg-indigo-600', 'text-white');
+            t.classList.add('text-slate-400');
+        });
+        const active = document.getElementById('qtab-' + _quillLang);
+        if (active) {
+            active.classList.remove('text-slate-400');
+            active.classList.add('bg-indigo-600', 'text-white');
+        }
+    }
+
+    window.applyQuillContent = function() {
+        const suffix = _quillMode === 'multi' ? '-multi' : '';
+        let targetId = '';
+        let type = '';
+
+        if (_isTabbed) {
+            targetId = 'product-desc-' + _quillLang + suffix;
+            type = 'desc';
+        } else {
+            targetId = 'product-' + _quillLang + suffix;
+            type = _quillLang;
+        }
+
+        const html = _quill.root.innerHTML === '<p><br></p>' ? '' : _quill.root.innerHTML;
+        const targetEl = document.getElementById(targetId);
+        if (targetEl) targetEl.value = html;
+        
+        // Update sidebar preview
+        _updateSidebarPreview(type, _quillMode);
+        
         closeQuillEditor();
     };
 
-    // Close on overlay click
+    window.closeQuillEditor = function() {
+        document.getElementById('quill-popup-overlay').classList.remove('open');
+    };
+
+    function _updateSidebarPreview(type, mode) {
+        const suffix = mode === 'multi' ? '-multi' : '';
+        const previewId = 'preview-' + type + (mode === 'multi' ? '-multi' : '-single');
+        const btnId = 'btn-open-' + type + (mode === 'multi' ? '-multi' : '-single');
+        const prevEl = document.getElementById(previewId);
+        const btnEl = document.getElementById(btnId);
+        if (!prevEl) return;
+
+        let content = '';
+        if (type === 'desc') {
+            content = document.getElementById('product-desc-id' + suffix).value || document.getElementById('product-desc-en' + suffix).value;
+        } else {
+            content = document.getElementById('product-' + type + suffix).value;
+        }
+
+        const tmp = document.createElement('div');
+        tmp.innerHTML = content || '';
+        const plain = (tmp.innerText || '').trim();
+
+        if (plain) {
+            prevEl.innerText = plain.substring(0, 40) + (plain.length > 40 ? '...' : '');
+            if (btnEl) btnEl.classList.add('has-content');
+        } else {
+            prevEl.innerText = 'Klik untuk mengisi...';
+            if (btnEl) btnEl.classList.remove('has-content');
+        }
+    }
+
+    // Connect overlay close
     document.getElementById('quill-popup-overlay').addEventListener('click', (e) => {
-        if (e.target === document.getElementById('quill-popup-overlay')) closeQuillEditor();
+        if (e.target.id === 'quill-popup-overlay') closeQuillEditor();
     });
 
 </script>
