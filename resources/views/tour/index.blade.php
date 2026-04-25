@@ -417,9 +417,19 @@
                             </div>
                             
                             <div class="grow"></div>
+                            
+                            <!-- Extra Tabs (Researcher & Contact) -->
+                            <div id="extra-tabs-wrapper" class="flex items-center gap-2 pr-3 border-r border-white/10 hidden">
+                                <button id="btn-tab-researcher" class="px-3 py-1.5 rounded-md bg-white/5 border border-white/10 text-[9px] font-bold text-slate-400 uppercase tracking-widest hover:bg-white/10 transition-all [&.active]:bg-emerald-500/20 [&.active]:border-emerald-500/50 [&.active]:text-emerald-400" onclick="switchTab('researcher')">
+                                    <i class="fas fa-user-tie mr-1"></i> Researcher
+                                </button>
+                                <button id="btn-tab-contact" class="px-3 py-1.5 rounded-md bg-white/5 border border-white/10 text-[9px] font-bold text-slate-400 uppercase tracking-widest hover:bg-white/10 transition-all [&.active]:bg-sky-500/20 [&.active]:border-sky-500/50 [&.active]:text-sky-400" onclick="switchTab('contact')">
+                                    <i class="fas fa-address-book mr-1"></i> Contact
+                                </button>
+                            </div>
 
                             <!-- VO Controls Template -->
-                            <div id="vo-controls-wrapper" class="flex items-center h-full border-l border-white/10 animate-fade-in">
+                            <div id="vo-controls-wrapper" class="flex items-center h-full animate-fade-in pl-1">
                                 <button id="btn-play" class="py-1.5 px-3 flex items-center justify-center text-primary text-[10px] cursor-pointer hover:bg-primary/20 transition-all h-full" onclick="playNarration()"><i class="fas fa-play"></i></button>
                                 <button id="btn-stop" class="py-1.5 px-3 flex items-center justify-center text-rose-500 text-[10px] cursor-pointer hidden hover:bg-rose-500/20 transition-all h-full" onclick="stopNarration()"><i class="fas fa-stop"></i></button>
                             </div>
@@ -428,24 +438,8 @@
                         <div class="flex-1 overflow-y-auto max-h-[250px] md:max-h-[400px] pr-2 scrollbar-none">
                             <div class="leading-[1.6] text-white/80 text-justify hidden opacity-0 [&.active]:block [&.active]:animate-fade-in [&.active]:opacity-100 [&_p]:mt-0 [&_p]:mb-[1em]" id="tab-id"></div>
                             <div class="leading-[1.6] text-white/80 text-justify hidden opacity-0 [&.active]:block [&.active]:animate-fade-in [&.active]:opacity-100 [&_p]:mt-0 [&_p]:mb-[1em]" id="tab-en"></div>
-                            
-                            <!-- Extra Info Box (Researcher & Contact) -->
-                            <div id="info-extra" class="mt-6 pt-6 border-t border-white/10 hidden animate-fade-in">
-                                <div id="wrap-researcher" class="mb-4 hidden">
-                                    <div class="flex items-center gap-2 mb-2">
-                                        <div class="w-5 h-5 rounded bg-emerald-500/20 flex items-center justify-center text-emerald-400 text-[10px]"><i class="fas fa-user-tie"></i></div>
-                                        <span class="text-[9px] font-bold text-emerald-400 uppercase tracking-widest">Peneliti / Researcher</span>
-                                    </div>
-                                    <div id="content-researcher" class="text-[11px] text-white/60 pl-7 leading-relaxed"></div>
-                                </div>
-                                <div id="wrap-contact" class="hidden">
-                                    <div class="flex items-center gap-2 mb-2">
-                                        <div class="w-5 h-5 rounded bg-sky-500/20 flex items-center justify-center text-sky-400 text-[10px]"><i class="fas fa-address-book"></i></div>
-                                        <span class="text-[9px] font-bold text-sky-400 uppercase tracking-widest">Kontak Person</span>
-                                    </div>
-                                    <div id="content-contact" class="text-[11px] text-white/60 pl-7 leading-relaxed font-mono"></div>
-                                </div>
-                            </div>
+                            <div class="leading-[1.6] text-white/80 hidden opacity-0 [&.active]:block [&.active]:animate-fade-in [&.active]:opacity-100 [&_p]:mt-0 [&_p]:mb-[1em]" id="tab-researcher"></div>
+                            <div class="leading-[1.6] text-white/80 hidden opacity-0 [&.active]:block [&.active]:animate-fade-in [&.active]:opacity-100 [&_p]:mt-0 [&_p]:mb-[1em] font-mono" id="tab-contact"></div>
                         </div>
                     </div>
                 </div>
@@ -1486,23 +1480,33 @@
             currentModalLang = lang;
             stopNarration();
 
-            document.getElementById('btn-tab-id').classList.remove('active');
-            document.getElementById('btn-tab-en').classList.remove('active');
-            document.getElementById('tab-id-container').classList.remove('active');
-            document.getElementById('tab-en-container').classList.remove('active');
-            
-            document.getElementById('tab-id').classList.remove('active');
-            document.getElementById('tab-en').classList.remove('active');
+            const tabs = ['id', 'en', 'researcher', 'contact'];
+            tabs.forEach(t => {
+                const btn = document.getElementById('btn-tab-' + t);
+                const cont = document.getElementById('tab-' + t + '-container');
+                const area = document.getElementById('tab-' + t);
+                if (btn) btn.classList.remove('active');
+                if (cont) cont.classList.remove('active');
+                if (area) area.classList.remove('active');
+            });
 
             document.getElementById('btn-tab-' + lang).classList.add('active');
-            document.getElementById('tab-' + lang + '-container').classList.add('active');
+            if (lang === 'id' || lang === 'en') {
+                document.getElementById('tab-' + lang + '-container').classList.add('active');
+            }
             document.getElementById('tab-' + lang).classList.add('active');
 
-            // Move VO controls to active tab container
+            // Move VO controls to active tab container (only for description tabs)
             const vo = document.getElementById('vo-controls-wrapper');
-            const target = document.getElementById('tab-' + lang + '-container');
-            if (vo && target) {
-                target.appendChild(vo);
+            if (lang === 'id' || lang === 'en') {
+                const target = document.getElementById('tab-' + lang + '-container');
+                if (vo && target) {
+                    target.appendChild(vo);
+                    vo.classList.remove('hidden');
+                }
+            } else {
+                // If researcher or contact, hide VO controls
+                if (vo) vo.classList.add('hidden');
             }
         }
 
@@ -1551,46 +1555,36 @@
             if (prevBtn) prevBtn.disabled = _vcIndex === 0;
             if (nextBtn) nextBtn.disabled = _vcIndex === _vcTotal - 1;
 
-            // Update Descriptions & Extra Info
+            // Update Descriptions & Extra Tabs
             const activeProduct = _currentProducts.find(p => p.id === _activeProductId);
 
-            const infoExtra = document.getElementById('info-extra');
-            const wrapResearcher = document.getElementById('wrap-researcher');
-            const wrapContact = document.getElementById('wrap-contact');
-            const contResearcher = document.getElementById('content-researcher');
-            const contContact = document.getElementById('content-contact');
+            const extraTabsWrapper = document.getElementById('extra-tabs-wrapper');
+            const btnResearcher = document.getElementById('btn-tab-researcher');
+            const btnContact = document.getElementById('btn-tab-contact');
 
             if (activeProduct) {
-                document.getElementById('tab-id').innerHTML = activeProduct.description_id || '';
-                document.getElementById('tab-en').innerHTML = activeProduct.description_en || activeProduct.description_id || '';
+                document.getElementById('tab-id').innerHTML = activeProduct.description_id || '-';
+                document.getElementById('tab-en').innerHTML = activeProduct.description_en || '-';
                 
-                // Set extra info
+                document.getElementById('tab-researcher').innerHTML = activeProduct.researcher || '';
+                document.getElementById('tab-contact').innerHTML = activeProduct.contact_person || '';
+
+                // Show/Hide buttons based on content
                 const hasResearcher = !!activeProduct.researcher && activeProduct.researcher !== '<p><br></p>';
                 const hasContact = !!activeProduct.contact_person && activeProduct.contact_person !== '<p><br></p>';
 
                 if (hasResearcher || hasContact) {
-                    infoExtra.classList.remove('hidden');
-                    if (hasResearcher) {
-                        wrapResearcher.classList.remove('hidden');
-                        contResearcher.innerHTML = activeProduct.researcher;
-                    } else {
-                        wrapResearcher.classList.add('hidden');
-                    }
-                    
-                    if (hasContact) {
-                        wrapContact.classList.remove('hidden');
-                        contContact.innerHTML = activeProduct.contact_person;
-                    } else {
-                        wrapContact.classList.add('hidden');
-                    }
+                    extraTabsWrapper.classList.remove('hidden');
+                    btnResearcher.style.display = hasResearcher ? 'flex' : 'none';
+                    btnContact.style.display = hasContact ? 'flex' : 'none';
                 } else {
-                    infoExtra.classList.add('hidden');
+                    extraTabsWrapper.classList.add('hidden');
                 }
             } else {
                 // Fallback to spot's own description if no product is active (Legacy Group Mode)
                 document.getElementById('tab-id').innerHTML = _spotTextId || '';
                 document.getElementById('tab-en').innerHTML = _spotTextEn || '';
-                infoExtra.classList.add('hidden');
+                extraTabsWrapper.classList.add('hidden');
             }
 
             // reset zoom on slide change
