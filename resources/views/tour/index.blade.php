@@ -475,7 +475,9 @@
 
             <div class="flex items-center justify-between mb-[15px]">
                 <div class="flex items-center gap-3">
-                    <button id="btn-back-grid" class="hidden text-white/50 hover:text-white bg-white/5 hover:bg-white/20 w-8 h-8 rounded-full flex items-center justify-center transition-all bg-black" onclick="backToGrid()">
+                    <button id="btn-back-grid"
+                        class="hidden text-white/50 hover:text-white bg-white/5 hover:bg-white/20 w-8 h-8 rounded-full flex items-center justify-center transition-all bg-black"
+                        onclick="backToGrid()">
                         <i class="fas fa-arrow-left"></i>
                     </button>
                     <h2 id="modal-title" class="m-0 text-2xl">Info</h2>
@@ -487,8 +489,9 @@
             </div>
 
             <!-- Multi-Product Grid Wrapper -->
-            <div id="multi-product-grid-wrapper" class="hidden w-full overflow-y-auto max-h-[60vh] scrollbar-none pb-2 animate-fade-in">
-                <div id="multi-product-grid" class="grid grid-cols-2 md:grid-cols-4 gap-3 lg:gap-4"></div>
+            <div id="multi-product-grid-wrapper"
+                class="hidden w-full overflow-y-auto max-h-[60vh] scrollbar-none pb-2 animate-fade-in">
+                <div id="multi-product-grid" class="grid grid-cols-2 md:grid-cols-6 gap-3 lg:gap-4"></div>
             </div>
 
             <!-- Wrapper Layout -->
@@ -513,7 +516,7 @@
                         </button>
 
                         <div class="vc-dots" id="vc-dots"></div>
-                </div>
+                    </div>
                 </div>
 
                 <!-- Text Pane -->
@@ -1005,20 +1008,25 @@
                         // Position Handling
                         let pos;
                         if (ispotData.type === '3d' || ispotData.type === 'image' || ispotData.is_perspective) {
-                            pos = new THREE.Vector3(ispotData.position_x, ispotData.position_y, ispotData.position_z);
+                            pos = new THREE.Vector3(ispotData.position_x, ispotData.position_y, ispotData
+                                .position_z);
                         } else {
-                            pos = new THREE.Vector3(ispotData.position_x, ispotData.position_y, ispotData.position_z).normalize()
+                            pos = new THREE.Vector3(ispotData.position_x, ispotData.position_y, ispotData
+                                    .position_z).normalize()
                                 .multiplyScalar(4000);
                         }
 
                         // Check for direct 3D model (.glb only) - ENFORCE type '3d'
-                        if (ispotData.type === '3d' && ispotData.model_path && ispotData.model_path.toLowerCase().endsWith('.glb')) {
+                        if (ispotData.type === '3d' && ispotData.model_path && ispotData.model_path.toLowerCase()
+                            .endsWith('.glb')) {
                             try {
-                                const modelUrl = "{{ url('storage') }}/" + ispotData.model_path + "?v={{ time() }}";
+                                const modelUrl = "{{ url('storage') }}/" + ispotData.model_path +
+                                    "?v={{ time() }}";
                                 console.log(`[3D-Load] Spot: ${ispotData.id}, URL: ${modelUrl}`);
                                 modelObj = await loadGLB(modelUrl, ispotData);
-                                
-                                const transparentPixel = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+
+                                const transparentPixel =
+                                    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
                                 ispot = new PANOLENS.Infospot(2000, transparentPixel);
                                 ispot.is3DModel = true;
                                 ispot.modelObj = modelObj;
@@ -1037,13 +1045,16 @@
                             let textureUrl = arrowUrl;
                             if (ispotData.type === 'info') textureUrl = infoUrl;
                             if (ispotData.type === '3d') textureUrl = threedUrl;
-                            
+
                             // If it's a 2D floating image (custom icon override only for type 'image')
-                            if (ispotData.type === 'image' && ispotData.model_path && !ispotData.model_path.toLowerCase().endsWith('.glb')) {
+                            if (ispotData.type === 'image' && ispotData.model_path && !ispotData.model_path
+                                .toLowerCase().endsWith('.glb')) {
                                 textureUrl = "{{ url('storage') }}/" + ispotData.model_path;
                             }
 
-                            console.log(`[Icon-Load] Spot: ${ispotData.id}, Type: ${ispotData.type}, URL: ${textureUrl}`);
+                            console.log(
+                                `[Icon-Load] Spot: ${ispotData.id}, Type: ${ispotData.type}, URL: ${textureUrl}`
+                                );
 
                             if (ispotData.is_perspective) {
                                 // ASYNC Texture Loading for Perspective Mesh
@@ -1066,7 +1077,8 @@
                                 ispot = new THREE.Mesh(geometry, material);
                                 ispot.renderOrder = 1000;
                                 ispot.rotation.order = 'YXZ';
-                                ispot.rotation.set(ispotData.rotation_x || 0, ispotData.rotation_y || 0, ispotData.rotation_z || 0);
+                                ispot.rotation.set(ispotData.rotation_x || 0, ispotData.rotation_y || 0, ispotData
+                                    .rotation_z || 0);
                                 ispot.scale.set(ispotData.scale_x || 0.1, ispotData.scale_y || 0.1, 1);
                                 ispot.isPerspectiveMesh = true;
                             } else {
@@ -1890,7 +1902,8 @@
                     const vidWrap = document.createElement('div');
                     vidWrap.className = 'mv-wrap flex items-center justify-center bg-black/60 rounded-md';
                     vidWrap.style.height = slideHeight;
-                    vidWrap.innerHTML = `<video src="${asset.url}" autoplay loop muted playsinline style="max-height: 100%; max-width: 100%; border-radius: 6px; pointer-events: none;"></video>`;
+                    vidWrap.innerHTML =
+                        `<video src="${asset.url}" autoplay loop muted playsinline style="max-height: 100%; max-width: 100%; border-radius: 6px; pointer-events: none;"></video>`;
                     slide.appendChild(vidWrap);
                 } else {
                     const wrap = document.createElement('div');
@@ -2097,7 +2110,7 @@
                 gridWrapper.classList.add('flex');
                 layoutWrapper.classList.add('hidden');
                 btnBackGrid.classList.add('hidden');
-                
+
                 gridContainer.innerHTML = '';
                 products.forEach(p => {
                     let imgHtml = `<div class="w-12 h-12 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
@@ -2107,14 +2120,17 @@
                         const firstVid = p.assets.find(a => a.file_type === 'video');
                         const firstImg = p.assets.find(a => a.file_type === '2d');
                         if (firstImg) {
-                            imgHtml = `<img src="${firstImg.url}" class="w-12 h-12 object-cover rounded-full group-hover:scale-110 transition-transform flex-shrink-0 bg-black/40">`;
+                            imgHtml =
+                                `<img src="${firstImg.url}" class="w-12 h-12 object-cover rounded-full group-hover:scale-110 transition-transform flex-shrink-0 bg-black/40">`;
                         } else if (firstVid) {
-                            imgHtml = `<div class="w-12 h-12 rounded-full bg-primary/20 text-white flex items-center justify-center text-xl group-hover:scale-110 transition-transform flex-shrink-0"><i class="fas fa-video"></i></div>`;
+                            imgHtml =
+                                `<div class="w-12 h-12 rounded-full bg-primary/20 text-white flex items-center justify-center text-xl group-hover:scale-110 transition-transform flex-shrink-0"><i class="fas fa-video"></i></div>`;
                         }
                     }
 
                     const card = document.createElement('div');
-                    card.className = 'bg-white/5 border border-white/10 rounded-xl p-3 cursor-pointer hover:bg-white/10 hover:border-primary/50 transition-all text-center flex flex-col items-center justify-start gap-2 group';
+                    card.className =
+                        'bg-white/5 border border-white/10 rounded-xl p-3 cursor-pointer hover:bg-white/10 hover:border-primary/50 transition-all text-center flex flex-col items-center justify-start gap-2 group';
                     card.onclick = () => chooseProduct(p.id);
                     card.innerHTML = `
                         ${imgHtml}
@@ -2133,7 +2149,7 @@
                 gridWrapper.classList.remove('flex');
                 layoutWrapper.classList.remove('hidden');
                 btnBackGrid.classList.add('hidden');
-                
+
                 document.getElementById('tab-id').innerHTML = textId || '';
                 document.getElementById('tab-en').innerHTML = textEn || '';
                 document.getElementById('tab-researcher').innerHTML = '';
@@ -2161,12 +2177,12 @@
                 document.getElementById('tab-en').innerHTML = product.description_en || '';
                 document.getElementById('tab-researcher').innerHTML = product.researcher || '';
                 document.getElementById('tab-contact').innerHTML = product.contact_person || '';
-                
+
                 // Handle Extra Tabs Visibility
                 const hasResearcher = !!product.researcher;
                 const hasContact = !!product.contact_person;
                 const extraWrapper = document.getElementById('extra-tabs-wrapper');
-                
+
                 if (hasResearcher || hasContact) {
                     extraWrapper.classList.remove('hidden');
                     document.getElementById('btn-tab-researcher').classList.toggle('hidden', !hasResearcher);
@@ -2174,7 +2190,7 @@
                 } else {
                     extraWrapper.classList.add('hidden');
                 }
-                
+
                 // Fallback to 'id' tab if current active tab is being hidden
                 if (currentModalLang === 'researcher' && !hasResearcher) switchTab('id');
                 if (currentModalLang === 'contact' && !hasContact) switchTab('id');
@@ -2186,19 +2202,19 @@
         window.chooseProduct = function(productId) {
             const product = _currentProducts.find(p => p.id === productId);
             if (!product) return;
-            
+
             document.getElementById('multi-product-grid-wrapper').classList.add('hidden');
             document.getElementById('multi-product-grid-wrapper').classList.remove('flex');
-            
+
             const layoutWrapper = document.getElementById('modal-layout-wrapper');
             layoutWrapper.classList.remove('hidden');
             layoutWrapper.classList.remove('animate-fade-in');
             void layoutWrapper.offsetWidth; // trigger reflow
             layoutWrapper.classList.add('animate-fade-in');
-            
+
             document.getElementById('btn-back-grid').classList.remove('hidden');
             document.getElementById('modal-title').innerText = product.name;
-            
+
             switchProduct(productId);
             switchTab('id');
         }
@@ -2206,19 +2222,19 @@
         window.backToGrid = function() {
             document.getElementById('modal-layout-wrapper').classList.add('hidden');
             document.getElementById('btn-back-grid').classList.add('hidden');
-            
+
             const gridWrapper = document.getElementById('multi-product-grid-wrapper');
             gridWrapper.classList.remove('hidden');
             gridWrapper.classList.add('flex');
             gridWrapper.classList.remove('animate-fade-in');
             void gridWrapper.offsetWidth; // trigger reflow
             gridWrapper.classList.add('animate-fade-in');
-            
+
             document.getElementById('modal-title').innerText = _currentInfospotTitle;
-            
+
             // Stop any playing videos in the old view
             _activeProductId = null;
-            document.getElementById('vc-track').innerHTML = ''; 
+            document.getElementById('vc-track').innerHTML = '';
         }
 
         function closeModal() {
