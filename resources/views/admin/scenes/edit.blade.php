@@ -46,14 +46,14 @@
                     <div class="space-y-2">
                         <label class="text-[9px] font-bold text-slate-500 uppercase tracking-widest ml-0.5">Current Visual Feed</label>
                         <div class="relative group aspect-video rounded-lg overflow-hidden border border-slate-200 bg-slate-100">
-                            <img src="{{ Storage::url($scene->image_path) }}" class="w-full h-full object-cover group-hover:opacity-40 transition-opacity" alt="Current">
+                            <img src="{{ Storage::url($scene->high_res_path) }}" class="w-full h-full object-cover group-hover:opacity-40 transition-opacity" alt="Current">
                             <div class="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900/40">
                                 <i class="fas fa-sync text-white text-xl mb-2"></i>
                                 <span class="text-white text-[9px] font-bold uppercase tracking-widest">Replace Visual Buffer</span>
                             </div>
                             <input type="file" name="image" accept="image/jpeg,image/png" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="this.closest('.group').querySelector('.text-white').innerText = 'NEW BUFFER READY'">
                         </div>
-                        <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest text-center">{{ basename($scene->image_path) }}</p>
+                        <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest text-center">{{ basename($scene->high_res_path) }}</p>
                         @error('image') <p class="text-rose-500 text-[8px] font-bold mt-1 uppercase">{{ $message }}</p> @enderror
                     </div>
 
@@ -88,6 +88,32 @@
         </div>
     </div>
 </div>
+
+<div id="upload-overlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[9999] flex flex-col items-center justify-center text-white hidden">
+    <div class="relative w-24 h-24 mb-6">
+        <div class="absolute inset-0 border-4 border-blue-500/20 rounded-full"></div>
+        <div class="absolute inset-0 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+    <h3 class="text-xs font-black uppercase tracking-[5px] text-white mb-2 ml-1">Calibrating Node</h3>
+    <p class="text-[10px] text-blue-200/80 font-bold uppercase tracking-[2px] animate-pulse">Re-Generating Multi-Resolution Variants...</p>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.querySelector('form');
+        const overlay = document.getElementById('upload-overlay');
+        const fileInput = document.querySelector('input[type="file"]');
+        
+        if (form && overlay) {
+            form.addEventListener('submit', () => {
+                // Only show overlay if a new file is actually being uploaded
+                if (fileInput && fileInput.files.length > 0) {
+                    overlay.classList.remove('hidden');
+                }
+            });
+        }
+    });
+</script>
 
 <style type="text/tailwindcss">
     @layer utilities {

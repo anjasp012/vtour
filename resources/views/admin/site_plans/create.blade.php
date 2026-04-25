@@ -43,4 +43,24 @@
         </form>
     </div>
 </div>
+<div id="upload-overlay" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[9999] flex flex-col items-center justify-center text-white hidden">
+    <div class="relative w-24 h-24 mb-6">
+        <div class="absolute inset-0 border-4 border-blue-500/20 rounded-full"></div>
+        <div class="absolute inset-0 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+    <h3 class="text-xs font-black uppercase tracking-[5px] text-white mb-2 ml-1">Calibrating Map</h3>
+    <p class="text-[10px] text-blue-200/80 font-bold uppercase tracking-[2px] animate-pulse">Generating Multi-Resolution Variants...</p>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.querySelector('form');
+        const overlay = document.getElementById('upload-overlay');
+        if (form && overlay) {
+            form.addEventListener('submit', () => {
+                overlay.classList.remove('hidden');
+            });
+        }
+    });
+</script>
 @endsection

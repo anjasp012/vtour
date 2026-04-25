@@ -7,7 +7,7 @@
     <!-- Main Editing Canvas -->
     <div class="flex-1 relative overflow-auto flex items-center justify-center min-h-0">
         <div class="relative inline-block shadow-2xl border-4 border-white rounded-lg bg-white group" id="map-container">
-            <img src="{{ Storage::url($sitePlan->image_path) }}" class="max-w-full max-h-[90vh] w-auto h-auto block select-none pointer-events-none rounded-sm" id="site-plan-image">
+            <img src="{{ Storage::url($sitePlan->high_res_path) }}" class="max-w-full max-h-[90vh] w-auto h-auto block select-none pointer-events-none rounded-sm" id="site-plan-image">
             
             <!-- Hotspots Layer -->
             <div id="hotspots-layer" class="absolute inset-0 cursor-crosshair"></div>

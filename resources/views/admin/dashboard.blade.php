@@ -59,7 +59,7 @@
             <div class="divide-y divide-slate-50">
                 @forelse($recentScenes as $scene)
                 <div class="px-6 py-4 flex items-center gap-4 hover:bg-slate-50/50 transition-colors">
-                    <img src="{{ Storage::url($scene->image_path) }}" class="w-12 h-12 rounded object-cover shadow-sm border border-slate-200" alt="Buffer">
+                    <img src="{{ Storage::url($scene->thumbnail_path ?? $scene->high_res_path) }}" class="w-12 h-12 rounded object-cover shadow-sm border border-slate-200" alt="Buffer">
                     <div class="flex-1 min-w-0">
                         <p class="text-[11px] font-bold text-slate-900 truncate tracking-tight">{{ $scene->name }}</p>
                         <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">{{ $scene->created_at->diffForHumans() }}</p>

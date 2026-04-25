@@ -21,7 +21,7 @@
             <div class="bg-white border border-slate-200 rounded overflow-hidden flex flex-col shadow-sm hover:shadow transition-all group">
                 <!-- Compact Thumbnail -->
                 <div class="relative aspect-[4/3] overflow-hidden border-b border-slate-100 bg-slate-50">
-                    <img src="{{ Storage::url($plan->image_path) }}" class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500" alt="{{ $plan->name }}">
+                    <img src="{{ Storage::url($plan->low_res_path ?? $plan->high_res_path) }}" class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500" alt="{{ $plan->name }}">
                     
                     <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 p-2 pt-4">
                         <span class="text-white font-bold text-[11px] tracking-tight truncate block">{{ $plan->name }}</span>

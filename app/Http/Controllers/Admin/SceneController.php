@@ -41,8 +41,8 @@ class SceneController extends Controller
         ]);
 
         $tour = $this->getTour();
-        $imagePath = $request->file('image')->store('scenes/images', 'public');
-        $thumbnailPath = $this->generateThumbnail($imagePath);
+        $highResPath = $request->file('image')->store('scenes/images', 'public');
+        $multiRes = $this->generateMultiResImages($highResPath);
 
         if ($request->has('is_start_scene') && $request->is_start_scene) {
             $tour->scenes()->update(['is_start_scene' => false]);
@@ -50,8 +50,10 @@ class SceneController extends Controller
 
         $newScene = $tour->scenes()->create([
             'name' => $validated['name'],
-            'image_path' => $imagePath,
-            'thumbnail_path' => $thumbnailPath,
+            'high_res_path' => $highResPath,
+            'low_res_path' => $multiRes['low_res_path'] ?? null,
+            'thumbnail_path' => $multiRes['thumbnail_path'] ?? null,
+            'medium_res_path' => $multiRes['medium_res_path'] ?? null,
             'is_start_scene' => $request->has('is_start_scene') ? true : false,
             'description_id' => $request->description_id,
             'description_en' => $request->description_en,
@@ -102,16 +104,15 @@ class SceneController extends Controller
         ];
 
         if ($request->hasFile('image')) {
-            if (Storage::disk('public')->exists($scene->image_path)) {
-                Storage::disk('public')->delete($scene->image_path);
-            }
-            if ($scene->thumbnail_path && Storage::disk('public')->exists($scene->thumbnail_path)) {
-                Storage::disk('public')->delete($scene->thumbnail_path);
-            }
+            $this->deletePhysicalImages($scene);
             
-            $imagePath = $request->file('image')->store('scenes/images', 'public');
-            $data['image_path'] = $imagePath;
-            $data['thumbnail_path'] = $this->generateThumbnail($imagePath);
+            $highResPath = $request->file('image')->store('scenes/images', 'public');
+            $multiRes = $this->generateMultiResImages($highResPath);
+            
+            $data['high_res_path'] = $highResPath;
+            $data['low_res_path'] = $multiRes['low_res_path'] ?? null;
+            $data['thumbnail_path'] = $multiRes['thumbnail_path'] ?? null;
+            $data['medium_res_path'] = $multiRes['medium_res_path'] ?? null;
         }
 
         $scene->update($data);
@@ -121,16 +122,20 @@ class SceneController extends Controller
 
     public function destroy(Scene $scene)
     {
-        if (Storage::disk('public')->exists($scene->image_path)) {
-            Storage::disk('public')->delete($scene->image_path);
-        }
-        if ($scene->thumbnail_path && Storage::disk('public')->exists($scene->thumbnail_path)) {
-            Storage::disk('public')->delete($scene->thumbnail_path);
-        }
-        
+        $this->deletePhysicalImages($scene);
         $scene->delete();
 
         return redirect()->route('admin.scenes.index')->with('success', 'Scene deleted successfully.');
+    }
+
+    private function deletePhysicalImages(Scene $scene)
+    {
+        $paths = ['high_res_path', 'low_res_path', 'thumbnail_path', 'medium_res_path'];
+        foreach ($paths as $p) {
+            if ($scene->$p && Storage::disk('public')->exists($scene->$p)) {
+                Storage::disk('public')->delete($scene->$p);
+            }
+        }
     }
 
     /**
@@ -156,53 +161,61 @@ class SceneController extends Controller
         ]);
     }
 
-    private function generateThumbnail($imagePath)
+    private function generateMultiResImages($imagePath)
     {
         try {
             $fullPath = storage_path('app/public/' . $imagePath);
-            if (!file_exists($fullPath)) return null;
+            if (!file_exists($fullPath)) return [];
 
             $info = getimagesize($fullPath);
             $mime = $info['mime'];
 
             switch ($mime) {
-                case 'image/jpeg':
-                    $src = imagecreatefromjpeg($fullPath);
-                    break;
-                case 'image/png':
-                    $src = imagecreatefrompng($fullPath);
-                    break;
-                default:
-                    return null;
+                case 'image/jpeg': $src = imagecreatefromjpeg($fullPath); break;
+                case 'image/png': $src = imagecreatefrompng($fullPath); break;
+                default: return [];
             }
 
-            if (!$src) return null;
+            if (!$src) return [];
 
             $width = imagesx($src);
             $height = imagesy($src);
-
-            // Thumbnail target width: 1024px (standard for low-res pano)
-            $newWidth = 1024;
-            $newHeight = ($height / $width) * $newWidth;
-
-            $tmp = imagecreatetruecolor($newWidth, $newHeight);
-            imagecopyresampled($tmp, $src, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
-
-            $thumbName = 'thumb_' . basename($imagePath);
             $thumbDir = dirname($imagePath);
-            $thumbPath = $thumbDir . '/' . $thumbName;
-            $thumbFullPath = storage_path('app/public/' . $thumbPath);
+            $baseName = basename($imagePath);
 
-            // Save as JPEG with quality 60 (very light)
-            imagejpeg($tmp, $thumbFullPath, 60);
+            $results = [];
+
+            // 1. Thumbnail (sidebar) - 5% of original
+            $results['thumbnail_path'] = $this->resizeByPercent($src, $width, $height, 0.05, 'thumb_', $thumbDir, $baseName, 80);
+
+            // 2. Low Res (pano start) - 15% of original
+            $results['low_res_path'] = $this->resizeByPercent($src, $width, $height, 0.15, 'low_', $thumbDir, $baseName, 70);
+
+            // 3. Medium Res (pano mid) - 40% of original
+            $results['medium_res_path'] = $this->resizeByPercent($src, $width, $height, 0.40, 'mid_', $thumbDir, $baseName, 75);
 
             imagedestroy($src);
-            imagedestroy($tmp);
-
-            return $thumbPath;
+            return $results;
         } catch (\Exception $e) {
-            \Log::error("Thumbnail generation failed: " . $e->getMessage());
-            return null;
+            \Log::error("Multi-res generation failed: " . $e->getMessage());
+            return [];
         }
+    }
+
+    private function resizeByPercent($src, $origW, $origH, $percent, $prefix, $dir, $baseName, $quality)
+    {
+        $targetW = max(50, round($origW * $percent));
+        $targetH = max(25, round($origH * $percent));
+        
+        $tmp = imagecreatetruecolor($targetW, $targetH);
+        imagecopyresampled($tmp, $src, 0, 0, 0, 0, $targetW, $targetH, $origW, $origH);
+        
+        $path = $dir . '/' . $prefix . $baseName;
+        $fullPath = storage_path('app/public/' . $path);
+        
+        imagejpeg($tmp, $fullPath, $quality);
+        imagedestroy($tmp);
+        
+        return $path;
     }
 }

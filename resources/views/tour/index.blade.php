@@ -598,74 +598,87 @@
             const sceneData = tourData.scenes.find(s => s.id == sceneId);
             if (!sceneData) return null;
 
-            // Normalize paths: remove leading slash if present then prefix with base
             const normalizePath = (path) => path ? (path.startsWith('/') ? path.substring(1) : path) : '';
-            const imageUrl = STORAGE_BASE + normalizePath(sceneData.image_path);
-            const thumbUrl = sceneData.thumbnail_path ? (STORAGE_BASE + normalizePath(sceneData.thumbnail_path)) : imageUrl;
+            const lowUrl = sceneData.low_res_path ? (STORAGE_BASE + normalizePath(sceneData.low_res_path)) : (STORAGE_BASE + normalizePath(sceneData.high_res_path));
+            const midUrl = sceneData.medium_res_path ? (STORAGE_BASE + normalizePath(sceneData.medium_res_path)) : null;
+            const highUrl = STORAGE_BASE + normalizePath(sceneData.high_res_path);
 
-            console.log(`Initializing panorama for ${sceneData.name} (ID: ${sceneId})`);
-            console.log(`- Thumb: ${thumbUrl}`);
-
-            // Load low-res first
-            const pano = new PANOLENS.ImagePanorama(thumbUrl);
-            pano.isHD = !sceneData.thumbnail_path;
+            const pano = new PANOLENS.ImagePanorama(lowUrl);
+            pano.loadStage = 0; // 0: low, 1: mid, 2: high
             panoramas[sceneId] = pano;
 
-            // If we have a thumbnail version, load high-res HD in the background
-            if (sceneData.thumbnail_path) {
-                const hdLoader = document.getElementById('hd-loader');
+            const hdLoader = document.getElementById('hd-loader');
+
+            const updatePanoTexture = (texture, stage, stageName) => {
+                if (pano.loadStage >= stage) return;
+                console.log(`- ${stageName} loaded for ${sceneData.name}`);
                 
-                // Show loader if this is the active scene
+                texture.minFilter = THREE.LinearFilter;
+                texture.magFilter = THREE.LinearFilter;
+                texture.generateMipmaps = false;
+                if (typeof THREE.sRGBEncoding !== 'undefined') texture.encoding = THREE.sRGBEncoding;
+
+                const updateMaterial = (mat) => {
+                    if (!mat) return;
+                    if (Array.isArray(mat)) { mat.forEach(m => updateMaterial(m)); return; }
+                    if (mat.map !== undefined) mat.map = texture;
+                    if (mat.uniforms) {
+                        if (mat.uniforms.tDiffuse) mat.uniforms.tDiffuse.value = texture;
+                        if (mat.uniforms.tEquirect) mat.uniforms.tEquirect.value = texture;
+                    }
+                    mat.needsUpdate = true;
+                };
+
+                updateMaterial(pano.material);
+                pano.traverse((node) => { if (node.isMesh) updateMaterial(node.material); });
+                pano.texture = texture;
+                pano.loadStage = stage;
+            };
+
+            const startLoading = () => {
+                if (pano.loadStage >= 2) return;
+                
                 const isCurrent = (typeof viewer !== 'undefined' && viewer.panorama === pano) || (typeof viewer === 'undefined' || !viewer.panorama);
                 if (isCurrent) hdLoader.classList.add('visible');
 
-                console.log(`- HD loading started: ${imageUrl}`);
-                textureLoader.load(imageUrl, (texture) => {
-                    console.log(`- HD loaded for ${sceneData.name}`);
-                    texture.minFilter = THREE.LinearFilter;
-                    texture.magFilter = THREE.LinearFilter;
-                    texture.generateMipmaps = false;
-                    
-                    if (typeof THREE.sRGBEncoding !== 'undefined') texture.encoding = THREE.sRGBEncoding;
+                if (midUrl) {
+                    textureLoader.load(midUrl, (texMid) => {
+                        updatePanoTexture(texMid, 1, 'MEDIUM');
+                        textureLoader.load(highUrl, (texHigh) => {
+                            updatePanoTexture(texHigh, 2, 'HIGH');
+                            if (viewer.panorama === pano) hdLoader.classList.remove('visible');
+                        }, undefined, (err) => {
+                            console.error("High Res Load Failed", err);
+                            if (viewer.panorama === pano) hdLoader.classList.remove('visible');
+                        });
+                    }, undefined, (err) => {
+                        console.error("Mid Res Load Failed", err);
+                        // Fallback: try High res directly
+                        textureLoader.load(highUrl, (texHigh) => {
+                            updatePanoTexture(texHigh, 2, 'HIGH');
+                            if (viewer.panorama === pano) hdLoader.classList.remove('visible');
+                        });
+                    });
+                } else {
+                    textureLoader.load(highUrl, (texHigh) => {
+                        updatePanoTexture(texHigh, 2, 'HIGH');
+                        if (viewer.panorama === pano) hdLoader.classList.remove('visible');
+                    }, undefined, (err) => {
+                        console.error("High Res Load Failed", err);
+                        if (viewer.panorama === pano) hdLoader.classList.remove('visible');
+                    });
+                }
+            };
 
-                    const updateMaterial = (mat) => {
-                        if (!mat) return;
-                        if (Array.isArray(mat)) { mat.forEach(m => updateMaterial(m)); return; }
-                        if (mat.map !== undefined) mat.map = texture;
-                        if (mat.uniforms) {
-                            if (mat.uniforms.tDiffuse) mat.uniforms.tDiffuse.value = texture;
-                            if (mat.uniforms.tEquirect) mat.uniforms.tEquirect.value = texture;
-                        }
-                        mat.needsUpdate = true;
-                    };
+            // Start loading process
+            startLoading();
 
-                    pano.isHD = true;
-                    pano.texture = texture; 
-                    updateMaterial(pano.material);
-                    pano.traverse((node) => { if (node.isMesh) updateMaterial(node.material); });
-
-                    if (typeof viewer !== 'undefined' && viewer.panorama === pano) {
-                        hdLoader.classList.remove('visible');
-                    }
-                }, undefined, (err) => {
-                    console.error(`- HD Load FAILED for ${sceneData.name}:`, err);
-                    if (typeof viewer !== 'undefined' && viewer.panorama === pano) {
-                        hdLoader.classList.remove('visible');
-                    }
-                });
-                
-                pano.addEventListener('enter-fade-start', () => {
-                    if (!pano.isHD) hdLoader.classList.add('visible');
-                });
-                pano.addEventListener('leave', () => {
-                    hdLoader.classList.remove('visible');
-                });
-            } else {
-                // If it's already HD (directly image_path), hide loader on enter if it was stuck
-                pano.addEventListener('enter-fade-start', () => {
-                    document.getElementById('hd-loader').classList.remove('visible');
-                });
-            }
+            pano.addEventListener('enter-fade-start', () => {
+                if (pano.loadStage < 2) hdLoader.classList.add('visible');
+            });
+            pano.addEventListener('leave', () => {
+                hdLoader.classList.remove('visible');
+            });
 
             // Attach infospots to this new panorama
             if (sceneData.infospots) {
@@ -1006,7 +1019,7 @@
                 card.dataset.id = scene.id;
                 
                 const normalizePath = (path) => path ? (path.startsWith('/') ? path.substring(1) : path) : '';
-                const thumbUrl = scene.thumbnail_path ? (STORAGE_BASE + normalizePath(scene.thumbnail_path)) : (STORAGE_BASE + normalizePath(scene.image_path));
+                const thumbUrl = scene.thumbnail_path ? (STORAGE_BASE + normalizePath(scene.thumbnail_path)) : (STORAGE_BASE + normalizePath(scene.high_res_path));
                 card.innerHTML = `
                     <img src="${thumbUrl}" alt="${scene.name}">
                     <div class="scene-card-label">${scene.name}</div>
@@ -1654,10 +1667,30 @@
             activeMapContainer.style.transform = 'scale(1)';
             activeMapContainer.style.transformOrigin = '50% 50%';
 
+            const lowUrl = plan.low_res_path ? `/storage/${plan.low_res_path}` : (plan.high_res_path ? `/storage/${plan.high_res_path}` : `/storage/${plan.image_path}`);
+            const midUrl = plan.medium_res_path ? `/storage/${plan.medium_res_path}` : null;
+            const highUrl = plan.high_res_path ? `/storage/${plan.high_res_path}` : `/storage/${plan.image_path}`;
+
             activeMapContainer.innerHTML = `
-                <img src="/storage/${plan.image_path}" class="max-w-full max-h-[60vh] w-auto h-auto block rounded-lg shadow-2xl pointer-events-none object-contain">
+                <img id="active-map-img" src="${lowUrl}" class="max-w-full max-h-[60vh] w-auto h-auto block rounded-lg shadow-2xl pointer-events-none object-contain transition-opacity">
                 <div id="map-hotspots-layer" class="absolute inset-0"></div>
             `;
+
+            const imgElement = document.getElementById('active-map-img');
+            if (midUrl) {
+                const midImg = new Image();
+                midImg.src = midUrl;
+                midImg.onload = () => {
+                    if (imgElement) imgElement.src = midUrl;
+                    const highImg = new Image();
+                    highImg.src = highUrl;
+                    highImg.onload = () => { if (imgElement) imgElement.src = highUrl; };
+                };
+            } else if (highUrl !== lowUrl) {
+                const highImg = new Image();
+                highImg.src = highUrl;
+                highImg.onload = () => { if (imgElement) imgElement.src = highUrl; };
+            }
 
             const layer = document.getElementById('map-hotspots-layer');
             plan.hotspots.forEach(hs => {

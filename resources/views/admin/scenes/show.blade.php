@@ -707,7 +707,7 @@
     const controls = viewer.getControl();
     controls.dollyIn = controls.dollyOut;
 
-    const panorama = new PANOLENS.ImagePanorama('{{ Storage::url($scene->image_path) }}');
+    const panorama = new PANOLENS.ImagePanorama('{{ Storage::url($scene->high_res_path) }}');
     viewer.add(panorama);
 
     // Apply saved initial view in Editor
