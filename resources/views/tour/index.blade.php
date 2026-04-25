@@ -367,13 +367,36 @@
         }
 
         /* Resolution Selector */
-        .res-selector {
-            position: relative;
+        .res-panel {
+            position: absolute;
+            bottom: calc(100% + 12px);
+            right: 0;
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 14px;
+            display: flex;
+            flex-direction: column;
+            min-width: 150px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-origin: bottom right;
+            z-index: 10002;
+            overflow: hidden;
         }
 
-        .res-btn {
+        .res-panel.minimized {
+            opacity: 0;
+            transform: scale(0.8) translateY(20px);
+            pointer-events: none;
+            filter: blur(10px);
+        }
+
+        .res-toggle-btn {
             background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(8px);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: white;
             padding: 8px 12px;
@@ -389,33 +412,12 @@
             transition: all 0.3s;
         }
 
-        .res-btn:hover {
+        .res-toggle-btn:hover {
             background: rgba(15, 23, 42, 0.8);
+            transform: scale(1.05);
         }
 
-        .res-menu {
-            position: absolute;
-            bottom: 50px;
-            right: 0;
-            background: #0f172a;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 12px;
-            z-index: 99999;
-            overflow: hidden;
-            display: none;
-            flex-direction: column;
-            min-width: 150px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
-            /* Force hardware acceleration */
-            -webkit-transform: translateZ(0);
-            transform: translateZ(0);
-        }
-
-        .res-menu.show {
-            display: flex !important;
-        }
-
-        .res-menu button {
+        .res-panel button {
             background: transparent;
             border: none;
             color: rgba(255, 255, 255, 0.6);
@@ -429,12 +431,12 @@
             transition: all 0.2s;
         }
 
-        .res-menu button:hover {
+        .res-panel button:hover {
             background: rgba(255, 255, 255, 0.1);
             color: white;
         }
 
-        .res-menu button.active {
+        .res-panel button.active {
             color: #6366f1;
             background: rgba(99, 102, 241, 0.1);
         }
@@ -597,16 +599,16 @@
         <!-- Bottom Right UI Controls -->
         <div class="bottom-right-controls">
             <!-- Resolution Selector -->
-            <div class="res-selector" id="res-selector">
-                <button class="res-btn" id="active-res-btn">
-                    <i class="fas fa-signal"></i>
-                    <span id="current-res-label">AUTO</span>
-                </button>
-                <div class="res-menu" id="res-menu">
-                    <button data-res="low">SD (15%)</button>
-                    <button data-res="medium">HD (40%)</button>
-                    <button data-res="high" class="active">ULTRA (AUTO)</button>
+            <div class="res-container" style="position: relative;">
+                <div class="res-panel minimized" id="res-panel">
+                    <button data-res="low">SD (Low)</button>
+                    <button data-res="medium">HD (Medium)</button>
+                    <button data-res="high">ULTRA (High)</button>
                 </div>
+                <button class="res-toggle-btn" id="res-toggle-btn">
+                    <i class="fas fa-signal"></i>
+                    <span id="res-label">SD</span>
+                </button>
             </div>
 
             <!-- HD Loader -->
@@ -1591,85 +1593,64 @@
 
             // Sync button state on system fullscreen change
             const syncFS = () => {
-                const fse = document.fullscreenElement || document.webkitFullscreenElement || document
-                    .mozFullScreenElement || document.msFullscreenElement;
+                const fse = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
                 const isPseudo = document.documentElement.classList.contains('pseudo-fullscreen');
-                document.getElementById('toggle-fullscreen').classList.toggle('btn-active', !!fse || isPseudo);
+                const fsBtn = document.getElementById('toggle-fullscreen');
+                if (fsBtn) fsBtn.classList.toggle('btn-active', !!fse || isPseudo);
             };
             document.addEventListener('fullscreenchange', syncFS);
-
-            // Resolution Menu Logic
-            const resBtn = document.getElementById('active-res-btn');
-            const resMenu = document.getElementById('res-menu');
-            const resLabel = document.getElementById('current-res-label');
-
-            resBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                resMenu.classList.toggle('show');
-            });
-
-            document.addEventListener('click', (e) => {
-                if (!resMenu.contains(e.target) && !resBtn.contains(e.target)) {
-                    resMenu.classList.remove('show');
-                }
-            });
-
-            resMenu.querySelectorAll('button').forEach(btn => {
-                // Initialize UI based on stored resolution
-                if (btn.dataset.res === selectedResolution) {
-                    resMenu.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    resLabel.textContent = btn.textContent.split(' ')[0];
-                }
-
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const res = btn.dataset.res;
-                    selectedResolution = res;
-                    localStorage.setItem('vtour_res', res); // Save to cache
-
-                    // UI Update
-                    resMenu.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    resLabel.textContent = btn.textContent.split(' ')[0]; // Show SD, HD, or ULTRA
-
-                    // Apply only to CURRENT panorama immediately to save bandwidth
-                    if (viewer && viewer.panorama) {
-                        const curPano = viewer.panorama;
-
-                        // 1. Handle Downgrade: Switch back to cached textures
-                        if (res === 'low' && curPano.cachedTextures[0]) {
-                            _applyCachedTexture(curPano, 0);
-                        } else if (res === 'medium' && curPano.cachedTextures[1]) {
-                            _applyCachedTexture(curPano, 1);
-                        } else if (res === 'high' && curPano.cachedTextures[2]) {
-                            _applyCachedTexture(curPano, 2);
-                        }
-
-                        // 2. Handle Upgrade: Trigger download if not yet at target
-                        if ((res === 'medium' && curPano.loadStage < 1) || (res === 'high' && curPano
-                                .loadStage < 2)) {
-                            _forceUpgrade(curPano);
-                        }
-
-                        // Handle loader visibility for current view
-                        if ((res === 'low') || (res === 'medium' && curPano.loadStage >= 1) || (res ===
-                                'high' && curPano.loadStage >= 2)) {
-                            hdLoader.classList.remove('visible');
-                        } else {
-                            hdLoader.classList.add('visible');
-                        }
-                    }
-                });
-            });
-
-
-
-
             document.addEventListener('webkitfullscreenchange', syncFS);
             document.addEventListener('mozfullscreenchange', syncFS);
             document.addEventListener('msfullscreenchange', syncFS);
+
+            // Resolution Toggle Logic (Same as UI Toggle)
+            const resToggle = document.getElementById('res-toggle-btn');
+            const resPanel = document.getElementById('res-panel');
+            const resLabel = document.getElementById('res-label');
+
+            if (resToggle && resPanel) {
+                resToggle.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    resPanel.classList.toggle('minimized');
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!resPanel.contains(e.target) && !resToggle.contains(e.target)) {
+                        resPanel.classList.add('minimized');
+                    }
+                });
+
+                resPanel.querySelectorAll('button').forEach(btn => {
+                    // Initialize
+                    if (btn.dataset.res === selectedResolution) {
+                        btn.classList.add('active');
+                        resLabel.textContent = btn.textContent.split(' ')[0];
+                    }
+
+                    btn.addEventListener('click', () => {
+                        const res = btn.dataset.res;
+                        selectedResolution = res;
+                        localStorage.setItem('vtour_res', res);
+
+                        resPanel.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        resLabel.textContent = btn.textContent.split(' ')[0];
+                        resPanel.classList.add('minimized');
+
+                        if (viewer && viewer.panorama) {
+                            const curPano = viewer.panorama;
+                            if (res === 'low' && curPano.cachedTextures[0]) _applyCachedTexture(curPano, 0);
+                            else if (res === 'medium' && curPano.cachedTextures[1]) _applyCachedTexture(curPano, 1);
+                            else if (res === 'high' && curPano.cachedTextures[2]) _applyCachedTexture(curPano, 2);
+
+                            if ((res === 'medium' && curPano.loadStage < 1) || (res === 'high' && curPano.loadStage < 2)) _forceUpgrade(curPano);
+
+                            if ((res === 'low') || (res === 'medium' && curPano.loadStage >= 1) || (res === 'high' && curPano.loadStage >= 2)) hdLoader.classList.remove('visible');
+                            else hdLoader.classList.add('visible');
+                        }
+                    });
+                });
+            }
 
             document.getElementById('toggle-markers').addEventListener('click', function() {
                 const pano = viewer.panorama;
