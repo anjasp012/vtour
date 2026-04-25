@@ -400,9 +400,7 @@
 
                         <button id="toggle-map" class="btn-action bg-white/5 hover:bg-white/15 border border-border-glass text-white/90 w-[38px] h-[38px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95" title="Site Plan"><i class="fas fa-map text-[14px] text-primary"></i></button>
 
-                        <button id="toggle-fullscreen" class="btn-action bg-white/5 hover:bg-white/15 border border-border-glass text-white/90 w-[38px] h-[38px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95" title="Full Screen"><i class="fas fa-expand text-[14px] text-primary"></i></button>
-
-                        <button id="toggle-quality" class="btn-action btn-active bg-white/5 hover:bg-white/15 [&.btn-active]:bg-primary/35 border border-border-glass [&.btn-active]:border-primary/80 text-white/90 w-[38px] h-[38px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 font-bold text-[10px]" title="Change Quality">HD</button>
+                        <button id="toggle-fullscreen" class="btn-action bg-white/5 hover:bg-white/15 [&.btn-active]:bg-primary/35 border border-border-glass [&.btn-active]:border-primary/80 text-white/90 w-[38px] h-[38px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95" title="Full Screen"><i class="fas fa-expand text-[14px] text-primary"></i></button>
                     </div>
                 </div>
 
@@ -479,7 +477,6 @@
         const loader3d = new THREE.GLTFLoader();
         const UNIFORM_SIZE = 500;
         let currentSceneData = null;
-        let isQualityHD = true;
 
         async function createStyledIcon(iconString, color = '#6366f1', rotation = 0) {
             await document.fonts.ready;
@@ -589,59 +586,6 @@
             }
         }
 
-        function loadHDForPano(pano, sceneData) {
-            if (!sceneData.thumbnail_path || pano.isHD || pano.isLoadingHD) return;
-            
-            pano.isLoadingHD = true;
-            const imageUrl = '/storage/' + sceneData.image_path;
-            const hdLoader = document.getElementById('hd-loader');
-            const loader = new THREE.TextureLoader();
-            
-            // Show loader if this is the active scene
-            const isCurrent = (typeof viewer !== 'undefined' && viewer.panorama === pano);
-            if (isCurrent && isQualityHD) hdLoader.classList.add('visible');
-
-            loader.load(imageUrl, (texture) => {
-                texture.minFilter = THREE.LinearFilter;
-                texture.magFilter = THREE.LinearFilter;
-                texture.generateMipmaps = false;
-                
-                if (typeof THREE.sRGBEncoding !== 'undefined') texture.encoding = THREE.sRGBEncoding;
-                else if (typeof THREE.SRGBColorSpace !== 'undefined') texture.colorSpace = THREE.SRGBColorSpace;
-
-                const updateMaterial = (mat) => {
-                    if (!mat) return;
-                    if (Array.isArray(mat)) {
-                        mat.forEach(m => updateMaterial(m));
-                        return;
-                    }
-                    if (mat.map !== undefined) mat.map = texture;
-                    if (mat.uniforms) {
-                        if (mat.uniforms.tDiffuse) mat.uniforms.tDiffuse.value = texture;
-                        if (mat.uniforms.tEquirect) mat.uniforms.tEquirect.value = texture;
-                    }
-                    mat.needsUpdate = true;
-                };
-
-                pano.isHD = true;
-                pano.isLoadingHD = false;
-                pano.texture = texture;
-                updateMaterial(pano.material);
-                pano.traverse((node) => {
-                    if (node.isMesh) updateMaterial(node.material);
-                });
-
-                if (typeof viewer !== 'undefined' && viewer.panorama === pano) {
-                    hdLoader.classList.remove('visible');
-                }
-            }, undefined, (err) => {
-                pano.isLoadingHD = false;
-                if (typeof viewer !== 'undefined' && viewer.panorama === pano) {
-                    hdLoader.classList.remove('visible');
-                }
-            });
-        }
-
         function getOrCreatePanorama(sceneId) {
             if (panoramas[sceneId]) return panoramas[sceneId];
 
@@ -651,24 +595,68 @@
             const imageUrl = '/storage/' + sceneData.image_path;
             const thumbUrl = sceneData.thumbnail_path ? '/storage/' + sceneData.thumbnail_path : imageUrl;
 
+            // Load low-res first (or high-res if no thumb)
             const pano = new PANOLENS.ImagePanorama(thumbUrl);
             pano.isHD = !sceneData.thumbnail_path;
-            pano.sceneId = sceneId;
             panoramas[sceneId] = pano;
 
+            // If we started with a thumbnail, load high-res in background
             if (sceneData.thumbnail_path) {
-                if (isQualityHD) {
-                    loadHDForPano(pano, sceneData);
-                }
+                const hdLoader = document.getElementById('hd-loader');
+                const loader = new THREE.TextureLoader();
                 
+                // Show loader if this is the active scene OR if it's the first scene (before viewer.panorama is set)
+                const isCurrent = (typeof viewer !== 'undefined' && viewer.panorama === pano) || (typeof viewer === 'undefined' || !viewer.panorama);
+                if (isCurrent) hdLoader.classList.add('visible');
+
+                loader.load(imageUrl, (texture) => {
+                    texture.minFilter = THREE.LinearFilter;
+                    texture.magFilter = THREE.LinearFilter;
+                    texture.generateMipmaps = false;
+                    
+                    // Handle encoding for older Three.js (v0.105.0)
+                    if (typeof THREE.sRGBEncoding !== 'undefined') texture.encoding = THREE.sRGBEncoding;
+                    else if (typeof THREE.SRGBColorSpace !== 'undefined') texture.colorSpace = THREE.SRGBColorSpace;
+
+                    const updateMaterial = (mat) => {
+                        if (!mat) return;
+                        if (Array.isArray(mat)) {
+                            mat.forEach(m => updateMaterial(m));
+                            return;
+                        }
+                        if (mat.map !== undefined) mat.map = texture;
+                        if (mat.uniforms) {
+                            if (mat.uniforms.tDiffuse) mat.uniforms.tDiffuse.value = texture;
+                            if (mat.uniforms.tEquirect) mat.uniforms.tEquirect.value = texture;
+                        }
+                        mat.needsUpdate = true;
+                    };
+
+                    pano.isHD = true;
+                    pano.texture = texture; // Internal Panolens ref
+                    updateMaterial(pano.material);
+                    pano.traverse((node) => {
+                        if (node.isMesh) updateMaterial(node.material);
+                    });
+
+                    // Hide loader if this is the active pano
+                    if (typeof viewer !== 'undefined' && viewer.panorama === pano) {
+                        hdLoader.classList.remove('visible');
+                    }
+                }, undefined, (err) => {
+                    if (typeof viewer !== 'undefined' && viewer.panorama === pano) {
+                        hdLoader.classList.remove('visible');
+                    }
+                });
+                
+                // Update loader visibility when entering pano
                 pano.addEventListener('enter-fade-start', () => {
-                    if (!pano.isHD && isQualityHD) {
-                        document.getElementById('hd-loader').classList.add('visible');
-                        loadHDForPano(pano, sceneData);
+                    if (!pano.isHD) {
+                        hdLoader.classList.add('visible');
                     }
                 });
                 pano.addEventListener('leave', () => {
-                    document.getElementById('hd-loader').classList.remove('visible');
+                    hdLoader.classList.remove('visible');
                 });
             }
 
@@ -1126,14 +1114,29 @@
             });
 
             document.getElementById('toggle-fullscreen').addEventListener('click', function () {
-                if (!document.fullscreenElement) {
-                    document.documentElement.requestFullscreen();
+                const docElm = document.documentElement;
+                const rfs = docElm.requestFullscreen || docElm.webkitRequestFullScreen || docElm.mozRequestFullScreen || docElm.msRequestFullscreen;
+                const efs = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
+                const fse = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+
+                if (!fse) {
+                    if (rfs) rfs.call(docElm);
                     this.classList.add('btn-active');
                 } else {
-                    document.exitFullscreen();
+                    if (efs) efs.call(document);
                     this.classList.remove('btn-active');
                 }
             });
+            
+            // Sync button state on system fullscreen change
+            const syncFS = () => {
+                const fse = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+                document.getElementById('toggle-fullscreen').classList.toggle('btn-active', !!fse);
+            };
+            document.addEventListener('fullscreenchange', syncFS);
+            document.addEventListener('webkitfullscreenchange', syncFS);
+            document.addEventListener('mozfullscreenchange', syncFS);
+            document.addEventListener('msfullscreenchange', syncFS);
 
             document.getElementById('toggle-markers').addEventListener('click', function () {
                 const pano = viewer.panorama;
@@ -1144,20 +1147,6 @@
                         c.visible = visible;
                     }
                 });
-            });
-
-            document.getElementById('toggle-quality').addEventListener('click', function () {
-                isQualityHD = !isQualityHD;
-                this.classList.toggle('btn-active', isQualityHD);
-                this.innerText = isQualityHD ? 'HD' : 'SD';
-                this.style.color = isQualityHD ? '#6366f1' : '#fff';
-
-                if (isQualityHD && viewer.panorama) {
-                    const sceneData = tourData.scenes.find(s => s.id == viewer.panorama.sceneId);
-                    if (sceneData) {
-                        loadHDForPano(viewer.panorama, sceneData);
-                    }
-                }
             });
 
             document.getElementById('ui-toggle').addEventListener('click', function () {
