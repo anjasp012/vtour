@@ -10,6 +10,9 @@ class TourController extends Controller
     public function index()
     {
         $tour = Tour::with([
+            'scenes' => function($q) {
+                $q->orderBy('order', 'asc')->orderBy('id', 'asc');
+            },
             'scenes.infospots.targetScene', 
             'scenes.infospots.assets',
             'scenes.infospots.products.assets',
