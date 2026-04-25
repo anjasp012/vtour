@@ -911,16 +911,22 @@
 
             updateMaterial(pano.material);
             pano.traverse((node) => {
-                // Skip marker meshes — they have their own textures
                 if (node.isMesh && !node.isPerspectiveMesh && !node.isCustomImage && !node.is3DModel) {
                     updateMaterial(node.material);
-                    node.material.depthWrite = false; // Prevent clipping
+                    node.material.depthWrite = false;
                 }
             });
 
             // Sync internal Panolens references
             pano.texture = texture;
             pano.loadStage = stage;
+        }
+
+        // Alias for clarity in other parts of the script
+        function _applyCachedTexture(pano, stage) {
+            if (pano && pano.cachedTextures && pano.cachedTextures[stage]) {
+                _applyTextureToPano(pano, pano.cachedTextures[stage], stage);
+            }
         }
 
         function _forceUpgrade(pano) {
@@ -968,12 +974,10 @@
 
                 pano.cachedTextures[stage] = texture;
 
-                // Block update based on selected resolution
-                if (selectedResolution === 'low' && stage >= 1) return;
-                if (selectedResolution === 'medium' && stage >= 2) return;
-
-                // Only apply if it's an UPGRADE
-                if (pano.loadStage < stage) {
+                const targetStage = selectedResolution === 'low' ? 0 : (selectedResolution === 'medium' ? 1 : 2);
+                
+                // Apply if it's the target stage, OR if it's an upgrade towards the target
+                if (stage === targetStage || (stage < targetStage && stage > pano.loadStage)) {
                     console.log(`- ${stageName} applied for ${sceneData.name}`);
                     _applyTextureToPano(pano, texture, stage);
                 }
@@ -1383,12 +1387,18 @@
                         viewer.setPanorama(pano);
 
                         // Check for upgrade on current pano every time we enter
-                        const targetStage = selectedResolution === 'low' ? 0 : (selectedResolution === 'medium' ?
-                            1 : 2);
+                        const targetStage = selectedResolution === 'low' ? 0 : (selectedResolution === 'medium' ? 1 : 2);
+                        
                         if (pano.loadStage < targetStage) {
-                            hdLoader.classList.add('visible');
-                            if (pano.retryLoading) pano.retryLoading();
-                        } else {
+                            // If we have it in cache, apply immediately
+                            if (pano.cachedTextures && pano.cachedTextures[targetStage]) {
+                                _applyCachedTexture(pano, targetStage);
+                                hdLoader.classList.remove('visible');
+                            } else {
+                                hdLoader.classList.add('visible');
+                                if (pano.retryLoading) pano.retryLoading();
+                            }
+                        } else if (pano.loadStage > targetStage) {
                             // If we already have a better texture than target (e.g. from previous high-res session)
                             // but user wants SD, we should swap back here just to be sure
                             if (pano.loadStage > targetStage) {
