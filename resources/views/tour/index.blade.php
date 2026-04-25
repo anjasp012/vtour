@@ -795,17 +795,13 @@
 
                     model.is3DModel = true;
 
-                    // Set maximum renderOrder and disable depthTest for "always on top" visibility
+                    // Set maximum renderOrder for "always on top" priority without breaking inner mesh depth
                     model.traverse(node => {
                         if (node.isMesh) {
                             node.renderOrder = 9999;
-                            if (node.material) {
-                                node.material.depthTest = false;
-                                node.material.depthWrite = false;
-                                node.material.transparent = true;
-                            }
                         }
                     });
+
 
                     if (gltf.animations && gltf.animations.length > 0) {
                         const mixer = new THREE.AnimationMixer(model);
@@ -1056,10 +1052,7 @@
                                 const material = new THREE.MeshBasicMaterial({
                                     map: texture,
                                     transparent: true,
-                                    side: THREE.DoubleSide,
-                                    alphaTest: 0.1,
-                                    depthTest: false,
-                                    depthWrite: false
+                                    side: THREE.DoubleSide
                                 });
                                 ispot = new THREE.Mesh(geometry, material);
                                 ispot.renderOrder = 1000;
@@ -2085,9 +2078,13 @@
                 switchProduct(products[0].id);
             } else {
                 tabsContainer.classList.add('hidden');
-                // No products, just show assets (legacy)
-                document.getElementById('tab-id').innerHTML = '';
-                document.getElementById('tab-en').innerHTML = '';
+                // No products, just show legacy content
+                document.getElementById('tab-id').innerHTML = textId || '';
+                document.getElementById('tab-en').innerHTML = textEn || '';
+                document.getElementById('tab-researcher').innerHTML = '';
+                document.getElementById('tab-contact').innerHTML = '';
+                document.getElementById('extra-tabs-wrapper').classList.add('hidden');
+                
                 buildCarousel(assets);
             }
 
@@ -2108,6 +2105,30 @@
                 document.querySelectorAll('.product-tab').forEach(tab => {
                     tab.classList.toggle('active', tab.dataset.id == productId);
                 });
+                
+                // Update specific product text content
+                document.getElementById('tab-id').innerHTML = product.description_id || '';
+                document.getElementById('tab-en').innerHTML = product.description_en || '';
+                document.getElementById('tab-researcher').innerHTML = product.researcher || '';
+                document.getElementById('tab-contact').innerHTML = product.contact_person || '';
+                
+                // Handle Extra Tabs Visibility
+                const hasResearcher = !!product.researcher;
+                const hasContact = !!product.contact_person;
+                const extraWrapper = document.getElementById('extra-tabs-wrapper');
+                
+                if (hasResearcher || hasContact) {
+                    extraWrapper.classList.remove('hidden');
+                    document.getElementById('btn-tab-researcher').classList.toggle('hidden', !hasResearcher);
+                    document.getElementById('btn-tab-contact').classList.toggle('hidden', !hasContact);
+                } else {
+                    extraWrapper.classList.add('hidden');
+                }
+                
+                // Fallback to 'id' tab if current active tab is being hidden
+                if (currentModalLang === 'researcher' && !hasResearcher) switchTab('id');
+                if (currentModalLang === 'contact' && !hasContact) switchTab('id');
+
                 buildCarousel(product.assets);
             }
         }

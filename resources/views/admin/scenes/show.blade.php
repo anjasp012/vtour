@@ -848,17 +848,13 @@
                 model.is3DModel = true;
                 model.spotData = spotData;
 
-                // Set maximum renderOrder and disable depthTest for "always on top" visibility
+                // Set maximum renderOrder for "always on top" priority without breaking inner mesh depth
                 model.traverse(node => {
                     if (node.isMesh) {
                         node.renderOrder = 9999;
-                        if (node.material) {
-                            node.material.depthTest = false;
-                            node.material.depthWrite = false;
-                            node.material.transparent = true;
-                        }
                     }
                 });
+
 
                 // Handle Animations
                 if (gltf.animations && gltf.animations.length > 0) {
@@ -992,8 +988,9 @@
              const geometry = new THREE.PlaneGeometry(600, 600);
              const texture = new THREE.TextureLoader().load(customIconUrl);
              const material = new THREE.MeshBasicMaterial({ 
-                 map: texture, transparent: true, side: THREE.DoubleSide,
-                 alphaTest: 0.1, depthTest: false, depthWrite: false
+                 map: texture, 
+                 transparent: true, 
+                 side: THREE.DoubleSide
              });
              marker = new THREE.Mesh(geometry, material);
              marker.renderOrder = 999;
@@ -1009,8 +1006,9 @@
                 const geometry = new THREE.PlaneGeometry(600, 600);
                 const texture = new THREE.TextureLoader().load(iconUrl);
                 const material = new THREE.MeshBasicMaterial({ 
-                    map: texture, transparent: true, side: THREE.DoubleSide,
-                    alphaTest: 0.1, depthTest: false, depthWrite: false
+                    map: texture, 
+                    transparent: true, 
+                    side: THREE.DoubleSide
                 });
                 marker = new THREE.Mesh(geometry, material);
                 marker.renderOrder = 999;
