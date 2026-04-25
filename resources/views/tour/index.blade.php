@@ -369,57 +369,96 @@
         /* Resolution Sub-Panel (Sidebar) */
         .res-sidebar-panel {
             position: absolute;
-            left: calc(100% + 10px);
-            top: 0;
-            background: rgba(15, 23, 42, 0.4);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 5px;
-            border-radius: 12px;
+            left: calc(100% + 12px);
+            top: -10px; /* Slight offset up for better centering */
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 8px;
+            border-radius: 16px;
             display: flex;
-            flex-direction: row;
-            gap: 5px;
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             transform-origin: left center;
-            z-index: 100;
+            z-index: 20000;
+        }
+
+        .res-sidebar-panel::before {
+            content: 'QUALITY';
+            font-size: 7px;
+            font-weight: 900;
+            color: rgba(255, 255, 255, 0.3);
+            letter-spacing: 2px;
+            margin-bottom: 2px;
         }
 
         .res-sidebar-panel.minimized {
             opacity: 0;
-            transform: scale(0.8) translateX(-15px);
+            transform: scale(0.7) translateX(-20px);
             pointer-events: none;
-            filter: blur(8px);
+            filter: blur(12px);
+        }
+
+        .res-sidebar-panel .res-row {
+            display: flex;
+            gap: 6px;
         }
 
         .res-sidebar-panel button {
-            width: 38px;
-            height: 38px;
-            border-radius: 8px;
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 10px;
-            font-weight: 800;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 11px;
+            font-weight: 900;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             text-transform: uppercase;
         }
 
         .res-sidebar-panel button:hover {
             background: rgba(255, 255, 255, 0.15);
             color: white;
+            transform: translateY(-2px);
         }
 
         .res-sidebar-panel button.active {
-            background: rgba(99, 102, 241, 0.3);
-            border-color: rgba(99, 102, 241, 0.6);
+            background: #6366f1;
+            border-color: #818cf8;
             color: white;
-            box-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.5);
+            transform: scale(1.05);
+        }
+
+        /* Mobile Adjustments for Resolution Sidebar */
+        @media (max-width: 640px) {
+            .res-sidebar-panel {
+                padding: 6px;
+                border-radius: 12px;
+                left: calc(100% + 8px);
+                top: -8px;
+            }
+            
+            .res-sidebar-panel::before {
+                font-size: 6px;
+                margin-bottom: 1px;
+            }
+
+            .res-sidebar-panel button {
+                width: 32px;
+                height: 32px;
+                border-radius: 8px;
+                font-size: 9px;
+            }
         }
 
         .hd-loader.visible {
@@ -628,9 +667,11 @@
                             </button>
                             
                             <div id="res-sidebar-panel" class="res-sidebar-panel minimized">
-                                <button data-res="low">SD</button>
-                                <button data-res="medium">MD</button>
-                                <button data-res="high">HD</button>
+                                <div class="res-row">
+                                    <button data-res="low">SD</button>
+                                    <button data-res="medium">MD</button>
+                                    <button data-res="high">HD</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -846,9 +887,8 @@
             viewer.tweenControlCenter(target, 0);
         }
 
-        function _applyCachedTexture(pano, stage) {
-            const texture = pano.cachedTextures[stage];
-            if (!texture) return;
+        function _applyTextureToPano(pano, texture, stage) {
+            if (!pano || !texture) return;
 
             const updateMaterial = (mat) => {
                 if (!mat) return;
@@ -866,18 +906,21 @@
 
             updateMaterial(pano.material);
             pano.traverse((node) => {
+                // Skip marker meshes — they have their own textures
                 if (node.isMesh && !node.isPerspectiveMesh && !node.isCustomImage && !node.is3DModel) {
                     updateMaterial(node.material);
-                    node.material.depthWrite = false;
+                    node.material.depthWrite = false; // Prevent clipping
                 }
             });
+
+            // Sync internal Panolens references
             pano.texture = texture;
             pano.loadStage = stage;
         }
 
         function _forceUpgrade(pano) {
-            if (pano && pano.retryLoading) {
-                pano.retryLoading();
+            if (pano && pano.startLoading) {
+                pano.startLoading();
             }
         }
 
@@ -896,49 +939,18 @@
             pano.cachedTextures = {}; // Store textures for switching back
             panoramas[sceneId] = pano;
 
-            // Capture the initial low-res texture into cache once pano loads it
+            // Capture initial texture to cache
             pano.addEventListener('load', () => {
                 if (pano.material && pano.material.map && !pano.cachedTextures[0]) {
                     pano.cachedTextures[0] = pano.material.map;
-                    console.log(`[Cache] Initial SD texture captured for ${sceneData.name}`);
+                    // Ensure filters are correct
+                    pano.cachedTextures[0].generateMipmaps = false;
+                    pano.cachedTextures[0].minFilter = THREE.LinearFilter;
                 }
                 if (pano.material) pano.material.depthWrite = false;
             });
 
-            const applyTextureToPano = (texture, stage) => {
-                if (!texture) return;
-
-                const updateMaterial = (mat) => {
-                    if (!mat) return;
-                    if (Array.isArray(mat)) {
-                        mat.forEach(m => updateMaterial(m));
-                        return;
-                    }
-
-                    // Crucial: Update the map and trigger renewal
-                    mat.map = texture;
-                    if (mat.uniforms) {
-                        if (mat.uniforms.tDiffuse) mat.uniforms.tDiffuse.value = texture;
-                        if (mat.uniforms.tEquirect) mat.uniforms.tEquirect.value = texture;
-                    }
-                    mat.needsUpdate = true;
-                };
-
-                updateMaterial(pano.material);
-                pano.traverse((node) => {
-                    // Skip marker meshes — they have their own textures
-                    if (node.isMesh && !node.isPerspectiveMesh && !node.isCustomImage && !node.is3DModel) {
-                        updateMaterial(node.material);
-                        node.material.depthWrite = false; // Prevent clipping
-                    }
-                });
-
-                // Also update the internal texture reference Panolens might use
-                pano.texture = texture;
-                pano.loadStage = stage;
-            };
-
-            const updatePanoTexture = (texture, stage, stageName) => {
+            const _updatePanoTexture = (texture, stage, stageName) => {
                 texture.minFilter = THREE.LinearFilter;
                 texture.magFilter = THREE.LinearFilter;
                 texture.generateMipmaps = false;
@@ -950,27 +962,21 @@
                 if (selectedResolution === 'low' && stage >= 1) return;
                 if (selectedResolution === 'medium' && stage >= 2) return;
 
-                // Only apply if it's an UPGRADE or the EXACT same as target
-                // If we want to allow downgrades, we'll handle that in a separate function
+                // Only apply if it's an UPGRADE
                 if (pano.loadStage < stage) {
                     console.log(`- ${stageName} applied for ${sceneData.name}`);
-                    applyTextureToPano(texture, stage);
+                    _applyTextureToPano(pano, texture, stage);
                 }
             };
 
             pano.isLoading = false;
             const startLoading = () => {
-                // IMPORTANT: Recalculate targetStage every time startLoading is called
-                // to respect global resolution changes since the pano was created.
                 const targetStage = selectedResolution === 'low' ? 0 : (selectedResolution === 'medium' ? 1 : 2);
-
-                // If already at target or higher, or currently working, stop.
                 if (pano.loadStage >= targetStage || pano.isLoading) return;
 
                 // Priority 1: Check Cache first for target stage
                 if (pano.cachedTextures[targetStage]) {
-                    console.log(`[Cache] Applying stage ${targetStage} immediately for ${sceneData.name}`);
-                    applyTextureToPano(pano.cachedTextures[targetStage], targetStage);
+                    _applyTextureToPano(pano, pano.cachedTextures[targetStage], targetStage);
                     hdLoader.classList.remove('visible');
                     return;
                 }
@@ -990,10 +996,10 @@
 
                 if (midUrl && targetStage >= 1 && !pano.cachedTextures[1]) {
                     textureLoader.load(midUrl, (texMid) => {
-                        updatePanoTexture(texMid, 1, 'MEDIUM');
+                        _updatePanoTexture(texMid, 1, 'MEDIUM');
                         if (targetStage >= 2 && !pano.cachedTextures[2]) {
                             textureLoader.load(highUrl, (texHigh) => {
-                                updatePanoTexture(texHigh, 2, 'HIGH');
+                                _updatePanoTexture(texHigh, 2, 'HIGH');
                                 onFinally();
                             }, undefined, (err) => {
                                 onFinally();
@@ -1005,7 +1011,7 @@
                         // Fallback to high directly if mid fails
                         if (targetStage >= 2) {
                             textureLoader.load(highUrl, (texHigh) => {
-                                updatePanoTexture(texHigh, 2, 'HIGH');
+                                _updatePanoTexture(texHigh, 2, 'HIGH');
                                 onFinally();
                             }, undefined, (err) => {
                                 onFinally();
@@ -1016,7 +1022,7 @@
                     });
                 } else if (targetStage >= 2 && !pano.cachedTextures[2]) {
                     textureLoader.load(highUrl, (texHigh) => {
-                        updatePanoTexture(texHigh, 2, 'HIGH');
+                        _updatePanoTexture(texHigh, 2, 'HIGH');
                         onFinally();
                     }, undefined, (err) => {
                         onFinally();
@@ -1605,9 +1611,9 @@
 
                         if (viewer && viewer.panorama) {
                             const curPano = viewer.panorama;
-                            if (res === 'low' && curPano.cachedTextures[0]) _applyCachedTexture(curPano, 0);
-                            else if (res === 'medium' && curPano.cachedTextures[1]) _applyCachedTexture(curPano, 1);
-                            else if (res === 'high' && curPano.cachedTextures[2]) _applyCachedTexture(curPano, 2);
+                            if (res === 'low' && curPano.cachedTextures[0]) _applyTextureToPano(curPano, curPano.cachedTextures[0], 0);
+                            else if (res === 'medium' && curPano.cachedTextures[1]) _applyTextureToPano(curPano, curPano.cachedTextures[1], 1);
+                            else if (res === 'high' && curPano.cachedTextures[2]) _applyTextureToPano(curPano, curPano.cachedTextures[2], 2);
 
                             if ((res === 'medium' && curPano.loadStage < 1) || (res === 'high' && curPano.loadStage < 2)) _forceUpgrade(curPano);
 
