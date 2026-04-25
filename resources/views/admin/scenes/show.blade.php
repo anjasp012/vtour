@@ -293,7 +293,7 @@
 
                         <!-- 2D Image Upload -->
                         <div id="marker-image-upload" class="hidden space-y-2 mt-4 animate-fade-in">
-                            <label class="text-[8px] font-bold text-slate-500 uppercase tracking-widest block ml-0.5">Marker Image (2D)</label>
+                            <label class="text-[8px] font-bold text-orange-500 uppercase tracking-widest block ml-0.5">Marker Image (2D)</label>
                             <input type="file" name="marker_image" id="input-marker-image" accept="image/*" 
                                    class="w-full text-[9px] text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-[9px] file:font-bold file:bg-orange-600 file:text-white hover:file:bg-orange-700 transition-all cursor-pointer">
                             <p class="text-[7px] text-slate-500 italic">Pilih gambar 2D untuk digunakan sebagai penanda di panorama.</p>
@@ -305,13 +305,17 @@
                             <div class="space-y-2">
                                 <input type="file" name="model_file" id="input-model-file" accept=".glb" 
                                        class="w-full text-[9px] text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-[9px] file:font-bold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 transition-all cursor-pointer">
-                                <div id="current-model-info" class="hidden flex items-center gap-2 p-1.5 bg-indigo-900/40 rounded border border-indigo-500/20">
-                                    <i class="fas fa-cube text-[10px] text-indigo-400"></i>
-                                    <span id="current-model-name" class="text-[8px] text-indigo-200 truncate flex-1"></span>
-                                    <span class="text-[7px] text-indigo-400 font-bold uppercase tracking-widest">Active</span>
-                                </div>
                                 <p class="text-[7px] text-slate-500 italic">Upload file .glb untuk merender objek 3D langsung di panorama.</p>
                             </div>
+                        </div>
+
+                        <!-- Active Asset Info (Shared) -->
+                        <div id="current-model-info" class="hidden flex items-center gap-2 p-1.5 mt-4 rounded border animate-fade-in bg-slate-900/40 border-slate-700/50">
+                            <div id="current-model-icon-box" class="w-6 h-6 rounded flex items-center justify-center text-[10px]">
+                                <i id="current-model-icon" class="fas fa-cube"></i>
+                            </div>
+                            <span id="current-model-name" class="text-[8px] text-slate-200 truncate flex-1"></span>
+                            <span class="text-[7px] text-slate-400 font-bold uppercase tracking-widest px-1.5 py-0.5 bg-slate-800 rounded">Active</span>
                         </div>
                     </div>
 
@@ -1110,6 +1114,14 @@
             updateLabels();
             updateRealtimePreview();
         });
+    });
+
+    [inputModelFile, document.getElementById('input-marker-image')].forEach(input => {
+        if (input) {
+            input.addEventListener('change', () => {
+                if (currentModelInfo) currentModelInfo.classList.add('hidden');
+            });
+        }
     });
 
     const sPx = document.getElementById('slider-px'), sPy = document.getElementById('slider-py'), sPz = document.getElementById('slider-pz');
@@ -1958,6 +1970,17 @@
             if ((spot.type === '3d' || spot.type === 'image') && spot.model_path) {
                 currentModelInfo.classList.remove('hidden');
                 currentModelName.innerText = spot.model_path.split('/').pop();
+                
+                const iconBox = document.getElementById('current-model-icon-box');
+                const icon = document.getElementById('current-model-icon');
+                
+                if (spot.model_path.toLowerCase().endsWith('.glb')) {
+                    iconBox.className = 'w-6 h-6 rounded flex items-center justify-center text-[10px] bg-purple-500/20 text-purple-400';
+                    icon.className = 'fas fa-cube';
+                } else {
+                    iconBox.className = 'w-6 h-6 rounded flex items-center justify-center text-[10px] bg-orange-500/20 text-orange-400';
+                    icon.className = 'fas fa-image';
+                }
             } else {
                 currentModelInfo.classList.add('hidden');
             }
