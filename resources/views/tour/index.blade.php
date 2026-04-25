@@ -1295,11 +1295,11 @@
                     btn.classList.add('active');
                     resLabel.textContent = btn.textContent.split(' ')[0]; // Show SD, HD, or ULTRA
 
-                    // Trigger upgrade if we upped the res to existing pano
+                    // Apply only to CURRENT panorama immediately to save bandwidth
                     if (viewer && viewer.panorama) {
                         const curPano = viewer.panorama;
                         
-                        // Handle Downgrade: Switch back to cached textures
+                        // 1. Handle Downgrade: Switch back to cached textures
                         if (res === 'low' && curPano.cachedTextures[0]) {
                             _applyCachedTexture(curPano, 0);
                         } else if (res === 'medium' && curPano.cachedTextures[1]) {
@@ -1308,14 +1308,16 @@
                              _applyCachedTexture(curPano, 2);
                         }
 
-                        // Handle Upgrade: Trigger download if not yet at target
+                        // 2. Handle Upgrade: Trigger download if not yet at target
                         if ((res === 'medium' && curPano.loadStage < 1) || (res === 'high' && curPano.loadStage < 2)) {
                             _forceUpgrade(curPano);
                         }
                         
-                        // Hide loader if downgrading or already reached
+                        // Handle loader visibility for current view
                         if ((res === 'low') || (res === 'medium' && curPano.loadStage >= 1) || (res === 'high' && curPano.loadStage >= 2)) {
                             hdLoader.classList.remove('visible');
+                        } else {
+                            hdLoader.classList.add('visible');
                         }
                     }
                 };
