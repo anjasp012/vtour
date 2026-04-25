@@ -841,9 +841,9 @@
                 model.position.set(0, 0, 0);
                 model.rotation.set(spotData.rotation_x || 0, spotData.rotation_y || 0, spotData.rotation_z || 0);
                 model.scale.set(
-                    (spotData.scale_x || 1) * s, 
-                    (spotData.scale_y || 1) * s, 
-                    (spotData.scale_z || spotData.scale_x || 1) * s
+                    (spotData.scale_x || 0.1) * s, 
+                    (spotData.scale_y || 0.1) * s, 
+                    (spotData.scale_z || spotData.scale_x || 0.1) * s
                 );
                 
                 // Base metadata
@@ -1384,7 +1384,7 @@
         
         // Perspective setting defaults
         if (type === '3d' || type === 'image') {
-            inputPerspective.checked = true;
+            inputPerspective.checked = false;
         } else {
             inputPerspective.checked = false;
         }
