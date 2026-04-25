@@ -1035,7 +1035,7 @@
 
                             console.log(`[Icon-Load] Spot: ${ispotData.id}, Type: ${ispotData.type}, URL: ${textureUrl}`);
 
-                            if (spot.is_perspective || spot.type === 'image') {
+                            if (ispotData.is_perspective || ispotData.type === 'image') {
                                 // Render as 3D Mesh for perspective mode
                                 const geometry = new THREE.PlaneGeometry(600, 600);
                                 const texture = new THREE.TextureLoader().load(textureUrl);
@@ -1050,9 +1050,8 @@
                                 ispot = new THREE.Mesh(geometry, material);
                                 ispot.renderOrder = 1000;
                                 ispot.rotation.order = 'YXZ';
-                                ispot.rotation.set(spot.rotation_x || 0, spot.rotation_y || 0, spot.rotation_z ||
-                                0);
-                                ispot.scale.set(spot.scale_x || 1, spot.scale_y || 1, 1);
+                                ispot.rotation.set(ispotData.rotation_x || 0, ispotData.rotation_y || 0, ispotData.rotation_z || 0);
+                                ispot.scale.set(ispotData.scale_x || 1, ispotData.scale_y || 1, 1);
                                 ispot.isPerspectiveMesh = true;
                             } else {
                                 // Standard Billboard
