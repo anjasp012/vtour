@@ -43,7 +43,7 @@ class InfospotAssetController extends Controller
     {
         $request->validate([
             'assets'              => 'required|array|min:1',
-            'assets.*.file'       => 'required|file|max:102400', // 100MB max
+            'assets.*.file'       => 'required|file', // 100MB max
             'assets.*.file_type'  => 'required|in:3d,2d',
             'assets.*.label'      => 'nullable|string|max:255',
             'assets.*.infospot_product_id' => 'nullable|integer|exists:infospot_products,id',

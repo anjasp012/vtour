@@ -50,7 +50,7 @@ class SceneController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'image' => 'required|image|mimes:jpeg,png,jpg', // 10MB max
+            'image' => 'required|image|mimes:jpeg,png,jpg,webp', // 10MB max
             'description_id' => 'nullable|string',
             'description_en' => 'nullable|string',
         ]);
@@ -97,7 +97,7 @@ class SceneController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp',
             'description_id' => 'nullable|string',
             'description_en' => 'nullable|string',
         ]);
