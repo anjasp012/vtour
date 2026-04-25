@@ -1003,8 +1003,8 @@
                                 .multiplyScalar(4000);
                         }
 
-                        // Check for direct 3D model (.glb only)
-                        if (spot.model_path && spot.model_path.toLowerCase().endsWith('.glb')) {
+                        // Check for direct 3D model (.glb only) - ENFORCE type '3d'
+                        if (spot.type === '3d' && spot.model_path && spot.model_path.toLowerCase().endsWith('.glb')) {
                             try {
                                 const modelUrl = '/storage/' + spot.model_path;
                                 console.log(`Attempting to load 3D model for spot ${spot.id}: ${modelUrl}`);
@@ -1036,8 +1036,8 @@
                             // Determine the texture/icon URL
                             let textureUrl = (spot.type === 'info') ? infoUrl : (spot.type === '3d' ? threedUrl : arrowUrl);
                             
-                            // If it's a custom icon or a 2D floating image
-                            if (spot.model_path && !spot.model_path.toLowerCase().endsWith('.glb')) {
+                            // If it's a 2D floating image (custom icon override only for type 'image')
+                            if (spot.type === 'image' && spot.model_path && !spot.model_path.toLowerCase().endsWith('.glb')) {
                                 textureUrl = STORAGE_BASE + normalizePath(spot.model_path);
                             }
 
@@ -1154,7 +1154,7 @@
                         url: '{{ Storage::url('') }}/' + a.file_path,
                         label: a.label || null
                     }));
-                } else if (spot.model_path) {
+                } else if ((spot.type === '3d' || spot.type === 'image') && spot.model_path) {
                     const isGlb = spot.model_path.toLowerCase().endsWith('.glb');
                     assets = [{
                         file_type: isGlb ? '3d' : 'image',
