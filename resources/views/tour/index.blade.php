@@ -508,26 +508,20 @@
                 mixers.forEach(mixer => mixer.update(delta));
             }
             
-            // Auto-rotation and Bounce sync for 3D/2D models
-            Object.values(panoramas).forEach(pano => {
-                pano.children.forEach(child => {
-                    if ((child.is3DModel || child.isPerspectiveMesh) && !child.isNavMarker) {
-                        // Only auto-rotate if not being manually dragged
-                        if (!child.isBeingDragged) {
-                            child.rotation.y += 0.005; // Slow elegant rotation
-                        }
+            // Only process current panorama to save CPU/Battery on mobile
+            if (typeof viewer !== 'undefined' && viewer.panorama) {
+                viewer.panorama.children.forEach(child => {
+                    // Sync 3D model positions
+                    if (child.is3DModel && child.modelObj && child.syncPosition) {
+                        child.modelObj.position.copy(child.position);
+                    }
+                    
+                    // Auto-rotate 3D items
+                    if ((child.is3DModel || child.isPerspectiveMesh) && !child.isNavMarker && !child.isBeingDragged) {
+                        child.rotation.y += 0.005;
                     }
                 });
-            });
-
-            // Sync models with their proxy ispots (for bounce)
-            Object.values(panoramas).forEach(pano => {
-                pano.children.forEach(ispot => {
-                    if (ispot.is3DModel && ispot.modelObj && ispot.syncPosition) {
-                        ispot.modelObj.position.copy(ispot.position);
-                    }
-                });
-            });
+            }
         }
         animate3d(); // Start the loop
 
@@ -586,6 +580,7 @@
             }
         }
 
+        const textureLoader = new THREE.TextureLoader();
         function getOrCreatePanorama(sceneId) {
             if (panoramas[sceneId]) return panoramas[sceneId];
 
@@ -603,13 +598,12 @@
             // If we started with a thumbnail, load high-res in background
             if (sceneData.thumbnail_path) {
                 const hdLoader = document.getElementById('hd-loader');
-                const loader = new THREE.TextureLoader();
                 
-                // Show loader if this is the active scene OR if it's the first scene (before viewer.panorama is set)
+                // Show loader if this is the active scene OR if it's the first scene
                 const isCurrent = (typeof viewer !== 'undefined' && viewer.panorama === pano) || (typeof viewer === 'undefined' || !viewer.panorama);
                 if (isCurrent) hdLoader.classList.add('visible');
 
-                loader.load(imageUrl, (texture) => {
+                textureLoader.load(imageUrl, (texture) => {
                     texture.minFilter = THREE.LinearFilter;
                     texture.magFilter = THREE.LinearFilter;
                     texture.generateMipmaps = false;
