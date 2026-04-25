@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script>
     <script src="https://code.responsivevoice.org/responsivevoice.js?key=QlpaIuG0"></script>
-    
+
     <!-- Tailwind CSS v4 -->
     <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
 
@@ -27,8 +27,15 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* Base element tweaks */
@@ -39,8 +46,14 @@
         }
 
         /* Utilities */
-        .scrollbar-none::-webkit-scrollbar { display: none; }
-        .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+        .scrollbar-none::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scrollbar-none {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
 
         /* =============================================
            VANILLA CAROUSEL — Asset Media Slider
@@ -49,48 +62,57 @@
             position: relative;
             width: 100%;
             border-radius: 18px;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.08);
-            overflow: hidden; /* hides sliding track; zoom handled via img transform */
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            overflow: hidden;
+            /* hides sliding track; zoom handled via img transform */
         }
+
         .vc-track {
             display: flex;
             transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             will-change: transform;
         }
+
         .vc-slide {
             flex: 0 0 auto;
             position: relative;
             flex-shrink: 0;
         }
+
         .vc-slide img {
             width: 100%;
             height: 300px;
             object-fit: contain;
             display: block;
             cursor: zoom-in;
-            transform-origin: 50% 50%; /* overridden dynamically on wheel */
+            transform-origin: 50% 50%;
+            /* overridden dynamically on wheel */
             transition: transform 0.15s ease;
             user-select: none;
-            background: rgba(0,0,0,0.2);
+            background: rgba(0, 0, 0, 0.2);
         }
+
         .vc-slide .mv-wrap {
             width: 100%;
             height: 300px;
         }
+
         .vc-slide .mv-wrap model-viewer {
             width: 100% !important;
             height: 100% !important;
         }
+
         .vc-slide-label {
             font-size: 10px;
             letter-spacing: 2px;
             text-transform: uppercase;
-            color: rgba(255,255,255,0.4);
+            color: rgba(255, 255, 255, 0.4);
             text-align: center;
             padding: 8px;
-            background: rgba(0,0,0,0.35);
+            background: rgba(0, 0, 0, 0.35);
         }
+
         /* Nav arrows */
         .vc-btn {
             position: absolute;
@@ -99,8 +121,8 @@
             width: 36px;
             height: 36px;
             border-radius: 50%;
-            border: 1px solid rgba(255,255,255,0.15);
-            background: rgba(10,15,30,0.75);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(10, 15, 30, 0.75);
             color: #fff;
             cursor: pointer;
             display: flex;
@@ -111,10 +133,24 @@
             transition: background 0.2s;
             z-index: 10;
         }
-        .vc-btn:hover { background: rgba(99,102,241,0.75); }
-        .vc-btn.vc-prev { left: 10px; }
-        .vc-btn.vc-next { right: 10px; }
-        .vc-btn:disabled { opacity: 0.2; cursor: default; }
+
+        .vc-btn:hover {
+            background: rgba(99, 102, 241, 0.75);
+        }
+
+        .vc-btn.vc-prev {
+            left: 10px;
+        }
+
+        .vc-btn.vc-next {
+            right: 10px;
+        }
+
+        .vc-btn:disabled {
+            opacity: 0.2;
+            cursor: default;
+        }
+
         /* Dots — inside card, absolute bottom center */
         .vc-dots {
             position: absolute;
@@ -127,20 +163,23 @@
             z-index: 10;
             pointer-events: auto;
         }
+
         .vc-dot {
             width: 5px;
             height: 5px;
             border-radius: 50%;
-            background: rgba(255,255,255,0.2);
+            background: rgba(255, 255, 255, 0.2);
             border: none;
             cursor: pointer;
             transition: background 0.2s, transform 0.2s;
             padding: 0;
         }
+
         .vc-dot.active {
             background: #6366f1;
             transform: scale(1.5);
         }
+
         /* Product Tabs */
         .product-tabs-container {
             display: flex;
@@ -150,13 +189,17 @@
             padding: 12px 4px 4px 4px;
             scrollbar-width: none;
         }
-        .product-tabs-container::-webkit-scrollbar { display: none; }
+
+        .product-tabs-container::-webkit-scrollbar {
+            display: none;
+        }
+
         .product-tab {
             padding: 6px 12px;
             border-radius: 8px;
-            background: rgba(255,255,255,0.05);
+            background: rgba(255, 255, 255, 0.05);
             border: 1px solid transparent;
-            color: rgba(255,255,255,0.6);
+            color: rgba(255, 255, 255, 0.6);
             font-size: 10px;
             font-weight: 600;
             text-transform: uppercase;
@@ -165,15 +208,18 @@
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
         .product-tab:hover {
-            background: rgba(255,255,255,0.1);
+            background: rgba(255, 255, 255, 0.1);
             color: #fff;
         }
+
         .product-tab.active {
             background: rgba(99, 102, 241, 0.2);
             border-color: rgba(99, 102, 241, 0.5);
             color: #fff;
         }
+
         /* Type badge */
         .vc-badge {
             position: absolute;
@@ -186,11 +232,19 @@
             padding: 3px 8px;
             border-radius: 6px;
             backdrop-filter: blur(8px);
-            border: 1px solid rgba(255,255,255,0.15);
+            border: 1px solid rgba(255, 255, 255, 0.15);
             z-index: 5;
         }
-        .vc-badge-2d { background: rgba(37,99,235,0.65); color: #bfdbfe; }
-        .vc-badge-3d { background: rgba(124,58,237,0.65); color: #ddd6fe; }
+
+        .vc-badge-2d {
+            background: rgba(37, 99, 235, 0.65);
+            color: #bfdbfe;
+        }
+
+        .vc-badge-3d {
+            background: rgba(124, 58, 237, 0.65);
+            color: #ddd6fe;
+        }
 
         /* =============================================
            SCENE LIST — Sidebar Thumbnails
@@ -198,9 +252,11 @@
         #scene-list-panel {
             scrollbar-width: none;
         }
+
         #scene-list-panel::-webkit-scrollbar {
             display: none;
         }
+
         .scene-card {
             position: relative;
             width: 100px;
@@ -210,9 +266,10 @@
             border: 2px solid transparent;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            background: rgba(0,0,0,0.5);
+            background: rgba(0, 0, 0, 0.5);
             flex-shrink: 0;
         }
+
         /* Mobile adjustment for scene-card */
         @media (max-width: 640px) {
             .scene-card {
@@ -220,30 +277,35 @@
                 height: 55px;
             }
         }
+
         .scene-card:hover {
-            border-color: rgba(255,255,255,0.3);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
         }
+
         .scene-card.active {
             border-color: #6366f1;
-            box-shadow: 0 0 15px rgba(99,102,241,0.6);
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.6);
         }
+
         .scene-card img {
             width: 100%;
             height: 100%;
             object-fit: cover;
             transition: transform 0.5s ease;
         }
+
         .scene-card:hover img {
             transform: scale(1.1);
         }
+
         .scene-card-label {
             position: absolute;
             bottom: 0;
             left: 0;
             width: 100%;
             padding: 6px 8px;
-            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
             color: white;
             font-size: 8px;
             font-weight: 600;
@@ -253,8 +315,16 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        .scrollbar-none::-webkit-scrollbar { display: none; }
-        .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .scrollbar-none::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scrollbar-none {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
         /* HD Loader */
         /* Bottom Right Controls Group */
         .bottom-right-controls {
@@ -268,7 +338,10 @@
             flex-direction: row-reverse;
             pointer-events: none;
         }
-        .bottom-right-controls > * { pointer-events: auto; }
+
+        .bottom-right-controls>* {
+            pointer-events: auto;
+        }
 
         .hd-loader {
             background: rgba(15, 23, 42, 0.6);
@@ -292,6 +365,7 @@
         .res-selector {
             position: relative;
         }
+
         .res-btn {
             background: rgba(15, 23, 42, 0.6);
             backdrop-filter: blur(8px);
@@ -309,7 +383,11 @@
             letter-spacing: 1px;
             transition: all 0.3s;
         }
-        .res-btn:hover { background: rgba(15, 23, 42, 0.8); }
+
+        .res-btn:hover {
+            background: rgba(15, 23, 42, 0.8);
+        }
+
         .res-menu {
             position: absolute;
             bottom: calc(100% + 10px);
@@ -322,13 +400,17 @@
             display: none;
             flex-direction: column;
             min-width: 140px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         }
-        .res-menu.show { display: flex; }
+
+        .res-menu.show {
+            display: flex;
+        }
+
         .res-menu button {
             background: transparent;
             border: none;
-            color: rgba(255,255,255,0.6);
+            color: rgba(255, 255, 255, 0.6);
             padding: 12px 16px;
             text-align: left;
             font-size: 10px;
@@ -338,12 +420,21 @@
             cursor: pointer;
             transition: all 0.2s;
         }
-        .res-menu button:hover { background: rgba(255,255,255,0.1); color: white; }
+
+        .res-menu button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
         .res-menu button.active {
             color: #6366f1;
             background: rgba(99, 102, 241, 0.1);
         }
-        .hd-loader.visible { opacity: 1; }
+
+        .hd-loader.visible {
+            opacity: 1;
+        }
+
         .hd-loader .spinner {
             width: 12px;
             height: 12px;
@@ -352,42 +443,57 @@
             border-radius: 50%;
             animation: hd-spin 0.8s linear infinite;
         }
-        @keyframes hd-spin { to { transform: rotate(360deg); } }
+
+        @keyframes hd-spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
     </style>
 </head>
 
 <body class="m-0 p-0 w-full h-full overflow-hidden bg-black font-outfit">
 
-    <div id="loader" class="fixed top-0 left-0 w-full h-full bg-[#0f172a] flex flex-col items-center justify-center z-[50000] text-white transition-opacity duration-1000">
-        <div class="w-[50px] h-[50px] border-[5px] border-white/5 border-t-primary rounded-full animate-spin-slow mb-[25px]"></div>
+    <div id="loader"
+        class="fixed top-0 left-0 w-full h-full bg-[#0f172a] flex flex-col items-center justify-center z-[50000] text-white transition-opacity duration-1000">
+        <div
+            class="w-[50px] h-[50px] border-[5px] border-white/5 border-t-primary rounded-full animate-spin-slow mb-[25px]">
+        </div>
         <div class="font-[300] tracking-[6px] text-xs">CLEANING UI...</div>
     </div>
 
     <!-- Modal System -->
-    <div id="modal" class="group fixed top-0 left-0 w-full h-full bg-black/60 backdrop-blur-[15px] flex items-center justify-center z-[20000] opacity-0 invisible transition-all duration-400 [&.active]:opacity-100 [&.active]:visible">
-        <div class="bg-bg-glass border border-border-glass py-5 px-6 md:py-[20px] md:px-[25px] rounded-[25px] max-w-[1000px] w-[90%] max-h-[85vh] flex flex-col text-white transform scale-80 transition-transform duration-400 text-left relative scrollbar-none group-[.active]:scale-100 overflow-hidden">
-            
+    <div id="modal"
+        class="group fixed top-0 left-0 w-full h-full bg-black/60 backdrop-blur-[15px] flex items-center justify-center z-[20000] opacity-0 invisible transition-all duration-400 [&.active]:opacity-100 [&.active]:visible">
+        <div
+            class="bg-bg-glass border border-border-glass py-5 px-6 md:py-[20px] md:px-[25px] rounded-[25px] max-w-[1000px] w-[90%] max-h-[85vh] flex flex-col text-white transform scale-80 transition-transform duration-400 text-left relative scrollbar-none group-[.active]:scale-100 overflow-hidden">
+
             <div class="flex items-center justify-between mb-[15px]">
                 <h2 id="modal-title" class="m-0 text-2xl">Info</h2>
-                <div class="text-[1.2rem] text-white/40 cursor-pointer transition-all duration-300 z-10 w-[36px] h-[36px] flex items-center justify-center rounded-full bg-white/10 shrink-0 hover:text-white hover:bg-accent hover:rotate-90" onclick="closeModal()">
+                <div class="text-[1.2rem] text-white/40 cursor-pointer transition-all duration-300 z-10 w-[36px] h-[36px] flex items-center justify-center rounded-full bg-white/10 shrink-0 hover:text-white hover:bg-accent hover:rotate-90"
+                    onclick="closeModal()">
                     <i class="fas fa-times"></i>
                 </div>
             </div>
-            
+
             <!-- Wrapper Layout -->
             <div class="flex flex-col gap-5 md:flex-row md:gap-[30px] md:items-start" id="modal-layout-wrapper">
 
                 <!-- Asset Carousel Pane -->
                 <div class="flex-1 w-full hidden" id="modal-pane-assets">
-                    
+
                     <!-- track wrapper -->
                     <div class="vc-wrap" id="vc-wrap">
                         <div class="vc-track" id="vc-track"></div>
-                        <button class="vc-btn vc-prev" id="vc-prev" aria-label="Previous"><i class="fas fa-chevron-left"></i></button>
-                        <button class="vc-btn vc-next" id="vc-next" aria-label="Next"><i class="fas fa-chevron-right"></i></button>
-                        
+                        <button class="vc-btn vc-prev" id="vc-prev" aria-label="Previous"><i
+                                class="fas fa-chevron-left"></i></button>
+                        <button class="vc-btn vc-next" id="vc-next" aria-label="Next"><i
+                                class="fas fa-chevron-right"></i></button>
+
                         <!-- Enlarge Button -->
-                        <button class="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-black/50 backdrop-blur-md border border-white/20 text-white flex items-center justify-center cursor-pointer z-20 hover:bg-primary transition-all" onclick="toggleEnlarge()" title="Enlarge View">
+                        <button
+                            class="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-black/50 backdrop-blur-md border border-white/20 text-white flex items-center justify-center cursor-pointer z-20 hover:bg-primary transition-all"
+                            onclick="toggleEnlarge()" title="Enlarge View">
                             <i class="fas fa-expand-arrows-alt text-xs" id="enlarge-icon"></i>
                         </button>
 
@@ -403,43 +509,63 @@
                     <div class="flex flex-col w-full">
                         <div class="flex items-center gap-3 mb-[15px] border-b border-white/10 pb-[10px]">
                             <!-- ID Group -->
-                            <div class="flex items-center h-8 bg-white/5 border border-white/10 rounded-md overflow-hidden transition-all duration-300 [&.active]:bg-primary/20 [&.active]:border-primary/50" id="tab-id-container">
-                                <button id="btn-tab-id" class="tab-btn active py-0 px-3 h-full flex items-center justify-center cursor-pointer hover:bg-white/10 [&.active]:bg-primary/30" onclick="switchTab('id')">
-                                    <img src="https://flagcdn.com/w40/id.png" class="w-5 h-3.5 object-cover rounded-[1px] shadow-sm" alt="ID">
+                            <div class="flex items-center h-8 bg-white/5 border border-white/10 rounded-md overflow-hidden transition-all duration-300 [&.active]:bg-primary/20 [&.active]:border-primary/50"
+                                id="tab-id-container">
+                                <button id="btn-tab-id"
+                                    class="tab-btn active py-0 px-3 h-full flex items-center justify-center cursor-pointer hover:bg-white/10 [&.active]:bg-primary/30"
+                                    onclick="switchTab('id')">
+                                    <img src="https://flagcdn.com/w40/id.png"
+                                        class="w-5 h-3.5 object-cover rounded-[1px] shadow-sm" alt="ID">
                                 </button>
                             </div>
 
                             <!-- EN Group -->
-                            <div class="flex items-center h-8 bg-white/5 border border-white/10 rounded-md overflow-hidden transition-all duration-300 [&.active]:bg-primary/20 [&.active]:border-primary/50" id="tab-en-container">
-                                <button id="btn-tab-en" class="tab-btn py-0 px-3 h-full flex items-center justify-center cursor-pointer hover:bg-white/10 [&.active]:bg-primary/30" onclick="switchTab('en')">
-                                    <img src="https://flagcdn.com/w40/gb.png" class="w-5 h-3.5 object-cover rounded-[1px] shadow-sm" alt="EN">
+                            <div class="flex items-center h-8 bg-white/5 border border-white/10 rounded-md overflow-hidden transition-all duration-300 [&.active]:bg-primary/20 [&.active]:border-primary/50"
+                                id="tab-en-container">
+                                <button id="btn-tab-en"
+                                    class="tab-btn py-0 px-3 h-full flex items-center justify-center cursor-pointer hover:bg-white/10 [&.active]:bg-primary/30"
+                                    onclick="switchTab('en')">
+                                    <img src="https://flagcdn.com/w40/gb.png"
+                                        class="w-5 h-3.5 object-cover rounded-[1px] shadow-sm" alt="EN">
                                 </button>
                             </div>
-                            
+
                             <div class="grow"></div>
-                            
+
                             <!-- Extra Tabs (Researcher & Contact) -->
-                            <div id="extra-tabs-wrapper" class="flex items-center gap-2 pr-3 border-r border-white/10 hidden">
-                                <button id="btn-tab-researcher" class="px-3 py-1.5 rounded-md bg-white/5 border border-white/10 text-[9px] font-bold text-slate-400 uppercase tracking-widest hover:bg-white/10 transition-all [&.active]:bg-emerald-500/20 [&.active]:border-emerald-500/50 [&.active]:text-emerald-400" onclick="switchTab('researcher')">
+                            <div id="extra-tabs-wrapper" class="flex items-center gap-2 pr-3 hidden">
+                                <button id="btn-tab-researcher"
+                                    class="px-3 py-2 rounded-md bg-white/5 border border-white/10 text-[9px] font-bold text-slate-400 uppercase tracking-widest hover:bg-white/10 transition-all [&.active]:bg-emerald-500/20 [&.active]:border-emerald-500/50 [&.active]:text-emerald-400"
+                                    onclick="switchTab('researcher')">
                                     <i class="fas fa-user-tie mr-1"></i> Researcher
                                 </button>
-                                <button id="btn-tab-contact" class="px-3 py-1.5 rounded-md bg-white/5 border border-white/10 text-[9px] font-bold text-slate-400 uppercase tracking-widest hover:bg-white/10 transition-all [&.active]:bg-sky-500/20 [&.active]:border-sky-500/50 [&.active]:text-sky-400" onclick="switchTab('contact')">
+                                <button id="btn-tab-contact"
+                                    class="px-3 py-2 rounded-md bg-white/5 border border-white/10 text-[9px] font-bold text-slate-400 uppercase tracking-widest hover:bg-white/10 transition-all [&.active]:bg-sky-500/20 [&.active]:border-sky-500/50 [&.active]:text-sky-400"
+                                    onclick="switchTab('contact')">
                                     <i class="fas fa-address-book mr-1"></i> Contact
                                 </button>
                             </div>
 
                             <!-- VO Controls Template -->
                             <div id="vo-controls-wrapper" class="flex items-center h-full animate-fade-in pl-1">
-                                <button id="btn-play" class="py-1.5 px-3 flex items-center justify-center text-primary text-[10px] cursor-pointer hover:bg-primary/20 transition-all h-full" onclick="playNarration()"><i class="fas fa-play"></i></button>
-                                <button id="btn-stop" class="py-1.5 px-3 flex items-center justify-center text-rose-500 text-[10px] cursor-pointer hidden hover:bg-rose-500/20 transition-all h-full" onclick="stopNarration()"><i class="fas fa-stop"></i></button>
+                                <button id="btn-play"
+                                    class="py-1.5 px-3 flex items-center justify-center text-primary text-[10px] cursor-pointer hover:bg-primary/20 transition-all h-full"
+                                    onclick="playNarration()"><i class="fas fa-play"></i></button>
+                                <button id="btn-stop"
+                                    class="py-1.5 px-3 flex items-center justify-center text-rose-500 text-[10px] cursor-pointer hidden hover:bg-rose-500/20 transition-all h-full"
+                                    onclick="stopNarration()"><i class="fas fa-stop"></i></button>
                             </div>
                         </div>
-                        
+
                         <div class="flex-1 overflow-y-auto max-h-[250px] md:max-h-[400px] pr-2 scrollbar-none">
-                            <div class="leading-[1.6] text-white/80 text-justify hidden opacity-0 [&.active]:block [&.active]:animate-fade-in [&.active]:opacity-100 [&_p]:mt-0 [&_p]:mb-[1em]" id="tab-id"></div>
-                            <div class="leading-[1.6] text-white/80 text-justify hidden opacity-0 [&.active]:block [&.active]:animate-fade-in [&.active]:opacity-100 [&_p]:mt-0 [&_p]:mb-[1em]" id="tab-en"></div>
-                            <div class="leading-[1.6] text-white/80 hidden opacity-0 [&.active]:block [&.active]:animate-fade-in [&.active]:opacity-100 [&_p]:mt-0 [&_p]:mb-[1em]" id="tab-researcher"></div>
-                            <div class="leading-[1.6] text-white/80 hidden opacity-0 [&.active]:block [&.active]:animate-fade-in [&.active]:opacity-100 [&_p]:mt-0 [&_p]:mb-[1em] font-mono" id="tab-contact"></div>
+                            <div class="leading-[1.6] text-white/80 text-justify hidden opacity-0 [&.active]:block [&.active]:animate-fade-in [&.active]:opacity-100 [&_p]:mt-0 [&_p]:mb-[1em]"
+                                id="tab-id"></div>
+                            <div class="leading-[1.6] text-white/80 text-justify hidden opacity-0 [&.active]:block [&.active]:animate-fade-in [&.active]:opacity-100 [&_p]:mt-0 [&_p]:mb-[1em]"
+                                id="tab-en"></div>
+                            <div class="leading-[1.6] text-white/80 hidden opacity-0 [&.active]:block [&.active]:animate-fade-in [&.active]:opacity-100 [&_p]:mt-0 [&_p]:mb-[1em]"
+                                id="tab-researcher"></div>
+                            <div class="leading-[1.6] text-white/80 hidden opacity-0 [&.active]:block [&.active]:animate-fade-in [&.active]:opacity-100 [&_p]:mt-0 [&_p]:mb-[1em] font-mono"
+                                id="tab-contact"></div>
                         </div>
                     </div>
                 </div>
@@ -475,78 +601,103 @@
 
     <!-- UI Overlay -->
     <div class="absolute top-0 left-0 w-full h-full pointer-events-none p-[15px] box-border z-[10000]">
-        
+
         <div class="flex items-start justify-between w-full" id="overlay-top-wrapper">
             <!-- Left Group: Vertical Container -->
             <div class="flex flex-col items-start gap-[12px] pointer-events-auto" id="left-sidebar-container">
                 <!-- Top Group: Responsive Toggle + Controls -->
                 <div class="flex flex-col sm:flex-row items-start sm:items-center gap-[12px]" id="top-control-bar">
                     <!-- UI Toggle Button (Always Visible) -->
-                    <div id="ui-toggle" class="w-[48px] h-[48px] bg-bg-glass backdrop-blur-[25px] border border-border-glass rounded-lg text-white flex items-center justify-center cursor-pointer transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] shadow-[0_15px_30px_rgba(0,0,0,0.4)] hover:bg-primary hover:scale-110 hover:rotate-6 text-[1.1rem]">
+                    <div id="ui-toggle"
+                        class="w-[48px] h-[48px] bg-bg-glass backdrop-blur-[25px] border border-border-glass rounded-lg text-white flex items-center justify-center cursor-pointer transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] shadow-[0_15px_30px_rgba(0,0,0,0.4)] hover:bg-primary hover:scale-110 hover:rotate-6 text-[1.1rem]">
                         <i class="fas fa-times"></i>
                     </div>
 
                     <!-- Control Buttons (Toggleable) -->
-                    <div id="control-buttons-panel" class="bg-bg-glass backdrop-blur-[30px] border border-border-glass p-[6px] rounded-lg flex sm:flex-row flex-col gap-[6px] shadow-[0_20px_40px_rgba(0,0,0,0.4)] transition-all duration-500 ease-in-out [&.minimized]:opacity-0 [&.minimized]:-translate-x-[20px] sm:[&.minimized]:-translate-x-[20px] [&.minimized]:-translate-y-[10px] [&.minimized]:pointer-events-none [&.minimized]:blur-[10px]">
-                        <button id="toggle-rotate" class="btn-action btn-active bg-white/5 hover:bg-white/15 [&.btn-active]:bg-primary/35 border border-border-glass [&.btn-active]:border-primary/80 text-white/90 w-[38px] h-[38px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95" title="Auto Rotation"><i class="fas fa-sync-alt text-[14px] text-primary"></i></button>
-                        
-                        <button id="toggle-markers" class="btn-action btn-active bg-white/5 hover:bg-white/15 [&.btn-active]:bg-primary/35 border border-border-glass [&.btn-active]:border-primary/80 text-white/90 w-[38px] h-[38px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95" title="Show Markers"><i class="bi bi-eye-fill text-[14px] text-primary"></i></button>
+                    <div id="control-buttons-panel"
+                        class="bg-bg-glass backdrop-blur-[30px] border border-border-glass p-[6px] rounded-lg flex sm:flex-row flex-col gap-[6px] shadow-[0_20px_40px_rgba(0,0,0,0.4)] transition-all duration-500 ease-in-out [&.minimized]:opacity-0 [&.minimized]:-translate-x-[20px] sm:[&.minimized]:-translate-x-[20px] [&.minimized]:-translate-y-[10px] [&.minimized]:pointer-events-none [&.minimized]:blur-[10px]">
+                        <button id="toggle-rotate"
+                            class="btn-action btn-active bg-white/5 hover:bg-white/15 [&.btn-active]:bg-primary/35 border border-border-glass [&.btn-active]:border-primary/80 text-white/90 w-[38px] h-[38px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95"
+                            title="Auto Rotation"><i class="fas fa-sync-alt text-[14px] text-primary"></i></button>
 
-                        <button id="toggle-map" class="btn-action bg-white/5 hover:bg-white/15 border border-border-glass text-white/90 w-[38px] h-[38px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95" title="Site Plan"><i class="fas fa-map text-[14px] text-primary"></i></button>
+                        <button id="toggle-markers"
+                            class="btn-action btn-active bg-white/5 hover:bg-white/15 [&.btn-active]:bg-primary/35 border border-border-glass [&.btn-active]:border-primary/80 text-white/90 w-[38px] h-[38px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95"
+                            title="Show Markers"><i class="bi bi-eye-fill text-[14px] text-primary"></i></button>
 
-                        <button id="toggle-fullscreen" class="btn-action bg-white/5 hover:bg-white/15 [&.btn-active]:bg-primary/35 border border-border-glass [&.btn-active]:border-primary/80 text-white/90 w-[38px] h-[38px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95" title="Full Screen"><i class="fas fa-expand text-[14px] text-primary"></i></button>
+                        <button id="toggle-map"
+                            class="btn-action bg-white/5 hover:bg-white/15 border border-border-glass text-white/90 w-[38px] h-[38px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95"
+                            title="Site Plan"><i class="fas fa-map text-[14px] text-primary"></i></button>
+
+                        <button id="toggle-fullscreen"
+                            class="btn-action bg-white/5 hover:bg-white/15 [&.btn-active]:bg-primary/35 border border-border-glass [&.btn-active]:border-primary/80 text-white/90 w-[38px] h-[38px] rounded-[12px] cursor-pointer inline-flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95"
+                            title="Full Screen"><i class="fas fa-expand text-[14px] text-primary"></i></button>
                     </div>
                 </div>
 
                 <!-- Scene List Sidebar (Toggleable, Below controls) -->
-                <div id="scene-list-panel" class="flex flex-col gap-[6px] max-h-[calc(100vh-250px)] overflow-y-auto scrollbar-none transition-all duration-500 ease-in-out [&.minimized]:opacity-0 [&.minimized]:-translate-x-[40px] [&.minimized]:pointer-events-none [&.minimized]:blur-[10px]">
+                <div id="scene-list-panel"
+                    class="flex flex-col gap-[6px] max-h-[calc(100vh-250px)] overflow-y-auto scrollbar-none transition-all duration-500 ease-in-out [&.minimized]:opacity-0 [&.minimized]:-translate-x-[40px] [&.minimized]:pointer-events-none [&.minimized]:blur-[10px]">
                     <!-- Items dynamic -->
                 </div>
             </div>
 
             <!-- Right Panel: Scene Title (Always Visible) -->
-            <div class="bg-bg-glass backdrop-blur-[30px] border border-border-glass p-[10px_22px] rounded-lg pointer-events-auto shadow-[0_30px_60px_rgba(0,0,0,0.5)] origin-right text-right">
+            <div
+                class="bg-bg-glass backdrop-blur-[30px] border border-border-glass p-[10px_22px] rounded-lg pointer-events-auto shadow-[0_30px_60px_rgba(0,0,0,0.5)] origin-right text-right">
                 @php
                     $startScene = $tour->scenes->where('is_start_scene', true)->first() ?? $tour->scenes->first();
                 @endphp
-                <h1 id="scene-title" class="m-0 text-[16px] font-bold text-white tracking-[0.8px]">{{ $startScene->name ?? 'SCENE' }}</h1>
-                <p id="scene-subtitle" class="mt-[4px] m-0 text-[9px] text-white/50 font-bold tracking-[2px] uppercase">{{ strtoupper($tour->name) }}</p>
+                <h1 id="scene-title" class="m-0 text-[16px] font-bold text-white tracking-[0.8px]">
+                    {{ $startScene->name ?? 'SCENE' }}</h1>
+                <p id="scene-subtitle"
+                    class="mt-[4px] m-0 text-[9px] text-white/50 font-bold tracking-[2px] uppercase">
+                    {{ strtoupper($tour->name) }}</p>
             </div>
         </div>
-        
+
         <!-- Bottom Section (Flex empty space helper) -->
         <div class="flex-1"></div>
 
         <!-- Coord Pill -->
-        <div class="bg-bg-glass backdrop-blur-[20px] border border-border-glass px-[25px] py-[10px] rounded-[50px] text-white font-mono text-[13px] self-start pointer-events-auto opacity-0 invisible transition-all duration-400 shadow-[0_10px_30px_rgba(0,0,0,0.5)] [&.show]:opacity-100 [&.show]:visible" id="coord-display">Ambil kordinat dengan klik ruangan...</div>
+        <div class="bg-bg-glass backdrop-blur-[20px] border border-border-glass px-[25px] py-[10px] rounded-[50px] text-white font-mono text-[13px] self-start pointer-events-auto opacity-0 invisible transition-all duration-400 shadow-[0_10px_30px_rgba(0,0,0,0.5)] [&.show]:opacity-100 [&.show]:visible"
+            id="coord-display">Ambil kordinat dengan klik ruangan...</div>
     </div>
 
     <!-- Site Plan Overlay -->
-    <div id="site-plan-overlay" class="fixed top-0 left-0 w-full h-full bg-black/80 backdrop-blur-xl z-[25000] opacity-0 invisible transition-all duration-500 flex items-center justify-center p-6 md:p-12">
-        <div class="relative bg-[#0f172a]/90 border border-white/10 py-5 px-6 md:py-[20px] md:px-[25px] rounded-[25px] max-w-[1000px] w-[90%] max-h-[85vh] flex flex-col items-center shadow-2xl">
+    <div id="site-plan-overlay"
+        class="fixed top-0 left-0 w-full h-full bg-black/80 backdrop-blur-xl z-[25000] opacity-0 invisible transition-all duration-500 flex items-center justify-center p-6 md:p-12">
+        <div
+            class="relative bg-[#0f172a]/90 border border-white/10 py-5 px-6 md:py-[20px] md:px-[25px] rounded-[25px] max-w-[1000px] w-[90%] max-h-[85vh] flex flex-col items-center shadow-2xl">
             <!-- Header -->
             <div class="w-full flex items-center justify-between mb-[15px]">
                 <div>
                     <h2 class="text-white text-xl font-black uppercase tracking-tighter">Site Plan & Maps</h2>
-                    <p class="text-white/40 text-[9px] font-bold uppercase tracking-[2px] mt-1">Select a location to navigate</p>
+                    <p class="text-white/40 text-[9px] font-bold uppercase tracking-[2px] mt-1">Select a location to
+                        navigate</p>
                 </div>
-                <button class="w-10 h-10 bg-white/10 rounded-full text-white/60 hover:text-white hover:bg-rose-500 transition-all flex items-center justify-center cursor-pointer" onclick="closeSitePlan()">
+                <button
+                    class="w-10 h-10 bg-white/10 rounded-full text-white/60 hover:text-white hover:bg-rose-500 transition-all flex items-center justify-center cursor-pointer"
+                    onclick="closeSitePlan()">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
 
             <!-- Map Canvas -->
-            <div class="flex-1 w-full relative overflow-hidden flex items-center justify-center rounded-[24px] bg-black/20 border border-white/5 p-4" id="map-canvas-area">
-                <div id="active-map-container" class="relative inline-block transition-transform duration-200 ease-out origin-center cursor-grab active:cursor-grabbing">
+            <div class="flex-1 w-full relative overflow-hidden flex items-center justify-center rounded-[24px] bg-black/20 border border-white/5 p-4"
+                id="map-canvas-area">
+                <div id="active-map-container"
+                    class="relative inline-block transition-transform duration-200 ease-out origin-center cursor-grab active:cursor-grabbing">
                     <!-- Map Image will be injected here -->
                 </div>
             </div>
 
             <!-- Map Selector -->
-            @if($tour->sitePlans->count() > 1)
+            @if ($tour->sitePlans->count() > 1)
                 <div class="w-full flex items-center justify-center gap-4 mt-6 overflow-x-auto py-2 scrollbar-none">
-                    @foreach($tour->sitePlans as $plan)
-                        <button class="px-6 py-2 bg-white/5 border border-white/10 rounded-full text-white/60 text-[10px] font-bold uppercase tracking-widest hover:bg-primary/20 hover:text-white hover:border-primary/50 transition-all whitespace-nowrap cursor-pointer plan-tab-btn" data-id="{{ $plan->id }}" onclick="loadMap({{ $plan->id }})">
+                    @foreach ($tour->sitePlans as $plan)
+                        <button
+                            class="px-6 py-2 bg-white/5 border border-white/10 rounded-full text-white/60 text-[10px] font-bold uppercase tracking-widest hover:bg-primary/20 hover:text-white hover:border-primary/50 transition-all whitespace-nowrap cursor-pointer plan-tab-btn"
+                            data-id="{{ $plan->id }}" onclick="loadMap({{ $plan->id }})">
                             {{ $plan->name }}
                         </button>
                     @endforeach
@@ -575,10 +726,11 @@
         async function createStyledIcon(iconString, color = '#6366f1', rotation = 0) {
             await document.fonts.ready;
             const canvas = document.createElement('canvas');
-            canvas.width = 150; canvas.height = 150;
+            canvas.width = 150;
+            canvas.height = 150;
             const ctx = canvas.getContext('2d');
-            
-            if(rotation) {
+
+            if (rotation) {
                 ctx.translate(75, 75);
                 ctx.rotate(rotation * Math.PI / 180);
                 ctx.translate(-75, -75);
@@ -601,7 +753,7 @@
                 const delta = clock.getDelta();
                 mixers.forEach(mixer => mixer.update(delta));
             }
-            
+
             // Only process current panorama to save CPU/Battery on mobile
             if (typeof viewer !== 'undefined' && viewer.panorama) {
                 viewer.panorama.children.forEach(child => {
@@ -609,9 +761,10 @@
                     if (child.is3DModel && child.modelObj && child.syncPosition) {
                         child.modelObj.position.copy(child.position);
                     }
-                    
+
                     // Auto-rotate 3D items
-                    if ((child.is3DModel || child.isPerspectiveMesh) && !child.isNavMarker && !child.isBeingDragged) {
+                    if ((child.is3DModel || child.isPerspectiveMesh) && !child.isNavMarker && !child
+                        .isBeingDragged) {
                         child.rotation.y += 0.005;
                     }
                 });
@@ -623,19 +776,20 @@
             return new Promise((resolve, reject) => {
                 loader3d.load(url, (gltf) => {
                     const model = gltf.scene;
-                    
+
                     // Scale up significantly for world-space visibility
                     const s = 1000; // Increased to 1000 for maximum visibility
                     model.position.set(0, 0, 0); // Position is handled by proxy
-                    model.rotation.set(spotData.rotation_x || 0, spotData.rotation_y || 0, spotData.rotation_z || 0);
+                    model.rotation.set(spotData.rotation_x || 0, spotData.rotation_y || 0, spotData
+                        .rotation_z || 0);
                     model.scale.set(
-                        (spotData.scale_x || 1) * s, 
-                        (spotData.scale_y || 1) * s, 
+                        (spotData.scale_x || 1) * s,
+                        (spotData.scale_y || 1) * s,
                         (spotData.scale_z || spotData.scale_x || 1) * s
                     );
-                    
+
                     model.is3DModel = true;
-                    
+
                     // Set maximum renderOrder and disable depthTest for "always on top" visibility
                     model.traverse(node => {
                         if (node.isMesh) {
@@ -647,7 +801,7 @@
                             }
                         }
                     });
-                    
+
                     if (gltf.animations && gltf.animations.length > 0) {
                         const mixer = new THREE.AnimationMixer(model);
                         gltf.animations.forEach(clip => mixer.clipAction(clip).play());
@@ -662,12 +816,14 @@
         function addBounce(infospot) {
             const startY = infospot.position.y;
             const tween = new TWEEN.Tween(infospot.position)
-                .to({ y: startY + 150 }, 1500)
+                .to({
+                    y: startY + 150
+                }, 1500)
                 .easing(TWEEN.Easing.Quadratic.InOut)
                 .repeat(Infinity)
                 .yoyo(true)
                 .start();
-            
+
             // If it's a proxy with a 3D model, link them
             if (infospot.modelObj) {
                 infospot.bounceTween = tween;
@@ -686,7 +842,8 @@
             if (!sceneData) return null;
 
             const normalizePath = (path) => path ? (path.startsWith('/') ? path.substring(1) : path) : '';
-            const lowUrl = sceneData.low_res_path ? (STORAGE_BASE + normalizePath(sceneData.low_res_path)) : (STORAGE_BASE + normalizePath(sceneData.high_res_path));
+            const lowUrl = sceneData.low_res_path ? (STORAGE_BASE + normalizePath(sceneData.low_res_path)) : (STORAGE_BASE +
+                normalizePath(sceneData.high_res_path));
             const midUrl = sceneData.medium_res_path ? (STORAGE_BASE + normalizePath(sceneData.medium_res_path)) : null;
             const highUrl = STORAGE_BASE + normalizePath(sceneData.high_res_path);
 
@@ -705,11 +862,14 @@
 
             const applyTextureToPano = (texture, stage) => {
                 if (!texture) return;
-                
+
                 const updateMaterial = (mat) => {
                     if (!mat) return;
-                    if (Array.isArray(mat)) { mat.forEach(m => updateMaterial(m)); return; }
-                    
+                    if (Array.isArray(mat)) {
+                        mat.forEach(m => updateMaterial(m));
+                        return;
+                    }
+
                     // Crucial: Update the map and trigger renewal
                     mat.map = texture;
                     if (mat.uniforms) {
@@ -720,8 +880,10 @@
                 };
 
                 updateMaterial(pano.material);
-                pano.traverse((node) => { if (node.isMesh) updateMaterial(node.material); });
-                
+                pano.traverse((node) => {
+                    if (node.isMesh) updateMaterial(node.material);
+                });
+
                 // Also update the internal texture reference Panolens might use
                 pano.texture = texture;
                 pano.loadStage = stage;
@@ -729,7 +891,7 @@
 
             const updatePanoTexture = (texture, stage, stageName) => {
                 pano.cachedTextures[stage] = texture;
-                
+
                 // Block update based on selected resolution
                 if (selectedResolution === 'low' && stage >= 1) return;
                 if (selectedResolution === 'medium' && stage >= 2) return;
@@ -737,15 +899,15 @@
                 // Only apply if it's an UPGRADE or the EXACT same as target
                 // If we want to allow downgrades, we'll handle that in a separate function
                 if (pano.loadStage < stage) {
-                   console.log(`- ${stageName} applied for ${sceneData.name}`);
-                   applyTextureToPano(texture, stage);
+                    console.log(`- ${stageName} applied for ${sceneData.name}`);
+                    applyTextureToPano(texture, stage);
                 }
             };
 
             pano.isLoading = false;
             const startLoading = () => {
                 const targetStage = selectedResolution === 'low' ? 0 : (selectedResolution === 'medium' ? 1 : 2);
-                
+
                 // If already at target or higher, or currently working, stop.
                 if (pano.loadStage >= targetStage || pano.isLoading) return;
 
@@ -758,13 +920,14 @@
                 }
 
                 pano.isLoading = true;
-                
+
                 const onFinally = () => {
-                   pano.isLoading = false;
-                   if (viewer.panorama === pano) {
-                       const currentTarget = selectedResolution === 'low' ? 0 : (selectedResolution === 'medium' ? 1 : 2);
-                       if (pano.loadStage >= currentTarget) hdLoader.classList.remove('visible');
-                   }
+                    pano.isLoading = false;
+                    if (viewer.panorama === pano) {
+                        const currentTarget = selectedResolution === 'low' ? 0 : (selectedResolution === 'medium' ?
+                            1 : 2);
+                        if (pano.loadStage >= currentTarget) hdLoader.classList.remove('visible');
+                    }
                 };
 
                 console.log(`[Network] Start loading for ${sceneData.name}, Target: ${selectedResolution}`);
@@ -776,7 +939,9 @@
                             textureLoader.load(highUrl, (texHigh) => {
                                 updatePanoTexture(texHigh, 2, 'HIGH');
                                 onFinally();
-                            }, undefined, (err) => { onFinally(); });
+                            }, undefined, (err) => {
+                                onFinally();
+                            });
                         } else {
                             onFinally();
                         }
@@ -786,7 +951,9 @@
                             textureLoader.load(highUrl, (texHigh) => {
                                 updatePanoTexture(texHigh, 2, 'HIGH');
                                 onFinally();
-                            }, undefined, (err) => { onFinally(); });
+                            }, undefined, (err) => {
+                                onFinally();
+                            });
                         } else {
                             onFinally();
                         }
@@ -795,7 +962,9 @@
                     textureLoader.load(highUrl, (texHigh) => {
                         updatePanoTexture(texHigh, 2, 'HIGH');
                         onFinally();
-                    }, undefined, (err) => { onFinally(); });
+                    }, undefined, (err) => {
+                        onFinally();
+                    });
                 } else {
                     onFinally();
                 }
@@ -824,9 +993,10 @@
                         if (spot.type === '3d' || spot.type === 'image' || spot.is_perspective) {
                             pos = new THREE.Vector3(spot.position_x, spot.position_y, spot.position_z);
                         } else {
-                            pos = new THREE.Vector3(spot.position_x, spot.position_y, spot.position_z).normalize().multiplyScalar(4000);
+                            pos = new THREE.Vector3(spot.position_x, spot.position_y, spot.position_z).normalize()
+                                .multiplyScalar(4000);
                         }
-                        
+
                         // Check for direct 3D model (.glb only)
                         if (spot.model_path && spot.model_path.toLowerCase().endsWith('.glb')) {
                             try {
@@ -834,9 +1004,10 @@
                                 console.log(`Attempting to load 3D model for spot ${spot.id}: ${modelUrl}`);
                                 modelObj = await loadGLB(modelUrl, spot);
                                 console.log(`3D model loaded successfully for spot ${spot.id}`);
-                                
+
                                 // Create a Proxy Infospot for interaction (Increased size for easier hover)
-                                const transparentPixel = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+                                const transparentPixel =
+                                    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
                                 ispot = new PANOLENS.Infospot(2000, transparentPixel);
                                 ispot.is3DModel = true;
                                 ispot.modelObj = modelObj;
@@ -857,7 +1028,8 @@
 
                         if (!ispot) {
                             // Determine the texture/icon URL
-                            let textureUrl = (spot.type === 'info') ? infoUrl : (spot.type === '3d' ? threedUrl : arrowUrl);
+                            let textureUrl = (spot.type === 'info') ? infoUrl : (spot.type === '3d' ? threedUrl :
+                                arrowUrl);
                             if (spot.model_path && !spot.model_path.toLowerCase().endsWith('.glb')) {
                                 textureUrl = '/storage/' + spot.model_path;
                             }
@@ -866,14 +1038,19 @@
                                 // Render as 3D Mesh for perspective mode
                                 const geometry = new THREE.PlaneGeometry(600, 600);
                                 const texture = new THREE.TextureLoader().load(textureUrl);
-                                const material = new THREE.MeshBasicMaterial({ 
-                                    map: texture, transparent: true, side: THREE.DoubleSide,
-                                    alphaTest: 0.1, depthTest: false, depthWrite: false
+                                const material = new THREE.MeshBasicMaterial({
+                                    map: texture,
+                                    transparent: true,
+                                    side: THREE.DoubleSide,
+                                    alphaTest: 0.1,
+                                    depthTest: false,
+                                    depthWrite: false
                                 });
                                 ispot = new THREE.Mesh(geometry, material);
                                 ispot.renderOrder = 1000;
                                 ispot.rotation.order = 'YXZ';
-                                ispot.rotation.set(spot.rotation_x || 0, spot.rotation_y || 0, spot.rotation_z || 0);
+                                ispot.rotation.set(spot.rotation_x || 0, spot.rotation_y || 0, spot.rotation_z ||
+                                0);
                                 ispot.scale.set(spot.scale_x || 1, spot.scale_y || 1, 1);
                                 ispot.isPerspectiveMesh = true;
                             } else {
@@ -887,17 +1064,25 @@
                         if (spot.type === 'nav') ispot.isNavMarker = true;
 
                         ispot.position.copy(pos);
-                        ispot.addEventListener('click', () => { handleSpotClick(spot); });
+                        ispot.addEventListener('click', () => {
+                            handleSpotClick(spot);
+                        });
 
                         // Smart Hover Logic
                         ispot.addEventListener('hoverenter', () => {
                             if (ispot.is3DModel) {
                                 const s = 1000 * 1.2;
-                                new TWEEN.Tween(ispot.modelObj.scale).to({ 
-                                    x: (spot.scale_x || 1) * s, y: (spot.scale_y || 1) * s, z: (spot.scale_z || spot.scale_x || 1) * s 
+                                new TWEEN.Tween(ispot.modelObj.scale).to({
+                                    x: (spot.scale_x || 1) * s,
+                                    y: (spot.scale_y || 1) * s,
+                                    z: (spot.scale_z || spot.scale_x || 1) * s
                                 }, 300).easing(TWEEN.Easing.Back.Out).start();
                             } else if (ispot.isPerspectiveMesh) {
-                                new TWEEN.Tween(ispot.scale).to({ x: (spot.scale_x || 1) * 1.2, y: (spot.scale_y || 1) * 1.2, z: 1.2 }, 300).easing(TWEEN.Easing.Back.Out).start();
+                                new TWEEN.Tween(ispot.scale).to({
+                                    x: (spot.scale_x || 1) * 1.2,
+                                    y: (spot.scale_y || 1) * 1.2,
+                                    z: 1.2
+                                }, 300).easing(TWEEN.Easing.Back.Out).start();
                             } else {
                                 ispot.scale.set(1.3, 1.3, 1.3);
                             }
@@ -906,11 +1091,17 @@
                         ispot.addEventListener('hoverleave', () => {
                             if (ispot.is3DModel) {
                                 const s = 1000;
-                                new TWEEN.Tween(ispot.modelObj.scale).to({ 
-                                    x: (spot.scale_x || 1) * s, y: (spot.scale_y || 1) * s, z: (spot.scale_z || spot.scale_x || 1) * s 
+                                new TWEEN.Tween(ispot.modelObj.scale).to({
+                                    x: (spot.scale_x || 1) * s,
+                                    y: (spot.scale_y || 1) * s,
+                                    z: (spot.scale_z || spot.scale_x || 1) * s
                                 }, 300).easing(TWEEN.Easing.Back.Out).start();
                             } else if (ispot.isPerspectiveMesh) {
-                                new TWEEN.Tween(ispot.scale).to({ x: spot.scale_x || 1, y: spot.scale_y || 1, z: 1 }, 300).easing(TWEEN.Easing.Back.Out).start();
+                                new TWEEN.Tween(ispot.scale).to({
+                                    x: spot.scale_x || 1,
+                                    y: spot.scale_y || 1,
+                                    z: 1
+                                }, 300).easing(TWEEN.Easing.Back.Out).start();
                             } else {
                                 ispot.scale.set(1, 1, 1);
                             }
@@ -948,11 +1139,15 @@
                 if (spot.assets && spot.assets.length > 0) {
                     assets = spot.assets.map(a => ({
                         file_type: a.file_type,
-                        url: '{{ Storage::url("") }}/' + a.file_path,
+                        url: '{{ Storage::url('') }}/' + a.file_path,
                         label: a.label || null
                     }));
                 } else if (spot.model_path) {
-                    assets = [{ file_type: '3d', url: '/storage/' + spot.model_path, label: null }];
+                    assets = [{
+                        file_type: '3d',
+                        url: '/storage/' + spot.model_path,
+                        label: null
+                    }];
                 }
                 let products = [];
                 if (spot.products && spot.products.length > 0) {
@@ -975,9 +1170,11 @@
                 if (spot.target_scene_id) {
                     const targetPano = getOrCreatePanorama(spot.target_scene_id);
                     if (targetPano) {
-                        const targetSceneData = spot.target_scene || spot.targetScene || tourData.scenes.find(s => s.id == spot.target_scene_id);
+                        const targetSceneData = spot.target_scene || spot.targetScene || tourData.scenes.find(s => s.id ==
+                            spot.target_scene_id);
                         const targetSceneName = targetSceneData ? targetSceneData.name : "NEXT SCENE";
-                        walkToTarget(targetPano, new THREE.Vector3(spot.position_x, spot.position_y, spot.position_z), targetSceneName, "Navigasi", spot.target_scene_id);
+                        walkToTarget(targetPano, new THREE.Vector3(spot.position_x, spot.position_y, spot.position_z),
+                            targetSceneName, "Navigasi", spot.target_scene_id);
                     }
                 }
             }
@@ -991,13 +1188,14 @@
 
         container.addEventListener('pointerdown', (e) => {
             const rect = container.getBoundingClientRect();
-            const mouse = new THREE.Vector2(((e.clientX - rect.left) / rect.width) * 2 - 1, -((e.clientY - rect.top) / rect.height) * 2 + 1);
+            const mouse = new THREE.Vector2(((e.clientX - rect.left) / rect.width) * 2 - 1, -((e.clientY - rect
+                .top) / rect.height) * 2 + 1);
             const raycaster = new THREE.Raycaster();
             raycaster.setFromCamera(mouse, viewer.getCamera());
-            
+
             if (!viewer.panorama) return;
             const intersects = raycaster.intersectObjects(viewer.panorama.children, true);
-            
+
             if (intersects.length > 0) {
                 let target = intersects[0].object;
                 while (target.parent && !target.is3DModel && !target.isPerspectiveMesh) {
@@ -1015,8 +1213,9 @@
 
         container.addEventListener('pointermove', (e) => {
             const rect = container.getBoundingClientRect();
-            const mouse = new THREE.Vector2(((e.clientX - rect.left) / rect.width) * 2 - 1, -((e.clientY - rect.top) / rect.height) * 2 + 1);
-            
+            const mouse = new THREE.Vector2(((e.clientX - rect.left) / rect.width) * 2 - 1, -((e.clientY - rect
+                .top) / rect.height) * 2 + 1);
+
             if (modelDragging) {
                 const deltaX = e.clientX - lastPointerX;
                 totalDragDistance += Math.abs(deltaX);
@@ -1042,7 +1241,7 @@
                 raycaster.setFromCamera(mouse, viewer.getCamera());
                 if (!viewer.panorama) return;
                 const intersects = raycaster.intersectObjects(viewer.panorama.children, true);
-                
+
                 let isOverModel = false;
                 if (intersects.length > 0) {
                     let target = intersects[0].object;
@@ -1068,7 +1267,7 @@
 
         function walkToTarget(pano, targetPosition, title, subtitle, targetSceneId = null) {
             // Sembunyikan ikon di panorama lama agar tidak "mengikuti" saat transisi
-            if(viewer.panorama) {
+            if (viewer.panorama) {
                 viewer.panorama.children.forEach(c => {
                     if (c instanceof PANOLENS.Infospot || c.isPerspectiveMesh || c.is3DModel || c.isGLBModel) {
                         c.visible = false;
@@ -1084,6 +1283,7 @@
                 let targetFovIn = 40;
                 let duration = 600;
                 let startTime = Date.now();
+
                 function zoomIn() {
                     let elapsed = Date.now() - startTime;
                     let progress = Math.min(elapsed / duration, 1);
@@ -1095,9 +1295,10 @@
                     else {
                         if (!pano.parent) viewer.add(pano);
                         viewer.setPanorama(pano);
-                        
+
                         // Check for upgrade on current pano every time we enter
-                        const targetStage = selectedResolution === 'low' ? 0 : (selectedResolution === 'medium' ? 1 : 2);
+                        const targetStage = selectedResolution === 'low' ? 0 : (selectedResolution === 'medium' ?
+                            1 : 2);
                         if (pano.loadStage < targetStage) {
                             hdLoader.classList.add('visible');
                             if (pano.retryLoading) pano.retryLoading();
@@ -1109,12 +1310,13 @@
                             }
                             hdLoader.classList.remove('visible');
                         }
-                        
+
                         // Pastikan visibilitas ikon di panorama baru sesuai dengan tombol toggle
                         const markersBtn = document.getElementById('toggle-markers');
                         const isMarkersEnabled = markersBtn ? markersBtn.classList.contains('btn-active') : true;
                         pano.children.forEach(c => {
-                            if (c instanceof PANOLENS.Infospot || c.isPerspectiveMesh) c.visible = isMarkersEnabled;
+                            if (c instanceof PANOLENS.Infospot || c.isPerspectiveMesh) c.visible =
+                                isMarkersEnabled;
                         });
 
                         document.getElementById('scene-title').innerText = title;
@@ -1144,6 +1346,7 @@
                         zoomOut();
                     }
                 }
+
                 function zoomOut() {
                     let elapsed = Date.now() - startTime;
                     let progress = Math.min(elapsed / duration, 1);
@@ -1165,9 +1368,10 @@
                 const card = document.createElement('div');
                 card.className = `scene-card ${scene.id == currentSceneData?.id ? 'active' : ''}`;
                 card.dataset.id = scene.id;
-                
+
                 const normalizePath = (path) => path ? (path.startsWith('/') ? path.substring(1) : path) : '';
-                const thumbUrl = scene.thumbnail_path ? (STORAGE_BASE + normalizePath(scene.thumbnail_path)) : (STORAGE_BASE + normalizePath(scene.high_res_path));
+                const thumbUrl = scene.thumbnail_path ? (STORAGE_BASE + normalizePath(scene.thumbnail_path)) : (
+                    STORAGE_BASE + normalizePath(scene.high_res_path));
                 card.innerHTML = `
                     <img src="${thumbUrl}" alt="${scene.name}">
                     <div class="scene-card-label">${scene.name}</div>
@@ -1177,7 +1381,8 @@
                     if (scene.id == currentSceneData?.id) return;
                     const targetPano = getOrCreatePanorama(scene.id);
                     if (targetPano) {
-                        walkToTarget(targetPano, new THREE.Vector3(0, 0, 0), scene.name, "Akses Langsung", scene.id);
+                        walkToTarget(targetPano, new THREE.Vector3(0, 0, 0), scene.name, "Akses Langsung", scene
+                            .id);
                     }
                 };
 
@@ -1187,8 +1392,8 @@
 
         async function initTour() {
             infoUrl = await createStyledIcon('i', '#2563eb');
-            arrowUrl = await createStyledIcon('⮝', '#4f46e5'); 
-            threedUrl = await createStyledIcon('3D', '#7c3aed'); 
+            arrowUrl = await createStyledIcon('⮝', '#4f46e5');
+            threedUrl = await createStyledIcon('3D', '#7c3aed');
 
             viewer = new PANOLENS.Viewer({
                 container: container,
@@ -1205,7 +1410,7 @@
             sunLight.position.set(1000, 2000, 1000);
             viewer.add(sunLight);
 
-            // OPTIMASI: Batasi pixel ratio maksimal ke 1.5 (seperti engine 3DVista). 
+            // OPTIMASI: Batasi pixel ratio maksimal ke 1.5 (seperti engine 3DVista).
             // Layar HP modern sering memaksakan ratio 3x atau 4x yang membuat GPU kelebihan beban saat render 3D.
             if (viewer.renderer) {
                 viewer.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
@@ -1222,7 +1427,7 @@
 
 
 
-            
+
 
 
 
@@ -1263,7 +1468,7 @@
                 // Panolens: target = (sin(phi)*cos(theta), cos(phi), sin(phi)*sin(theta))
                 //           phi = 90-lat (degrees), theta = lon (degrees)
                 const toRad = Math.PI / 180;
-                const phi   = (90 - lat) * toRad;
+                const phi = (90 - lat) * toRad;
                 const theta = lon * toRad;
                 const target = new THREE.Vector3(
                     Math.sin(phi) * Math.cos(theta),
@@ -1275,18 +1480,21 @@
 
 
 
-            document.getElementById('toggle-rotate').addEventListener('click', function () {
+            document.getElementById('toggle-rotate').addEventListener('click', function() {
                 const isAutoRotate = !viewer.getControl().autoRotate;
                 viewer.getControl().autoRotate = isAutoRotate;
                 viewer.autoRotate = isAutoRotate; // Sync Panolens internal flag
                 this.classList.toggle('btn-active', isAutoRotate);
             });
 
-            document.getElementById('toggle-fullscreen').addEventListener('click', function () {
+            document.getElementById('toggle-fullscreen').addEventListener('click', function() {
                 const docElm = document.documentElement;
-                const rfs = docElm.requestFullscreen || docElm.webkitRequestFullScreen || docElm.mozRequestFullScreen || docElm.msRequestFullscreen;
-                const efs = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
-                const fse = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+                const rfs = docElm.requestFullscreen || docElm.webkitRequestFullScreen || docElm
+                    .mozRequestFullScreen || docElm.msRequestFullscreen;
+                const efs = document.exitFullscreen || document.webkitExitFullscreen || document
+                    .mozCancelFullScreen || document.msExitFullscreen;
+                const fse = document.fullscreenElement || document.webkitFullscreenElement || document
+                    .mozFullScreenElement || document.msFullscreenElement;
 
                 if (!fse) {
                     if (rfs) {
@@ -1308,10 +1516,11 @@
                     }
                 }
             });
-            
+
             // Sync button state on system fullscreen change
             const syncFS = () => {
-                const fse = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+                const fse = document.fullscreenElement || document.webkitFullscreenElement || document
+                    .mozFullScreenElement || document.msFullscreenElement;
                 const isPseudo = document.documentElement.classList.contains('pseudo-fullscreen');
                 document.getElementById('toggle-fullscreen').classList.toggle('btn-active', !!fse || isPseudo);
             };
@@ -1341,7 +1550,7 @@
                     const res = btn.dataset.res;
                     selectedResolution = res;
                     localStorage.setItem('vtour_res', res); // Save to cache
-                    
+
                     // UI Update
                     resMenu.querySelectorAll('button').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
@@ -1350,23 +1559,25 @@
                     // Apply only to CURRENT panorama immediately to save bandwidth
                     if (viewer && viewer.panorama) {
                         const curPano = viewer.panorama;
-                        
+
                         // 1. Handle Downgrade: Switch back to cached textures
                         if (res === 'low' && curPano.cachedTextures[0]) {
                             _applyCachedTexture(curPano, 0);
                         } else if (res === 'medium' && curPano.cachedTextures[1]) {
-                             _applyCachedTexture(curPano, 1);
+                            _applyCachedTexture(curPano, 1);
                         } else if (res === 'high' && curPano.cachedTextures[2]) {
-                             _applyCachedTexture(curPano, 2);
+                            _applyCachedTexture(curPano, 2);
                         }
 
                         // 2. Handle Upgrade: Trigger download if not yet at target
-                        if ((res === 'medium' && curPano.loadStage < 1) || (res === 'high' && curPano.loadStage < 2)) {
+                        if ((res === 'medium' && curPano.loadStage < 1) || (res === 'high' && curPano
+                                .loadStage < 2)) {
                             _forceUpgrade(curPano);
                         }
-                        
+
                         // Handle loader visibility for current view
-                        if ((res === 'low') || (res === 'medium' && curPano.loadStage >= 1) || (res === 'high' && curPano.loadStage >= 2)) {
+                        if ((res === 'low') || (res === 'medium' && curPano.loadStage >= 1) || (res ===
+                                'high' && curPano.loadStage >= 2)) {
                             hdLoader.classList.remove('visible');
                         } else {
                             hdLoader.classList.add('visible');
@@ -1381,7 +1592,10 @@
 
                 const updateMaterial = (mat) => {
                     if (!mat) return;
-                    if (Array.isArray(mat)) { mat.forEach(m => updateMaterial(m)); return; }
+                    if (Array.isArray(mat)) {
+                        mat.forEach(m => updateMaterial(m));
+                        return;
+                    }
                     if (mat.map !== undefined) mat.map = texture;
                     if (mat.uniforms) {
                         if (mat.uniforms.tDiffuse) mat.uniforms.tDiffuse.value = texture;
@@ -1391,7 +1605,9 @@
                 };
 
                 updateMaterial(pano.material);
-                pano.traverse((node) => { if (node.isMesh) updateMaterial(node.material); });
+                pano.traverse((node) => {
+                    if (node.isMesh) updateMaterial(node.material);
+                });
                 pano.texture = texture;
                 pano.loadStage = stage;
             }
@@ -1405,18 +1621,18 @@
             document.addEventListener('mozfullscreenchange', syncFS);
             document.addEventListener('msfullscreenchange', syncFS);
 
-            document.getElementById('toggle-markers').addEventListener('click', function () {
+            document.getElementById('toggle-markers').addEventListener('click', function() {
                 const pano = viewer.panorama;
                 const visible = !pano.children[0].visible;
                 this.classList.toggle('btn-active', visible);
-                pano.children.forEach(c => { 
+                pano.children.forEach(c => {
                     if (c instanceof PANOLENS.Infospot || c.isPerspectiveMesh) {
                         c.visible = visible;
                     }
                 });
             });
 
-            document.getElementById('ui-toggle').addEventListener('click', function () {
+            document.getElementById('ui-toggle').addEventListener('click', function() {
                 const panel = document.getElementById('control-buttons-panel');
                 const listPanel = document.getElementById('scene-list-panel');
                 const isMinimized = panel.classList.toggle('minimized');
@@ -1432,24 +1648,26 @@
             viewer.container.addEventListener('click', (e) => {
                 if (!document.getElementById('coord-display').classList.contains('show')) return;
                 const rect = container.getBoundingClientRect();
-                const mouse = new THREE.Vector2(((e.clientX - rect.left) / rect.width) * 2 - 1, -((e.clientY - rect.top) / rect.height) * 2 + 1);
+                const mouse = new THREE.Vector2(((e.clientX - rect.left) / rect.width) * 2 - 1, -((e.clientY -
+                    rect.top) / rect.height) * 2 + 1);
                 const raycaster = new THREE.Raycaster();
                 raycaster.setFromCamera(mouse, viewer.getCamera());
                 const intersects = raycaster.intersectObjects(viewer.getScene().children, true);
                 if (intersects.length > 0) {
                     const p = intersects[0].point;
-                    document.getElementById('coord-display').innerHTML = `Position: <b>set(${Math.round(p.x)}, ${Math.round(p.y)}, ${Math.round(p.z)})</b>`;
+                    document.getElementById('coord-display').innerHTML =
+                        `Position: <b>set(${Math.round(p.x)}, ${Math.round(p.y)}, ${Math.round(p.z)})</b>`;
                 }
             });
         }
-        
+
         let currentModalLang = 'id';
 
         function playNarration() {
             if (!window.responsiveVoice) return;
 
             let htmlText = document.getElementById('tab-' + currentModalLang).innerHTML;
-            let plainText = htmlText.replace(/<[^>]*>?/gm, ''); 
+            let plainText = htmlText.replace(/<[^>]*>?/gm, '');
             if (!plainText.trim()) return;
 
             let voice = currentModalLang === 'id' ? "Indonesian Female" : "UK English Female";
@@ -1514,7 +1732,7 @@
             const wrapper = document.getElementById('modal-layout-wrapper');
             const icon = document.getElementById('enlarge-icon');
             const isEnlarged = wrapper.classList.toggle('assets-enlarged');
-            
+
             icon.className = isEnlarged ? 'fas fa-compress-arrows-alt text-xs' : 'fas fa-expand-arrows-alt text-xs';
 
             // Adapt carousel height
@@ -1539,7 +1757,7 @@
 
         function vcGoto(idx) {
             _vcIndex = Math.max(0, Math.min(idx, _vcTotal - 1));
-            
+
             // Fix: Translate percentage must be relative to the track's total width.
             // Since each slide is 100% of the container, the track is (_vcTotal * 100%) wide.
             // To move 1 slide, we move (100 / _vcTotal)%.
@@ -1565,7 +1783,7 @@
             if (activeProduct) {
                 document.getElementById('tab-id').innerHTML = activeProduct.description_id || '-';
                 document.getElementById('tab-en').innerHTML = activeProduct.description_en || '-';
-                
+
                 document.getElementById('tab-researcher').innerHTML = activeProduct.researcher || '';
                 document.getElementById('tab-contact').innerHTML = activeProduct.contact_person || '';
 
@@ -1595,20 +1813,20 @@
         document.getElementById('vc-next').addEventListener('click', () => vcGoto(_vcIndex + 1));
 
         function buildCarousel(assets) {
-            const track  = document.getElementById('vc-track');
+            const track = document.getElementById('vc-track');
             const dotsEl = document.getElementById('vc-dots');
-            const pane   = document.getElementById('modal-pane-assets');
-            
+            const pane = document.getElementById('modal-pane-assets');
+
             // Check current enlargement state to apply correct height to new slides
             const isEnlarged = document.getElementById('modal-layout-wrapper').classList.contains('assets-enlarged');
             const slideHeight = isEnlarged ? '60vh' : '300px';
 
             // Reset
-            track.innerHTML  = '';
+            track.innerHTML = '';
             dotsEl.innerHTML = '';
             _vcIndex = 0;
             _vcTotal = assets.length;
-            _currentAssets = assets; 
+            _currentAssets = assets;
 
             if (!assets || assets.length === 0) {
                 pane.style.display = 'none';
@@ -1631,8 +1849,8 @@
 
                 if (asset.file_type === '2d') {
                     const img = document.createElement('img');
-                    img.src     = asset.url;
-                    img.alt     = asset.label || 'Image';
+                    img.src = asset.url;
+                    img.alt = asset.label || 'Image';
                     img.loading = 'lazy';
                     img.style.height = slideHeight; // Apply current height state
                     slide.appendChild(img);
@@ -1640,7 +1858,8 @@
                     const wrap = document.createElement('div');
                     wrap.className = 'mv-wrap';
                     wrap.style.height = slideHeight; // Apply current height state
-                    wrap.innerHTML = `<model-viewer src="${asset.url}" auto-rotate camera-controls shadow-intensity="1" touch-action="pan-y" loading="eager"></model-viewer>`;
+                    wrap.innerHTML =
+                        `<model-viewer src="${asset.url}" auto-rotate camera-controls shadow-intensity="1" touch-action="pan-y" loading="eager"></model-viewer>`;
                     slide.appendChild(wrap);
                 }
 
@@ -1671,7 +1890,9 @@
             // Reset track position & zoom
             vcGoto(0);
             track.style.transition = 'none';
-            setTimeout(() => { track.style.transition = ''; }, 50);
+            setTimeout(() => {
+                track.style.transition = '';
+            }, 50);
 
             // Disable prev on first slide
             document.getElementById('vc-prev').disabled = true;
@@ -1681,21 +1902,21 @@
         }
 
         /* ---- Image zoom via mouse scroll ---- */
-        let _imgScale      = 1;
+        let _imgScale = 1;
         const _imgMinScale = 1;
         const _imgMaxScale = 5;
 
         function _imgApplyTransform(img) {
             img.style.transform = `scale(${_imgScale})`;
-            img.style.cursor    = _imgScale > 1 ? 'grab' : 'zoom-in';
+            img.style.cursor = _imgScale > 1 ? 'grab' : 'zoom-in';
         }
 
         function _imgZoomReset() {
             _imgScale = 1;
             document.querySelectorAll('.vc-slide img').forEach(img => {
-                img.style.transform      = '';
+                img.style.transform = '';
                 img.style.transformOrigin = '50% 50%';
-                img.style.cursor         = 'zoom-in';
+                img.style.cursor = 'zoom-in';
             });
         }
 
@@ -1709,7 +1930,7 @@
             const factor = 1.1;
             const direction = delta > 0 ? 1 : -1;
             const newScale = direction > 0 ? _imgScale * factor : _imgScale / factor;
-            
+
             if (newScale < _imgMinScale || newScale > _imgMaxScale) return;
 
             const rect = img.getBoundingClientRect();
@@ -1721,7 +1942,9 @@
             _imgScale = newScale;
             img.style.transformOrigin = `${originX}% ${originY}%`;
             _imgApplyTransform(img);
-        }, { passive: false });
+        }, {
+            passive: false
+        });
 
         // Zoom via Pinch (Mobile)
         (() => {
@@ -1737,7 +1960,9 @@
                     initialScale = _imgScale;
                     e.preventDefault();
                 }
-            }, { passive: false });
+            }, {
+                passive: false
+            });
 
             document.getElementById('vc-wrap').addEventListener('touchmove', (e) => {
                 const img = e.target.closest('.vc-slide')?.querySelector('img');
@@ -1751,22 +1976,27 @@
                     _imgApplyTransform(img);
                     e.preventDefault();
                 }
-            }, { passive: false });
+            }, {
+                passive: false
+            });
         })();
 
         // Pan while zoomed in — shift transform-origin to pan
         (() => {
-            let dragging = false, startX = 0, startY = 0;
-            let originXpct = 50, originYpct = 50;
+            let dragging = false,
+                startX = 0,
+                startY = 0;
+            let originXpct = 50,
+                originYpct = 50;
             let activeImg = null;
 
             document.getElementById('vc-wrap').addEventListener('mousedown', (e) => {
                 const img = e.target.closest('.vc-slide')?.querySelector('img');
                 if (!img || _imgScale <= 1) return;
-                dragging  = true;
+                dragging = true;
                 activeImg = img;
-                startX    = e.clientX;
-                startY    = e.clientY;
+                startX = e.clientX;
+                startY = e.clientY;
                 // Read current origin
                 const orig = (img.style.transformOrigin || '50% 50%').split(' ');
                 originXpct = parseFloat(orig[0]) || 50;
@@ -1777,9 +2007,9 @@
 
             window.addEventListener('mousemove', (e) => {
                 if (!dragging || !activeImg) return;
-                const rect  = activeImg.getBoundingClientRect();
+                const rect = activeImg.getBoundingClientRect();
                 // How much in % did we move relative to image size
-                const dxPct = (e.clientX - startX) / rect.width  * 100 / _imgScale;
+                const dxPct = (e.clientX - startX) / rect.width * 100 / _imgScale;
                 const dyPct = (e.clientY - startY) / rect.height * 100 / _imgScale;
                 startX = e.clientX;
                 startY = e.clientY;
@@ -1790,7 +2020,7 @@
 
             window.addEventListener('mouseup', () => {
                 if (dragging && activeImg) activeImg.style.cursor = _imgScale > 1 ? 'grab' : 'zoom-in';
-                dragging  = false;
+                dragging = false;
                 activeImg = null;
             });
 
@@ -1890,7 +2120,7 @@
         /* ---- Site Plan System ---- */
         const sitePlanOverlay = document.getElementById('site-plan-overlay');
         const activeMapContainer = document.getElementById('active-map-container');
-        
+
         document.getElementById('toggle-map').addEventListener('click', () => {
             const plans = tourData.site_plans || tourData.sitePlans;
             if (plans && plans.length > 0) {
@@ -1929,7 +2159,8 @@
             activeMapContainer.style.transform = 'scale(1)';
             activeMapContainer.style.transformOrigin = '50% 50%';
 
-            const lowUrl = plan.low_res_path ? `/storage/${plan.low_res_path}` : (plan.high_res_path ? `/storage/${plan.high_res_path}` : `/storage/${plan.image_path}`);
+            const lowUrl = plan.low_res_path ? `/storage/${plan.low_res_path}` : (plan.high_res_path ?
+                `/storage/${plan.high_res_path}` : `/storage/${plan.image_path}`);
             const midUrl = plan.medium_res_path ? `/storage/${plan.medium_res_path}` : null;
             const highUrl = plan.high_res_path ? `/storage/${plan.high_res_path}` : `/storage/${plan.image_path}`;
 
@@ -1946,12 +2177,16 @@
                     if (imgElement) imgElement.src = midUrl;
                     const highImg = new Image();
                     highImg.src = highUrl;
-                    highImg.onload = () => { if (imgElement) imgElement.src = highUrl; };
+                    highImg.onload = () => {
+                        if (imgElement) imgElement.src = highUrl;
+                    };
                 };
             } else if (highUrl !== lowUrl) {
                 const highImg = new Image();
                 highImg.src = highUrl;
-                highImg.onload = () => { if (imgElement) imgElement.src = highUrl; };
+                highImg.onload = () => {
+                    if (imgElement) imgElement.src = highUrl;
+                };
             }
 
             const layer = document.getElementById('map-hotspots-layer');
@@ -1960,9 +2195,9 @@
                 marker.className = 'absolute -translate-x-1/2 -translate-y-1/2 group cursor-pointer';
                 marker.style.left = hs.x + '%';
                 marker.style.top = hs.y + '%';
-                
+
                 const sceneName = hs.scene ? hs.scene.name : 'Unknown Scene';
-                
+
                 marker.innerHTML = `
                     <div class="relative">
                         <div class="w-4 h-4 md:w-6 md:h-6 bg-primary rounded-full border-2 md:border-4 border-white shadow-lg animate-pulse hover:scale-125 transition-transform"></div>
@@ -1977,7 +2212,8 @@
                     const targetPano = getOrCreatePanorama(hs.scene_id);
                     if (targetPano) {
                         closeSitePlan();
-                        walkToTarget(targetPano, new THREE.Vector3(0, 0, 0), sceneName, "Site Plan Navigation", hs.scene_id);
+                        walkToTarget(targetPano, new THREE.Vector3(0, 0, 0), sceneName, "Site Plan Navigation",
+                            hs.scene_id);
                     }
                 };
 
@@ -2001,7 +2237,7 @@
             const factor = 1.1;
             const direction = delta > 0 ? 1 : -1;
             const newScale = direction > 0 ? _mapScale * factor : _mapScale / factor;
-            
+
             if (newScale < 1 || newScale > 10) return;
 
             const rect = activeMapContainer.getBoundingClientRect();
@@ -2013,7 +2249,9 @@
             _mapScale = newScale;
             activeMapContainer.style.transformOrigin = `${_mapOriginX}% ${_mapOriginY}%`;
             activeMapContainer.style.transform = `scale(${_mapScale})`;
-        }, { passive: false });
+        }, {
+            passive: false
+        });
 
         mapArea.addEventListener('mousedown', (e) => {
             if (_mapScale <= 1) return;
@@ -2028,13 +2266,13 @@
             const rect = activeMapContainer.getBoundingClientRect();
             const dxPct = (e.clientX - _mapStartX) / rect.width * 100 / _mapScale;
             const dyPct = (e.clientY - _mapStartY) / rect.height * 100 / _mapScale;
-            
+
             _mapStartX = e.clientX;
             _mapStartY = e.clientY;
-            
+
             _mapOriginX = Math.max(0, Math.min(100, _mapOriginX - dxPct));
             _mapOriginY = Math.max(0, Math.min(100, _mapOriginY - dyPct));
-            
+
             activeMapContainer.style.transformOrigin = `${_mapOriginX.toFixed(2)}% ${_mapOriginY.toFixed(2)}%`;
         });
 
@@ -2048,22 +2286,29 @@
             let initialScale = 1;
             mapArea.addEventListener('touchstart', (e) => {
                 if (e.touches.length === 2) {
-                    initialDist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
+                    initialDist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e
+                        .touches[1].pageY);
                     initialScale = _mapScale;
                     e.preventDefault();
                 }
-            }, { passive: false });
+            }, {
+                passive: false
+            });
             mapArea.addEventListener('touchmove', (e) => {
                 if (e.touches.length === 2 && initialDist > 0) {
-                    const dist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
+                    const dist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e
+                        .touches[1].pageY);
                     _mapScale = Math.max(1, Math.min(10, initialScale * (dist / initialDist)));
                     activeMapContainer.style.transform = `scale(${_mapScale})`;
                     e.preventDefault();
                 }
-            }, { passive: false });
+            }, {
+                passive: false
+            });
         })();
 
         initTour();
     </script>
 </body>
+
 </html>
