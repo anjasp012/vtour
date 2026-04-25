@@ -591,6 +591,7 @@
 
         const STORAGE_BASE = "{{ Storage::url('') }}".replace(/\/$/, '') + '/';
         const textureLoader = new THREE.TextureLoader();
+        const hdLoader = document.getElementById('hd-loader');
 
         function getOrCreatePanorama(sceneId) {
             if (panoramas[sceneId]) return panoramas[sceneId];
@@ -607,7 +608,7 @@
             pano.loadStage = 0; // 0: low, 1: mid, 2: high
             panoramas[sceneId] = pano;
 
-            const hdLoader = document.getElementById('hd-loader');
+
 
             const updatePanoTexture = (texture, stage, stageName) => {
                 if (pano.loadStage >= stage) return;
@@ -961,6 +962,13 @@
                     else {
                         if (!pano.parent) viewer.add(pano);
                         viewer.setPanorama(pano);
+                        
+                        // Force check HD loader when switching
+                        if (pano.loadStage < 2) {
+                            hdLoader.classList.add('visible');
+                        } else {
+                            hdLoader.classList.remove('visible');
+                        }
                         
                         // Pastikan visibilitas ikon di panorama baru sesuai dengan tombol toggle
                         const markersBtn = document.getElementById('toggle-markers');
