@@ -683,11 +683,23 @@
             pano.cachedTextures = {}; // Store textures for switching back
             panoramas[sceneId] = pano;
 
+            // Capture the initial low-res texture into cache once pano loads it
+            pano.addEventListener('load', () => {
+                if (pano.material && pano.material.map && !pano.cachedTextures[0]) {
+                    pano.cachedTextures[0] = pano.material.map;
+                    console.log(`[Cache] Initial SD texture captured for ${sceneData.name}`);
+                }
+            });
+
             const applyTextureToPano = (texture, stage) => {
+                if (!texture) return;
+                
                 const updateMaterial = (mat) => {
                     if (!mat) return;
                     if (Array.isArray(mat)) { mat.forEach(m => updateMaterial(m)); return; }
-                    if (mat.map !== undefined) mat.map = texture;
+                    
+                    // Crucial: Update the map and trigger renewal
+                    mat.map = texture;
                     if (mat.uniforms) {
                         if (mat.uniforms.tDiffuse) mat.uniforms.tDiffuse.value = texture;
                         if (mat.uniforms.tEquirect) mat.uniforms.tEquirect.value = texture;
@@ -697,6 +709,8 @@
 
                 updateMaterial(pano.material);
                 pano.traverse((node) => { if (node.isMesh) updateMaterial(node.material); });
+                
+                // Also update the internal texture reference Panolens might use
                 pano.texture = texture;
                 pano.loadStage = stage;
             };
@@ -780,13 +794,7 @@
             startLoading();
 
             pano.addEventListener('enter-fade-start', () => {
-                const targetStage = selectedResolution === 'low' ? 0 : (selectedResolution === 'medium' ? 1 : 2);
-                if (pano.loadStage < targetStage) {
-                    hdLoader.classList.add('visible');
-                    startLoading(); 
-                } else {
-                    hdLoader.classList.remove('visible');
-                }
+                // Logic moved to switchScene for more reliable execution across all call paths
             });
             pano.addEventListener('leave', () => {
                 hdLoader.classList.remove('visible');
@@ -1074,7 +1082,19 @@
                         if (!pano.parent) viewer.add(pano);
                         viewer.setPanorama(pano);
                         
-                        // Removed immediate check here, moved to pano 'enter-fade-start' event for better sync
+                        // Check for upgrade on current pano every time we enter
+                        const targetStage = selectedResolution === 'low' ? 0 : (selectedResolution === 'medium' ? 1 : 2);
+                        if (pano.loadStage < targetStage) {
+                            hdLoader.classList.add('visible');
+                            if (pano.retryLoading) pano.retryLoading();
+                        } else {
+                            // If we already have a better texture than target (e.g. from previous high-res session)
+                            // but user wants SD, we should swap back here just to be sure
+                            if (pano.loadStage > targetStage) {
+                                _applyCachedTexture(pano, targetStage);
+                            }
+                            hdLoader.classList.remove('visible');
+                        }
                         
                         // Pastikan visibilitas ikon di panorama baru sesuai dengan tombol toggle
                         const markersBtn = document.getElementById('toggle-markers');
