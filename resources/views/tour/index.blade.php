@@ -397,14 +397,18 @@
             position: absolute;
             bottom: calc(100% + 10px);
             right: 0;
-            background: rgba(15, 23, 42, 0.9);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 12px;
+            z-index: 10002;
+            transform: translateZ(0);
             overflow: hidden;
             display: none;
             flex-direction: column;
             min-width: 140px;
+            pointer-events: auto;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         }
 
@@ -845,7 +849,7 @@
         const normalizePath = (path) => path ? (path.startsWith('/') ? path.substring(1) : path) : '';
         const textureLoader = new THREE.TextureLoader();
         const hdLoader = document.getElementById('hd-loader');
-        let selectedResolution = localStorage.getItem('vtour_res') || 'high'; // low, medium, high
+        let selectedResolution = localStorage.getItem('vtour_res') || 'low'; // low, medium, high
 
         function _applyInitialView(lon, lat) {
             const toRad = Math.PI / 180;
@@ -1600,10 +1604,10 @@
             const resMenu = document.getElementById('res-menu');
             const resLabel = document.getElementById('current-res-label');
 
-            resBtn.onclick = (e) => {
+            resBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 resMenu.classList.toggle('show');
-            };
+            });
 
             document.addEventListener('click', () => resMenu.classList.remove('show'));
 
@@ -1615,7 +1619,8 @@
                     resLabel.textContent = btn.textContent.split(' ')[0];
                 }
 
-                btn.onclick = () => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
                     const res = btn.dataset.res;
                     selectedResolution = res;
                     localStorage.setItem('vtour_res', res); // Save to cache
