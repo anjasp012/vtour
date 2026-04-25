@@ -1185,8 +1185,8 @@
 
 
 
-            // Inisialisasi awal hanya untuk scene pertama
-            let startSceneData = tourData.scenes.find(s => s.is_start_scene) || tourData.scenes[0];
+            // Inisialisasi awal: Scene dengan urutan (order) terkecil otomatis jadi Start Scene
+            let startSceneData = tourData.scenes[0];
             let startScene = startSceneData ? getOrCreatePanorama(startSceneData.id) : null;
 
 

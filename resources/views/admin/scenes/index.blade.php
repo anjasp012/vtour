@@ -31,12 +31,6 @@
                 <!-- Compact Thumbnail -->
                 <div class="relative aspect-video overflow-hidden border-b border-slate-100">
                     <img src="{{ Storage::url($scene->low_res_path ?? $scene->high_res_path) }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="{{ $scene->name }}">
-                    
-                    @if($scene->is_start_scene)
-                        <div class="absolute top-1.5 left-1.5 bg-blue-600 text-white text-[7px] font-bold px-1.5 py-0.5 rounded-sm shadow uppercase tracking-widest">
-                            INIT
-                        </div>
-                    @endif
 
                     <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 p-2 pt-4">
                         <span class="text-white font-bold text-[11px] tracking-tight truncate block">{{ $scene->name }}</span>

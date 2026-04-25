@@ -57,21 +57,7 @@
                         @error('image') <p class="text-rose-500 text-[8px] font-bold mt-1 uppercase">{{ $message }}</p> @enderror
                     </div>
 
-                    <div class="p-4 bg-blue-600 rounded border border-blue-500 flex items-center justify-between shadow-lg shadow-blue-500/10">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 bg-white/10 rounded flex items-center justify-center text-white text-xs">
-                                <i class="fas fa-flag-checkered"></i>
-                            </div>
-                            <div>
-                                <span class="text-[10px] font-bold text-white uppercase tracking-widest block leading-none mb-1">Initialization Node</span>
-                                <p class="text-[8px] text-blue-100 font-bold uppercase tracking-widest">Primary entry flow for project</p>
-                            </div>
-                        </div>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" name="is_start_scene" value="1" {{ $scene->is_start_scene ? 'checked' : '' }} class="sr-only peer">
-                            <div class="w-10 h-5 bg-white/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-blue-600 after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-white/40 shadow-inner"></div>
-                        </label>
-                    </div>
+
                     
                     <hr class="border-slate-100">
 

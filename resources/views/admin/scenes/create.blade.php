@@ -49,21 +49,7 @@
                         @error('image') <p class="text-rose-500 text-[8px] font-bold mt-1 uppercase">{{ $message }}</p> @enderror
                     </div>
 
-                    <div class="p-4 bg-slate-50 rounded border border-slate-200 flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 bg-blue-50 text-blue-600 rounded flex items-center justify-center text-xs">
-                                <i class="fas fa-play"></i>
-                            </div>
-                            <div>
-                                <span class="text-[10px] font-bold text-slate-700 uppercase tracking-widest block leading-none mb-1">Initialization Node</span>
-                                <p class="text-[8px] text-slate-400 font-bold uppercase tracking-widest">Entry waypoint for tour</p>
-                            </div>
-                        </div>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" name="is_start_scene" value="1" class="sr-only peer">
-                            <div class="w-10 h-5 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600 shadow-inner"></div>
-                        </label>
-                    </div>
+
                     
                     <hr class="border-slate-100">
 

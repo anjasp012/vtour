@@ -51,7 +51,6 @@ class SceneController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'image' => 'required|image|mimes:jpeg,png,jpg', // 10MB max
-            'is_start_scene' => 'boolean',
             'description_id' => 'nullable|string',
             'description_en' => 'nullable|string',
         ]);
@@ -60,19 +59,15 @@ class SceneController extends Controller
         $highResPath = $request->file('image')->store('scenes/images', 'public');
         $multiRes = $this->generateMultiResImages($highResPath);
 
-        if ($request->has('is_start_scene') && $request->is_start_scene) {
-            $tour->scenes()->update(['is_start_scene' => false]);
-        }
-
         $newScene = $tour->scenes()->create([
             'name' => $validated['name'],
             'high_res_path' => $highResPath,
             'low_res_path' => $multiRes['low_res_path'] ?? null,
             'thumbnail_path' => $multiRes['thumbnail_path'] ?? null,
             'medium_res_path' => $multiRes['medium_res_path'] ?? null,
-            'is_start_scene' => $request->has('is_start_scene') ? true : false,
             'description_id' => $request->description_id,
             'description_en' => $request->description_en,
+            'order' => $tour->scenes()->max('order') + 1,
         ]);
 
         if ($request->wantsJson()) {
@@ -103,18 +98,12 @@ class SceneController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'image' => 'nullable|image|mimes:jpeg,png,jpg',
-            'is_start_scene' => 'boolean',
             'description_id' => 'nullable|string',
             'description_en' => 'nullable|string',
         ]);
 
-        if ($request->has('is_start_scene') && $request->is_start_scene) {
-            $scene->tour->scenes()->update(['is_start_scene' => false]);
-        }
-
         $data = [
             'name' => $validated['name'],
-            'is_start_scene' => $request->has('is_start_scene') ? true : false,
             'description_id' => $request->description_id,
             'description_en' => $request->description_en,
         ];
