@@ -4,10 +4,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TourController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\SceneController as AdminSceneController;
-use App\Http\Controllers\Admin\TourController as AdminTourController;
 use App\Http\Controllers\Admin\SitePlanController as AdminSitePlanController;
 use App\Http\Controllers\Admin\InfospotController as AdminInfospotController;
-use App\Http\Controllers\Admin\InfospotAssetController as AdminInfospotAssetController;
+use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Admin\ProductAssetController as AdminProductAssetController;
 
 // Frontend route for Virtual Tour
 Route::get('/', [TourController::class, 'index'])->name('tour.show');
@@ -20,9 +20,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Admin Tour CRUD
-    Route::resource('tours', AdminTourController::class);
-    Route::resource('tours.site-plans', AdminSitePlanController::class)->shallow();
+    // Site Plans
+    Route::resource('site-plans', AdminSitePlanController::class);
     Route::post('site-plans/{site_plan}/hotspots', [AdminSitePlanController::class, 'saveHotspots'])
         ->name('site-plans.hotspots.save');
 
@@ -31,26 +30,27 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::resource('scenes', AdminSceneController::class);
     Route::post('scenes/{scene}/lock-view', [AdminSceneController::class, 'lockView'])
         ->name('scenes.lockView');
+    
     // Nested resources for infospots within a scene
     Route::resource('scenes.infospots', AdminInfospotController::class)->shallow();
 
-    // Infospot multi-file assets
-    Route::get('infospots/{infospot}/assets', [AdminInfospotAssetController::class, 'index'])
-        ->name('infospots.assets.index');
-    Route::post('infospots/{infospot}/assets', [AdminInfospotAssetController::class, 'store'])
-        ->name('infospots.assets.store');
-    Route::delete('infospot-assets/{asset}', [AdminInfospotAssetController::class, 'destroy'])
-        ->name('infospot-assets.destroy');
-    Route::post('infospot-assets/reorder', [AdminInfospotAssetController::class, 'reorder'])
-        ->name('infospot-assets.reorder');
-
-    // Infospot Products
-    Route::get('infospots/{infospot}/products', [\App\Http\Controllers\Admin\InfospotProductController::class, 'index'])
+    // Products (belonging to infospots)
+    Route::get('infospots/{infospot}/products', [AdminProductController::class, 'index'])
         ->name('infospots.products.index');
-    Route::post('infospots/{infospot}/products', [\App\Http\Controllers\Admin\InfospotProductController::class, 'store'])
+    Route::post('infospots/{infospot}/products', [AdminProductController::class, 'store'])
         ->name('infospots.products.store');
-    Route::patch('infospot-products/{product}', [\App\Http\Controllers\Admin\InfospotProductController::class, 'update'])
-        ->name('infospot-products.update');
-    Route::delete('infospot-products/{product}', [\App\Http\Controllers\Admin\InfospotProductController::class, 'destroy'])
-        ->name('infospot-products.destroy');
+    Route::patch('products/{product}', [AdminProductController::class, 'update'])
+        ->name('products.update');
+    Route::delete('products/{product}', [AdminProductController::class, 'destroy'])
+        ->name('products.destroy');
+
+    // Product Assets (belonging to products)
+    Route::get('products/{product}/assets', [AdminProductAssetController::class, 'index'])
+        ->name('products.assets.index');
+    Route::post('products/{product}/assets', [AdminProductAssetController::class, 'store'])
+        ->name('products.assets.store');
+    Route::delete('product-assets/{asset}', [AdminProductAssetController::class, 'destroy'])
+        ->name('product-assets.destroy');
+    Route::post('product-assets/reorder', [AdminProductAssetController::class, 'reorder'])
+        ->name('product-assets.reorder');
 });

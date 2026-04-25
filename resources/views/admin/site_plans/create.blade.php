@@ -10,7 +10,7 @@
             <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Upload a floor plan or architectural layout</p>
         </div>
 
-        <form action="{{ route('admin.tours.site-plans.store', $tour) }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-6">
+        <form action="{{ route('admin.site-plans.store') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-6">
             @csrf
             
             <div class="space-y-1.5">
@@ -36,7 +36,7 @@
                 <button type="submit" class="flex-1 bg-blue-600 text-white font-black py-4 rounded-lg text-xs uppercase tracking-[2px] shadow-lg shadow-blue-500/20 hover:bg-blue-700 transition-all">
                     Register Site Plan
                 </button>
-                <a href="{{ route('admin.tours.site-plans.index', $tour) }}" class="px-8 bg-slate-100 text-slate-400 font-bold py-4 rounded-lg text-xs uppercase tracking-[2px] hover:bg-slate-200 hover:text-slate-600 transition-all text-center">
+                <a href="{{ route('admin.site-plans.index') }}" class="px-8 bg-slate-100 text-slate-400 font-bold py-4 rounded-lg text-xs uppercase tracking-[2px] hover:bg-slate-200 hover:text-slate-600 transition-all text-center">
                     Cancel
                 </a>
             </div>

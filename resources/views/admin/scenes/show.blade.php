@@ -1639,7 +1639,7 @@
     window.deleteProduct = async function(id) {
         if (!confirm('Hapus produk ini? Assets di dalamnya akan ikut terhapus.')) return;
         try {
-            await fetch(`{{ url('admin/infospot-products') }}/${id}`, {
+            await fetch(`{{ url('admin/products') }}/${id}`, {
                 method: 'DELETE',
                 headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
             });
@@ -1728,8 +1728,11 @@
         container.classList.remove('hidden');
 
         try {
-            let url = `{{ url('admin/infospots') }}/${infospotId}/assets`;
-            if (productId) url += `?product_id=${productId}`;
+            if (!productId) {
+                container.innerHTML = '<p class="text-[8px] text-slate-600 italic text-center py-1">Select a product to view assets.</p>';
+                return;
+            }
+            let url = `{{ url('admin/products') }}/${productId}/assets`;
 
             const res = await fetch(url, {
                 headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
@@ -1829,7 +1832,7 @@
         if (ids.length === 0) return;
 
         try {
-            await fetch('{{ url('admin/infospot-assets/reorder') }}', {
+            await fetch('{{ url('admin/product-assets/reorder') }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1848,7 +1851,7 @@
     window.deleteAsset = async function(assetId, productId = null) {
         if (!confirm('Hapus asset ini?')) return;
         try {
-            const res = await fetch(`{{ url('admin/infospot-assets') }}/${assetId}`, {
+            const res = await fetch(`{{ url('admin/product-assets') }}/${assetId}`, {
                 method: 'DELETE',
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -1904,7 +1907,7 @@
         loading.style.display = 'flex';
 
         try {
-            const res = await fetch(`{{ url('admin/infospots') }}/${currentUploadInfospotId}/assets`, {
+            const res = await fetch(`{{ url('admin/products') }}/${productId}/assets`, {
                 method: 'POST',
                 body: formData,
                 headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }

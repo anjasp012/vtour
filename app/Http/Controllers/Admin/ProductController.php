@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Infospot;
-use App\Models\InfospotProduct;
+use App\Models\Product;
 
-class InfospotProductController extends Controller
+class ProductController extends Controller
 {
     public function index(Infospot $infospot)
     {
@@ -33,7 +33,7 @@ class InfospotProductController extends Controller
         return response()->json(['success' => true, 'product' => $product]);
     }
 
-    public function update(Request $request, InfospotProduct $product)
+    public function update(Request $request, Product $product)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -48,7 +48,7 @@ class InfospotProductController extends Controller
         return response()->json(['success' => true, 'product' => $product]);
     }
 
-    public function destroy(InfospotProduct $product)
+    public function destroy(Product $product)
     {
         $product->delete();
         return response()->json(['success' => true]);

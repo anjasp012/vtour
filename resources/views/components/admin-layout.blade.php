@@ -58,7 +58,7 @@
                 <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                     Dashboard
                 </a>
-                <a href="{{ route('admin.tours.site-plans.index', 1) }}" class="nav-link {{ request()->routeIs('admin.site-plans.*') || request()->routeIs('admin.tours.site-plans.*') ? 'active' : '' }}">
+                <a href="{{ route('admin.site-plans.index') }}" class="nav-link {{ request()->routeIs('admin.site-plans.*') ? 'active' : '' }}">
                     Site Plans
                 </a>
                 <a href="{{ route('admin.scenes.index') }}" class="nav-link {{ request()->routeIs('admin.scenes.*') && !request()->routeIs('admin.scenes.show') ? 'active' : '' }}">

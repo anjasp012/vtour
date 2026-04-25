@@ -4,14 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class InfospotAsset extends Model
+class ProductAsset extends Model
 {
     protected $guarded = [];
-
-    public function infospot()
-    {
-        return $this->belongsTo(Infospot::class);
-    }
 
     /**
      * Get the storage URL for this asset.
@@ -39,6 +34,6 @@ class InfospotAsset extends Model
 
     public function product()
     {
-        return $this->belongsTo(InfospotProduct::class, 'infospot_product_id');
+        return $this->belongsTo(Product::class);
     }
 }

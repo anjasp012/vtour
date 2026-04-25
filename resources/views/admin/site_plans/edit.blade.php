@@ -43,7 +43,7 @@
                 <button type="submit" class="flex-1 bg-indigo-600 text-white font-black py-4 rounded-lg text-xs uppercase tracking-[2px] shadow-lg shadow-indigo-500/20 hover:bg-indigo-700 transition-all">
                     Update Site Plan
                 </button>
-                <a href="{{ route('admin.tours.site-plans.index', $sitePlan->tour) }}" class="px-8 bg-slate-100 text-slate-400 font-bold py-4 rounded-lg text-xs uppercase tracking-[2px] hover:bg-slate-200 hover:text-slate-600 transition-all text-center">
+                <a href="{{ route('admin.site-plans.index') }}" class="px-8 bg-slate-100 text-slate-400 font-bold py-4 rounded-lg text-xs uppercase tracking-[2px] hover:bg-slate-200 hover:text-slate-600 transition-all text-center">
                     Cancel
                 </a>
             </div>

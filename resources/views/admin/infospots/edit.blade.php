@@ -82,17 +82,18 @@
     <div class="p-6 border-b border-gray-200 flex items-center justify-between">
         <h3 class="text-lg font-semibold text-gray-800">
             📎 Media Assets
-            <span class="ml-2 text-sm font-normal text-gray-400">({{ $infospot->assets->count() }} file)</span>
+            @php $allAssets = $infospot->products->flatMap->assets; @endphp
+            <span class="ml-2 text-sm font-normal text-gray-400">({{ $allAssets->count() }} file)</span>
         </h3>
     </div>
 
     {{-- Existing assets list --}}
     <div class="p-6">
-        @if($infospot->assets->isEmpty())
+        @if($allAssets->isEmpty())
             <p class="text-sm text-gray-400 italic mb-4">Belum ada asset. Upload di bawah.</p>
         @else
             <div class="space-y-3 mb-6">
-                @foreach($infospot->assets as $asset)
+                @foreach($allAssets as $asset)
                     <div class="flex items-center justify-between p-3 border border-gray-200 rounded-lg bg-gray-50">
                         <div class="flex items-center gap-3 min-w-0">
                             {{-- Type badge --}}
@@ -123,7 +124,7 @@
                             @endif
 
                             {{-- Delete --}}
-                            <form action="{{ route('admin.infospot-assets.destroy', $asset) }}" method="POST"
+                            <form action="{{ route('admin.product-assets.destroy', $asset) }}" method="POST"
                                   onsubmit="return confirm('Hapus asset ini?')">
                                 @csrf
                                 @method('DELETE')
@@ -139,7 +140,13 @@
         @endif
 
         {{-- Upload new assets form --}}
-        <form action="{{ route('admin.infospots.assets.store', $infospot) }}" method="POST" enctype="multipart/form-data" id="asset-upload-form">
+        @php $firstProduct = $infospot->products->first(); @endphp
+        @if($firstProduct)
+        <form action="{{ route('admin.products.assets.store', $firstProduct) }}" method="POST" enctype="multipart/form-data" id="asset-upload-form">
+        @else
+        <p class="text-xs text-rose-500">Error: No product found for this infospot. Please create one in the editor.</p>
+        <form style="display:none">
+        @endif
             @csrf
 
             <div class="border-t border-gray-200 pt-5">

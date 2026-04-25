@@ -8,9 +8,9 @@
     <div class="flex items-center justify-between border-b border-slate-100 pb-5">
         <div>
             <h1 class="text-xl font-black text-slate-900 tracking-tighter uppercase">Site Plans & Maps</h1>
-            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">2D Navigational Layouts for Tour: {{ $tour->name }}</p>
+            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">2D Navigational Layouts for Rumah Inovasi Indonesia</p>
         </div>
-        <a href="{{ route('admin.tours.site-plans.create', $tour) }}" class="px-5 py-2.5 bg-blue-600 text-white text-[9px] font-bold rounded shadow-lg shadow-blue-500/10 hover:bg-blue-700 transition-all flex items-center gap-2 uppercase tracking-widest">
+        <a href="{{ route('admin.site-plans.create') }}" class="px-5 py-2.5 bg-blue-600 text-white text-[9px] font-bold rounded shadow-lg shadow-blue-500/10 hover:bg-blue-700 transition-all flex items-center gap-2 uppercase tracking-widest">
             <i class="fas fa-plus"></i> New Site Plan
         </a>
     </div>
@@ -53,7 +53,7 @@
             <div class="col-span-full py-20 bg-slate-50 border border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center text-slate-400 space-y-4">
                 <i class="fas fa-map text-3xl opacity-20"></i>
                 <p class="text-xs font-bold uppercase tracking-widest">No site plans uploaded yet.</p>
-                <a href="{{ route('admin.tours.site-plans.create', $tour) }}" class="text-blue-600 font-bold hover:underline text-xs">Upload your first 2D map &rarr;</a>
+                <a href="{{ route('admin.site-plans.create') }}" class="text-blue-600 font-bold hover:underline text-xs">Upload your first 2D map &rarr;</a>
             </div>
         @endforelse
     </div>

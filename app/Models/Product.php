@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class InfospotProduct extends Model
+class Product extends Model
 {
     protected $guarded = [];
 
@@ -15,6 +15,6 @@ class InfospotProduct extends Model
 
     public function assets()
     {
-        return $this->hasMany(InfospotAsset::class)->orderBy('sort_order');
+        return $this->hasMany(ProductAsset::class)->orderBy('sort_order');
     }
 }

@@ -3,8 +3,8 @@
 @section('header', 'Workspaces')
 
 @php
-    $totalScenes = $tour->scenes->count();
-    $totalHotspots = $tour->scenes->sum(fn($s) => $s->infospots->count());
+    $totalScenes = $scenes->count();
+    $totalHotspots = $scenes->sum(fn($s) => $s->infospots->count());
 @endphp
 
 @section('content')
@@ -13,7 +13,7 @@
     <div class="flex items-center justify-between border-b border-slate-100 pb-5">
         <div>
             <h1 class="text-xl font-black text-slate-900 tracking-tighter uppercase">Scene Collections</h1>
-            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Total Detected Environments: {{ $tour->scenes->count() }}</p>
+            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">Total Detected Environments: {{ $scenes->count() }}</p>
         </div>
         <a href="{{ route('admin.scenes.create') }}" class="px-5 py-2.5 bg-blue-600 text-white text-[9px] font-bold rounded shadow-lg shadow-blue-500/10 hover:bg-blue-700 transition-all flex items-center gap-2 uppercase tracking-widest">
             <i class="fas fa-plus"></i> New Visual Buffer
@@ -22,7 +22,7 @@
 
     <!-- Ultra-Dense Scene Grid -->
     <div id="scenes-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-4">
-        @forelse($tour->scenes as $scene)
+        @forelse($scenes as $scene)
             <div dir="ltr" data-id="{{ $scene->id }}" class="bg-white border border-slate-200 rounded overflow-hidden flex flex-col shadow-sm hover:shadow transition-all group relative">
                 <!-- Drag Handle -->
                 <div class="drag-handle absolute top-1.5 right-1.5 z-20 w-6 h-6 bg-black/40 backdrop-blur-sm rounded flex items-center justify-center text-white/60 cursor-move hover:text-white hover:bg-black/60 transition-all opacity-0 group-hover:opacity-100">

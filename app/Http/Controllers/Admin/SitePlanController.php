@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Tour;
 use App\Models\SitePlan;
 use App\Models\SitePlanHotspot;
 use App\Models\Scene;
@@ -12,18 +11,18 @@ use Illuminate\Support\Facades\Storage;
 
 class SitePlanController extends Controller
 {
-    public function index(Tour $tour)
+    public function index()
     {
-        $sitePlans = $tour->sitePlans;
-        return view('admin.site_plans.index', compact('tour', 'sitePlans'));
+        $sitePlans = SitePlan::all();
+        return view('admin.site_plans.index', compact('sitePlans'));
     }
 
-    public function create(Tour $tour)
+    public function create()
     {
-        return view('admin.site_plans.create', compact('tour'));
+        return view('admin.site_plans.create');
     }
 
-    public function store(Request $request, Tour $tour)
+    public function store(Request $request)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -33,7 +32,7 @@ class SitePlanController extends Controller
         $highResPath = $request->file('image')->store('site_plans', 'public');
         $multiRes = $this->generateMultiResImages($highResPath);
 
-        $tour->sitePlans()->create([
+        SitePlan::create([
             'name' => $validated['name'],
             'high_res_path' => $highResPath,
             'low_res_path' => $multiRes['low_res_path'] ?? null,
@@ -41,13 +40,13 @@ class SitePlanController extends Controller
             'medium_res_path' => $multiRes['medium_res_path'] ?? null,
         ]);
 
-        return redirect()->route('admin.tours.site-plans.index', $tour)->with('success', 'Site plan created successfully.');
+        return redirect()->route('admin.site-plans.index')->with('success', 'Site plan created successfully.');
     }
 
     public function show(SitePlan $sitePlan)
     {
         $sitePlan->load('hotspots.scene');
-        $scenes = $sitePlan->tour->scenes;
+        $scenes = Scene::all();
         return view('admin.site_plans.show', compact('sitePlan', 'scenes'));
     }
 
@@ -79,16 +78,15 @@ class SitePlanController extends Controller
 
         $sitePlan->update($data);
 
-        return redirect()->route('admin.tours.site-plans.index', $sitePlan->tour)->with('success', 'Site plan updated successfully.');
+        return redirect()->route('admin.site-plans.index')->with('success', 'Site plan updated successfully.');
     }
 
     public function destroy(SitePlan $sitePlan)
     {
         $this->deletePhysicalImages($sitePlan);
-        $tour = $sitePlan->tour;
         $sitePlan->delete();
 
-        return redirect()->route('admin.tours.site-plans.index', $tour)->with('success', 'Site plan deleted successfully.');
+        return redirect()->route('admin.site-plans.index')->with('success', 'Site plan deleted successfully.');
     }
 
     private function deletePhysicalImages(SitePlan $sitePlan)
@@ -148,8 +146,6 @@ class SitePlanController extends Controller
         $targetH = max(25, round($origH * $percent));
         
         $tmp = imagecreatetruecolor($targetW, $targetH);
-        
-        // Handle alpha for site plan PNGs (optional, but we save as JPEG for performance)
         imagecopyresampled($tmp, $src, 0, 0, 0, 0, $targetW, $targetH, $origW, $origH);
         
         $path = $dir . '/' . $prefix . $baseName;

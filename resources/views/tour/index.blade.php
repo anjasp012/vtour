@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $tour->name }}</title>
+    <title>{{ $tourName }}</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -688,13 +688,13 @@
             <div
                 class="bg-bg-glass backdrop-blur-[30px] border border-border-glass p-[10px_22px] rounded-lg pointer-events-auto shadow-[0_30px_60px_rgba(0,0,0,0.5)] origin-right text-right">
                 @php
-                    $startScene = $tour->scenes->where('is_start_scene', true)->first() ?? $tour->scenes->first();
+                    $startScene = $scenes->first();
                 @endphp
                 <h1 id="scene-title" class="m-0 text-[16px] font-bold text-white tracking-[0.8px]">
                     {{ $startScene->name ?? 'SCENE' }}</h1>
                 <p id="scene-subtitle"
                     class="mt-[4px] m-0 text-[9px] text-white/50 font-bold tracking-[2px] uppercase">
-                    {{ strtoupper($tour->name) }}</p>
+                    {{ strtoupper($tourName) }}</p>
             </div>
         </div>
 
@@ -735,9 +735,9 @@
             </div>
 
             <!-- Map Selector -->
-            @if ($tour->sitePlans->count() > 1)
+            @if ($sitePlans->count() > 1)
                 <div class="w-full flex items-center justify-center gap-4 mt-6 overflow-x-auto py-2 scrollbar-none">
-                    @foreach ($tour->sitePlans as $plan)
+                    @foreach ($sitePlans as $plan)
                         <button
                             class="px-6 py-2 bg-white/5 border border-white/10 rounded-full text-white/60 text-[10px] font-bold uppercase tracking-widest hover:bg-primary/20 hover:text-white hover:border-primary/50 transition-all whitespace-nowrap cursor-pointer plan-tab-btn"
                             data-id="{{ $plan->id }}" onclick="loadMap({{ $plan->id }})">
@@ -758,7 +758,11 @@
         const loader = document.getElementById('loader');
         let viewer; // Global viewer instance
         let infoUrl, arrowUrl, threedUrl; // Icon URLs
-        const tourData = {!! $tour->toJson() !!};
+        const tourData = {
+            scenes: {!! $scenes->toJson() !!},
+            sitePlans: {!! $sitePlans->toJson() !!},
+            name: "{{ $tourName }}"
+        };
         const panoramas = {};
         const mixers = [];
         const clock = new THREE.Clock();
@@ -920,9 +924,15 @@
         }
 
         function _forceUpgrade(pano) {
-            if (pano && pano.startLoading) {
-                pano.startLoading();
+            if (pano && pano.retryLoading) {
+                pano.retryLoading();
             }
+        }
+
+        function _updateAllPanoramas() {
+            Object.values(panoramas).forEach(pano => {
+                if (pano.retryLoading) pano.retryLoading();
+            });
         }
 
         function getOrCreatePanorama(sceneId) {
@@ -1210,10 +1220,11 @@
             if (spot.type === 'info' || spot.type === '3d' || spot.type === 'image') {
                 // Build assets array — prefer assets relation, fallback to legacy model_path
                 let assets = [];
-                if (spot.assets && spot.assets.length > 0) {
-                    assets = spot.assets.map(a => ({
+                // New Hierarchy: Assets belong to products. For single-product spots, use the first product's assets.
+                if (!spot.is_multi && spot.products && spot.products.length > 0) {
+                    assets = (spot.products[0].assets || []).map(a => ({
                         file_type: a.file_type,
-                        url: '{{ Storage::url('') }}/' + a.file_path,
+                        url: STORAGE_BASE + normalizePath(a.file_path),
                         label: a.label || null
                     }));
                 } else if ((spot.type === '3d' || spot.type === 'image') && spot.model_path) {
@@ -1619,6 +1630,8 @@
 
                             if ((res === 'low') || (res === 'medium' && curPano.loadStage >= 1) || (res === 'high' && curPano.loadStage >= 2)) hdLoader.classList.remove('visible');
                             else hdLoader.classList.add('visible');
+
+                            _updateAllPanoramas();
                         }
                     });
                 });

@@ -4,27 +4,15 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Tour;
 use App\Models\Scene;
 use Illuminate\Support\Facades\Storage;
 
 class SceneController extends Controller
 {
-    private function getTour()
-    {
-        return Tour::firstOrCreate(
-            ['id' => 1],
-            ['name' => 'Rumah Inovasi Indonesia', 'description' => 'Automatically generated primary tour.']
-        );
-    }
-
     public function index()
     {
-        $tour = $this->getTour();
-        $tour->load(['scenes' => function($q) {
-            $q->orderBy('order', 'asc')->orderBy('id', 'desc');
-        }]);
-        return view('admin.scenes.index', compact('tour'));
+        $scenes = Scene::orderBy('order', 'asc')->orderBy('id', 'desc')->get();
+        return view('admin.scenes.index', compact('scenes'));
     }
 
     public function reorder(Request $request)
@@ -55,11 +43,10 @@ class SceneController extends Controller
             'description_en' => 'nullable|string',
         ]);
 
-        $tour = $this->getTour();
         $highResPath = $request->file('image')->store('scenes/images', 'public');
         $multiRes = $this->generateMultiResImages($highResPath);
 
-        $newScene = $tour->scenes()->create([
+        $newScene = Scene::create([
             'name' => $validated['name'],
             'high_res_path' => $highResPath,
             'low_res_path' => $multiRes['low_res_path'] ?? null,
@@ -67,7 +54,7 @@ class SceneController extends Controller
             'medium_res_path' => $multiRes['medium_res_path'] ?? null,
             'description_id' => $request->description_id,
             'description_en' => $request->description_en,
-            'order' => $tour->scenes()->max('order') + 1,
+            'order' => Scene::max('order') + 1,
         ]);
 
         if ($request->wantsJson()) {

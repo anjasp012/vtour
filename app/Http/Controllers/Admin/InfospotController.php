@@ -12,7 +12,7 @@ class InfospotController extends Controller
 {
     public function create(Scene $scene)
     {
-        $hasTargetScenes = $scene->tour->scenes()->where('id', '!=', $scene->id)->get();
+        $hasTargetScenes = Scene::where('id', '!=', $scene->id)->get();
         return view('admin.infospots.create', compact('scene', 'hasTargetScenes'));
     }
 
@@ -79,9 +79,9 @@ class InfospotController extends Controller
 
     public function edit(Infospot $infospot)
     {
-        $infospot->load('assets');
+        $infospot->load('products.assets');
         $scene = $infospot->scene;
-        $hasTargetScenes = $scene->tour->scenes()->where('id', '!=', $scene->id)->get();
+        $hasTargetScenes = Scene::where('id', '!=', $scene->id)->get();
         return view('admin.infospots.edit', compact('infospot', 'scene', 'hasTargetScenes'));
     }
 
