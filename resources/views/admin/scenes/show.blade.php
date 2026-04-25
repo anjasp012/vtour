@@ -749,6 +749,8 @@
 
     // Apply saved initial view in Editor
     panorama.addEventListener('load', () => {
+        if (panorama.material) panorama.material.depthWrite = false;
+        
         const lon = {{ $scene->initial_lon ?? 0 }};
         const lat = {{ $scene->initial_lat ?? 0 }};
         if (lon !== 0 || lat !== 0) {
@@ -1035,12 +1037,12 @@
             if (marker.is3DModel) {
                 const s = 1000 * 1.2;
                 new TWEEN.Tween(marker.modelObj.scale).to({ 
-                    x: (spotData.scale_x || 1) * s, 
-                    y: (spotData.scale_y || 1) * s, 
-                    z: (spotData.scale_z || spotData.scale_x || 1) * s 
+                    x: (spotData.scale_x || 0.1) * s, 
+                    y: (spotData.scale_y || 0.1) * s, 
+                    z: (spotData.scale_z || spotData.scale_x || 0.1) * s 
                 }, 300).easing(TWEEN.Easing.Back.Out).start();
             } else if (marker.isPerspectiveMesh) {
-                new TWEEN.Tween(marker.scale).to({ x: (spotData.scale_x || 1) * 1.2, y: (spotData.scale_y || 1) * 1.2, z: 1.2 }, 300).easing(TWEEN.Easing.Back.Out).start();
+                new TWEEN.Tween(marker.scale).to({ x: (spotData.scale_x || 0.1) * 1.2, y: (spotData.scale_y || 0.1) * 1.2, z: 1.2 }, 300).easing(TWEEN.Easing.Back.Out).start();
             } else {
                 marker.scale.set(1.3, 1.3, 1.3);
             }
@@ -1050,12 +1052,12 @@
             if (marker.is3DModel) {
                 const s = 1000;
                 new TWEEN.Tween(marker.modelObj.scale).to({ 
-                    x: (spotData.scale_x || 1) * s, 
-                    y: (spotData.scale_y || 1) * s, 
-                    z: (spotData.scale_z || spotData.scale_x || 1) * s 
+                    x: (spotData.scale_x || 0.1) * s, 
+                    y: (spotData.scale_y || 0.1) * s, 
+                    z: (spotData.scale_z || spotData.scale_x || 0.1) * s 
                 }, 300).easing(TWEEN.Easing.Back.Out).start();
             } else if (marker.isPerspectiveMesh) {
-                new TWEEN.Tween(marker.scale).to({ x: spotData.scale_x || 1, y: spotData.scale_y || 1, z: 1 }, 300).easing(TWEEN.Easing.Back.Out).start();
+                new TWEEN.Tween(marker.scale).to({ x: spotData.scale_x || 0.1, y: spotData.scale_y || 0.1, z: 1 }, 300).easing(TWEEN.Easing.Back.Out).start();
             } else {
                 marker.scale.set(1, 1, 1);
             }
@@ -1666,6 +1668,7 @@
             <div class="flex items-center gap-1.5">
                 <select class="flex-1 bg-slate-700 border border-slate-600 text-slate-300 text-[8px] font-bold uppercase tracking-widest rounded px-2 py-1 focus:outline-none asset-type-select">
                     <option value="2d">🖼 2D Image</option>
+                    <option value="video">🎥 Video (WebM)</option>
                     <option value="3d">🧊 3D GLB</option>
                 </select>
                 <button type="button" class="remove-asset-row text-slate-500 hover:text-rose-400 transition-colors ml-auto">
@@ -1679,7 +1682,9 @@
         const typeSelect = row.querySelector('.asset-type-select');
         const fileInput  = row.querySelector('.asset-file');
         typeSelect.addEventListener('change', () => {
-            fileInput.accept = typeSelect.value === '3d' ? '.glb' : 'image/*';
+            if (typeSelect.value === '3d') fileInput.accept = '.glb';
+            else if (typeSelect.value === 'video') fileInput.accept = 'video/webm,video/mp4';
+            else fileInput.accept = 'image/*';
         });
 
         row.querySelector('.remove-asset-row').addEventListener('click', () => {
@@ -1747,8 +1752,8 @@
                     <span class="shrink-0 text-[7px] font-bold px-1.5 py-0.5 rounded ${
                         a.file_type === '3d'
                         ? 'bg-purple-900 text-purple-300'
-                        : 'bg-blue-900 text-blue-300'
-                    } uppercase tracking-widest">${a.file_type === '3d' ? '3D' : '2D'}</span>
+                        : (a.file_type === 'video' ? 'bg-rose-900 text-rose-300' : 'bg-blue-900 text-blue-300')
+                    } uppercase tracking-widest">${a.file_type === '3d' ? '3D' : (a.file_type === 'video' ? 'Vid' : '2D')}</span>
                     <span class="text-[8px] text-slate-300 truncate flex-1 min-w-0">${a.label || a.filename}</span>
                     ${a.product ? `<span class="text-[7px] text-indigo-400 bg-indigo-900/40 px-1 rounded truncate max-w-[50px] border border-indigo-500/20">${a.product.name}</span>` : ''}
                     <button type="button" onclick="deleteAsset(${a.id}, ${productId})" title="Hapus"

@@ -858,6 +858,7 @@
                     pano.cachedTextures[0] = pano.material.map;
                     console.log(`[Cache] Initial SD texture captured for ${sceneData.name}`);
                 }
+                if (pano.material) pano.material.depthWrite = false;
             });
 
             const applyTextureToPano = (texture, stage) => {
@@ -884,6 +885,7 @@
                     // Skip marker meshes — they have their own textures
                     if (node.isMesh && !node.isPerspectiveMesh && !node.isCustomImage && !node.is3DModel) {
                         updateMaterial(node.material);
+                        node.material.depthWrite = false; // Prevent clipping
                     }
                 });
 
@@ -1618,6 +1620,7 @@
                     // Skip marker meshes — they have their own textures
                     if (node.isMesh && !node.isPerspectiveMesh && !node.isCustomImage && !node.is3DModel) {
                         updateMaterial(node.material);
+                        node.material.depthWrite = false; // Prevent clipping
                     }
                 });
                 pano.texture = texture;
@@ -1854,9 +1857,19 @@
                 slide.className = 'vc-slide';
                 slide.style.width = (100 / _vcTotal) + '%'; // Each slide is (1/total)% of the track
 
+                let badgeClass = 'vc-badge-2d';
+                let badgeText = '🖼 Photo';
+                if (asset.file_type === '3d') {
+                    badgeClass = 'vc-badge-3d';
+                    badgeText = '🧊 3D';
+                } else if (asset.file_type === 'video') {
+                    badgeClass = 'bg-rose-500/80 text-rose-100 border-rose-400/30';
+                    badgeText = '🎥 Video';
+                }
+
                 const badge = document.createElement('span');
-                badge.className = `vc-badge ${asset.file_type === '3d' ? 'vc-badge-3d' : 'vc-badge-2d'}`;
-                badge.innerText = asset.file_type === '3d' ? '🧊 3D' : '🖼 Photo';
+                badge.className = `vc-badge ${badgeClass}`;
+                badge.innerText = badgeText;
                 slide.appendChild(badge);
 
                 if (asset.file_type === '2d') {
@@ -1866,6 +1879,12 @@
                     img.loading = 'lazy';
                     img.style.height = slideHeight; // Apply current height state
                     slide.appendChild(img);
+                } else if (asset.file_type === 'video') {
+                    const vidWrap = document.createElement('div');
+                    vidWrap.className = 'mv-wrap flex items-center justify-center bg-black/60 rounded-md';
+                    vidWrap.style.height = slideHeight;
+                    vidWrap.innerHTML = `<video src="${asset.url}" controls playsinline style="max-height: 100%; max-width: 100%; border-radius: 6px;"></video>`;
+                    slide.appendChild(vidWrap);
                 } else {
                     const wrap = document.createElement('div');
                     wrap.className = 'mv-wrap';

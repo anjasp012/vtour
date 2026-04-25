@@ -44,7 +44,7 @@ class InfospotAssetController extends Controller
         $request->validate([
             'assets'              => 'required|array|min:1',
             'assets.*.file'       => 'required|file', // 100MB max
-            'assets.*.file_type'  => 'required|in:3d,2d',
+            'assets.*.file_type'  => 'required|in:3d,2d,video',
             'assets.*.label'      => 'nullable|string|max:255',
             'assets.*.infospot_product_id' => 'nullable|integer|exists:infospot_products,id',
         ]);
@@ -61,7 +61,7 @@ class InfospotAssetController extends Controller
             $type   = $meta['file_type'];
             $label  = $meta['label'] ?? null;
 
-            $folder = $type === '3d' ? 'infospots/models' : 'infospots/images';
+            $folder = $type === '3d' ? 'infospots/models' : ($type === 'video' ? 'infospots/videos' : 'infospots/images');
             $path   = $file->store($folder, 'public');
 
             $infospot->assets()->create([
