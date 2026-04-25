@@ -514,6 +514,7 @@
 
                         <div class="vc-dots" id="vc-dots"></div>
                 </div>
+                </div>
 
                 <!-- Text Pane -->
                 <div class="flex-1 w-full" id="modal-pane-text">
@@ -2218,44 +2219,6 @@
             // Stop any playing videos in the old view
             _activeProductId = null;
             document.getElementById('vc-track').innerHTML = ''; 
-        }
-
-        window.chooseProduct = function(productId) {
-            const product = _currentProducts.find(p => p.id === productId);
-            if (!product) return;
-            
-            document.getElementById('multi-product-grid-wrapper').classList.add('hidden');
-            document.getElementById('multi-product-grid-wrapper').classList.remove('flex');
-            
-            const layoutWrapper = document.getElementById('modal-layout-wrapper');
-            layoutWrapper.classList.remove('hidden');
-            layoutWrapper.classList.remove('animate-fade-in');
-            void layoutWrapper.offsetWidth; // trigger reflow
-            layoutWrapper.classList.add('animate-fade-in');
-            
-            document.getElementById('btn-back-grid').classList.remove('hidden');
-            document.getElementById('modal-title').innerText = product.name;
-            
-            switchProduct(productId);
-            switchTab('id');
-        }
-
-        window.backToGrid = function() {
-            document.getElementById('modal-layout-wrapper').classList.add('hidden');
-            document.getElementById('btn-back-grid').classList.add('hidden');
-            
-            const gridWrapper = document.getElementById('multi-product-grid-wrapper');
-            gridWrapper.classList.remove('hidden');
-            gridWrapper.classList.add('flex');
-            gridWrapper.classList.remove('animate-fade-in');
-            void gridWrapper.offsetWidth; // trigger reflow
-            gridWrapper.classList.add('animate-fade-in');
-            
-            document.getElementById('modal-title').innerText = _currentInfospotTitle;
-            
-            // Stop active video logic correctly
-            _activeProductId = null;
-            document.getElementById('vc-track').innerHTML = '';
         }
 
         function closeModal() {
