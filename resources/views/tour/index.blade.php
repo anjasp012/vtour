@@ -1883,7 +1883,7 @@
                     const vidWrap = document.createElement('div');
                     vidWrap.className = 'mv-wrap flex items-center justify-center bg-black/60 rounded-md';
                     vidWrap.style.height = slideHeight;
-                    vidWrap.innerHTML = `<video src="${asset.url}" controls playsinline style="max-height: 100%; max-width: 100%; border-radius: 6px;"></video>`;
+                    vidWrap.innerHTML = `<video src="${asset.url}" autoplay loop muted playsinline style="max-height: 100%; max-width: 100%; border-radius: 6px; pointer-events: none;"></video>`;
                     slide.appendChild(vidWrap);
                 } else {
                     const wrap = document.createElement('div');

@@ -457,7 +457,7 @@
 
                     <!-- Actions Bar (Sticky bottom) -->
                     <div class="pt-6 flex flex-col gap-2">
-                        <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded text-[9px] uppercase tracking-widest shadow-lg hover:bg-blue-700 transition-all">Update Database</button>
+                        <button type="submit" id="btn-submit-infospot" class="w-full bg-blue-600 text-white font-bold py-3 rounded text-[9px] uppercase tracking-widest shadow-lg hover:bg-blue-700 transition-all">Update Database</button>
                         <button type="button" onclick="cancelForm()" class="w-full bg-white text-slate-400 font-bold py-3 rounded text-[9px] uppercase tracking-widest border border-slate-200 hover:text-slate-950 transition-all">Cancel Edit</button>
                     </div>
                 </form>
@@ -1938,6 +1938,13 @@
         listState.style.display = 'none';
         createForm.style.display = 'block';
         
+        const submitBtn = document.getElementById('btn-submit-infospot');
+        if (mode === 'create') {
+            submitBtn.innerText = 'SIMPAN NODE';
+        } else {
+            submitBtn.innerText = 'UPDATE DATABASE';
+        }
+
         // Always reset basic product form fields first
         resetProductForm();
 
