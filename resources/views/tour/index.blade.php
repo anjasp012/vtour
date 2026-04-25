@@ -59,7 +59,7 @@
             will-change: transform;
         }
         .vc-slide {
-            min-width: 100%;
+            flex: 0 0 auto;
             position: relative;
             flex-shrink: 0;
         }
@@ -140,6 +140,39 @@
         .vc-dot.active {
             background: #6366f1;
             transform: scale(1.5);
+        }
+        /* Product Tabs */
+        .product-tabs-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 12px 4px 4px 4px;
+            scrollbar-width: none;
+        }
+        .product-tabs-container::-webkit-scrollbar { display: none; }
+        .product-tab {
+            padding: 6px 12px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid transparent;
+            color: rgba(255,255,255,0.6);
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .product-tab:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+        .product-tab.active {
+            background: rgba(99, 102, 241, 0.2);
+            border-color: rgba(99, 102, 241, 0.5);
+            color: #fff;
         }
         /* Type badge */
         .vc-badge {
@@ -222,6 +255,39 @@
         }
         .scrollbar-none::-webkit-scrollbar { display: none; }
         .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+        /* HD Loader */
+        .hd-loader {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 100px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        .hd-loader.visible { opacity: 1; }
+        .hd-loader .spinner {
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #6366f1;
+            border-radius: 50%;
+            animation: hd-spin 0.8s linear infinite;
+        }
+        @keyframes hd-spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 
@@ -248,6 +314,7 @@
 
                 <!-- Asset Carousel Pane -->
                 <div class="flex-1 w-full hidden" id="modal-pane-assets">
+                    
                     <!-- track wrapper -->
                     <div class="vc-wrap" id="vc-wrap">
                         <div class="vc-track" id="vc-track"></div>
@@ -261,17 +328,36 @@
 
                         <div class="vc-dots" id="vc-dots"></div>
                     </div>
+
+                    <!-- Product Tabs -->
+                    <div id="product-tabs" class="product-tabs-container hidden"></div>
                 </div>
 
                 <!-- Text Pane -->
                 <div class="flex-1 w-full" id="modal-pane-text">
                     <div class="flex flex-col w-full">
-                        <div class="flex flex-wrap gap-[10px] mb-[15px] border-b border-white/10 pb-[10px]">
-                            <button id="btn-tab-id" class="tab-btn active bg-white/5 border border-transparent text-white/60 py-1 px-2 rounded-md text-xs cursor-pointer transition-all duration-300 font-semibold hover:text-white hover:bg-white/10 hover:border-transparent [&.active]:bg-primary [&.active]:text-white [&.active]:border-white/20" onclick="switchTab('id')">Indonesia</button>
-                            <button id="btn-tab-en" class="tab-btn bg-white/5 border border-transparent text-white/60 py-1 px-2 rounded-md text-xs cursor-pointer transition-all duration-300 font-semibold hover:text-white hover:bg-white/10 hover:border-transparent [&.active]:bg-primary [&.active]:text-white [&.active]:border-white/20" onclick="switchTab('en')">English</button>
-                            <div class="grow min-w-[20px]"></div>
-                            <button id="btn-play" class="tab-btn bg-white/5 border border-transparent text-white/60 py-1 px-2 rounded-md text-xs cursor-pointer transition-all duration-300 font-semibold hover:text-white hover:bg-white/10" onclick="playNarration()"><i class="fas fa-volume-up"></i></button>
-                            <button id="btn-stop" class="tab-btn bg-rose-500/20 border border-rose-500/50 text-rose-500 py-1 px-2 rounded-md text-xs cursor-pointer transition-all duration-300 font-semibold hidden hover:bg-rose-500/30 hover:text-white hover:border-rose-500/70" onclick="stopNarration()"><i class="fas fa-stop"></i></button>
+                        <div class="flex items-center gap-3 mb-[15px] border-b border-white/10 pb-[10px]">
+                            <!-- ID Group -->
+                            <div class="flex items-center h-8 bg-white/5 border border-white/10 rounded-md overflow-hidden transition-all duration-300 [&.active]:bg-primary/20 [&.active]:border-primary/50" id="tab-id-container">
+                                <button id="btn-tab-id" class="tab-btn active py-0 px-3 h-full flex items-center justify-center cursor-pointer hover:bg-white/10 [&.active]:bg-primary/30" onclick="switchTab('id')">
+                                    <img src="https://flagcdn.com/w40/id.png" class="w-5 h-3.5 object-cover rounded-[1px] shadow-sm" alt="ID">
+                                </button>
+                            </div>
+
+                            <!-- EN Group -->
+                            <div class="flex items-center h-8 bg-white/5 border border-white/10 rounded-md overflow-hidden transition-all duration-300 [&.active]:bg-primary/20 [&.active]:border-primary/50" id="tab-en-container">
+                                <button id="btn-tab-en" class="tab-btn py-0 px-3 h-full flex items-center justify-center cursor-pointer hover:bg-white/10 [&.active]:bg-primary/30" onclick="switchTab('en')">
+                                    <img src="https://flagcdn.com/w40/gb.png" class="w-5 h-3.5 object-cover rounded-[1px] shadow-sm" alt="EN">
+                                </button>
+                            </div>
+                            
+                            <div class="grow"></div>
+
+                            <!-- VO Controls Template -->
+                            <div id="vo-controls-wrapper" class="flex items-center h-full border-l border-white/10 animate-fade-in">
+                                <button id="btn-play" class="py-1.5 px-3 flex items-center justify-center text-primary text-[10px] cursor-pointer hover:bg-primary/20 transition-all h-full" onclick="playNarration()"><i class="fas fa-play"></i></button>
+                                <button id="btn-stop" class="py-1.5 px-3 flex items-center justify-center text-rose-500 text-[10px] cursor-pointer hidden hover:bg-rose-500/20 transition-all h-full" onclick="stopNarration()"><i class="fas fa-stop"></i></button>
+                            </div>
                         </div>
                         
                         <div class="flex-1 overflow-y-auto max-h-[250px] md:max-h-[400px] pr-2 scrollbar-none">
@@ -286,7 +372,12 @@
     </div>
 
     <!-- 3D Canvas -->
-    <div id="viewer-container" class="w-full h-screen bg-black"></div>
+    <div id="viewer-container" class="w-full h-screen bg-black">
+        <div id="hd-loader" class="hd-loader">
+            <div class="spinner"></div>
+            <span>LOADING HD SCENE...</span>
+        </div>
+    </div>
 
     <!-- UI Overlay -->
     <div class="absolute top-0 left-0 w-full h-full pointer-events-none p-[15px] box-border z-[10000]">
@@ -412,9 +503,33 @@
 
         function animate3d() {
             requestAnimationFrame(animate3d);
-            const delta = clock.getDelta();
-            mixers.forEach(mixer => mixer.update(delta));
+            if (clock) {
+                const delta = clock.getDelta();
+                mixers.forEach(mixer => mixer.update(delta));
+            }
+            
+            // Auto-rotation and Bounce sync for 3D/2D models
+            Object.values(panoramas).forEach(pano => {
+                pano.children.forEach(child => {
+                    if ((child.is3DModel || child.isPerspectiveMesh) && !child.isNavMarker) {
+                        // Only auto-rotate if not being manually dragged
+                        if (!child.isBeingDragged) {
+                            child.rotation.y += 0.005; // Slow elegant rotation
+                        }
+                    }
+                });
+            });
+
+            // Sync models with their proxy ispots (for bounce)
+            Object.values(panoramas).forEach(pano => {
+                pano.children.forEach(ispot => {
+                    if (ispot.is3DModel && ispot.modelObj && ispot.syncPosition) {
+                        ispot.modelObj.position.copy(ispot.position);
+                    }
+                });
+            });
         }
+        animate3d(); // Start the loop
 
         async function loadGLB(url, spotData) {
             return new Promise((resolve, reject) => {
@@ -422,7 +537,7 @@
                     const model = gltf.scene;
                     
                     // Scale up significantly for world-space visibility
-                    const s = 100;
+                    const s = 1000; // Increased to 1000 for maximum visibility
                     model.position.set(0, 0, 0); // Position is handled by proxy
                     model.rotation.set(spotData.rotation_x || 0, spotData.rotation_y || 0, spotData.rotation_z || 0);
                     model.scale.set(
@@ -432,6 +547,18 @@
                     );
                     
                     model.is3DModel = true;
+                    
+                    // Set maximum renderOrder and disable depthTest for "always on top" visibility
+                    model.traverse(node => {
+                        if (node.isMesh) {
+                            node.renderOrder = 9999;
+                            if (node.material) {
+                                node.material.depthTest = false;
+                                node.material.depthWrite = false;
+                                node.material.transparent = true;
+                            }
+                        }
+                    });
                     
                     if (gltf.animations && gltf.animations.length > 0) {
                         const mixer = new THREE.AnimationMixer(model);
@@ -446,12 +573,17 @@
 
         function addBounce(infospot) {
             const startY = infospot.position.y;
-            new TWEEN.Tween(infospot.position)
-                .to({ y: startY + 200 }, 1000)
+            const tween = new TWEEN.Tween(infospot.position)
+                .to({ y: startY + 150 }, 1500)
                 .easing(TWEEN.Easing.Quadratic.InOut)
                 .repeat(Infinity)
                 .yoyo(true)
                 .start();
+            
+            // If it's a proxy with a 3D model, link them
+            if (infospot.modelObj) {
+                infospot.bounceTween = tween;
+            }
         }
 
         function getOrCreatePanorama(sceneId) {
@@ -461,91 +593,181 @@
             if (!sceneData) return null;
 
             const imageUrl = '{{ Storage::url("") }}' + sceneData.image_path;
-            const pano = new PANOLENS.ImagePanorama(imageUrl);
+            const thumbUrl = sceneData.thumbnail_path ? '{{ Storage::url("") }}' + sceneData.thumbnail_path : imageUrl;
+
+            // Load low-res first (or high-res if no thumb)
+            const pano = new PANOLENS.ImagePanorama(thumbUrl);
+            pano.isHD = !sceneData.thumbnail_path;
             panoramas[sceneId] = pano;
+
+            // If we started with a thumbnail, load high-res in background
+            if (sceneData.thumbnail_path) {
+                const hdLoader = document.getElementById('hd-loader');
+                const loader = new THREE.TextureLoader();
+                
+                // Show loader if this is the active scene OR if it's the first scene (before viewer.panorama is set)
+                const isCurrent = (typeof viewer !== 'undefined' && viewer.panorama === pano) || (typeof viewer === 'undefined' || !viewer.panorama);
+                if (isCurrent) hdLoader.classList.add('visible');
+
+                loader.load(imageUrl, (texture) => {
+                    texture.minFilter = THREE.LinearFilter;
+                    texture.magFilter = THREE.LinearFilter;
+                    texture.generateMipmaps = false;
+                    
+                    // Handle encoding for older Three.js (v0.105.0)
+                    if (typeof THREE.sRGBEncoding !== 'undefined') texture.encoding = THREE.sRGBEncoding;
+                    else if (typeof THREE.SRGBColorSpace !== 'undefined') texture.colorSpace = THREE.SRGBColorSpace;
+
+                    const updateMaterial = (mat) => {
+                        if (!mat) return;
+                        if (Array.isArray(mat)) {
+                            mat.forEach(m => updateMaterial(m));
+                            return;
+                        }
+                        if (mat.map !== undefined) mat.map = texture;
+                        if (mat.uniforms) {
+                            if (mat.uniforms.tDiffuse) mat.uniforms.tDiffuse.value = texture;
+                            if (mat.uniforms.tEquirect) mat.uniforms.tEquirect.value = texture;
+                        }
+                        mat.needsUpdate = true;
+                    };
+
+                    pano.isHD = true;
+                    pano.texture = texture; // Internal Panolens ref
+                    updateMaterial(pano.material);
+                    pano.traverse((node) => {
+                        if (node.isMesh) updateMaterial(node.material);
+                    });
+
+                    // Hide loader if this is the active pano
+                    if (typeof viewer !== 'undefined' && viewer.panorama === pano) {
+                        hdLoader.classList.remove('visible');
+                    }
+                }, undefined, (err) => {
+                    if (typeof viewer !== 'undefined' && viewer.panorama === pano) {
+                        hdLoader.classList.remove('visible');
+                    }
+                });
+                
+                // Update loader visibility when entering pano
+                pano.addEventListener('enter-fade-start', () => {
+                    if (!pano.isHD) {
+                        hdLoader.classList.add('visible');
+                    }
+                });
+                pano.addEventListener('leave', () => {
+                    hdLoader.classList.remove('visible');
+                });
+            }
 
             // Attach infospots to this new panorama
             if (sceneData.infospots) {
-                sceneData.infospots.forEach(async (spot) => {
-                    let ispot;
-                    let modelObj = null;
+                (async () => {
+                    for (const spot of sceneData.infospots) {
+                        let ispot;
+                        let modelObj = null;
 
-                    // Position Normalization (Ensure inside the 5000 radius sphere)
-                    const pos = new THREE.Vector3(spot.position_x, spot.position_y, spot.position_z).normalize().multiplyScalar(4000);
-                    
-                    // Check for direct 3D model
-                    if (spot.model_path) {
-                        try {
-                            const modelUrl = '{{ url('storage') }}/' + spot.model_path;
-                            modelObj = await loadGLB(modelUrl, spot);
-                            
-                            // Create a Proxy Infospot for interaction
-                            ispot = new PANOLENS.Infospot(800, PANOLENS.DataImage.Info);
-                            ispot.material.opacity = 0;
-                            ispot.add(modelObj);
-                            ispot.is3DModel = true;
-                            ispot.modelObj = modelObj;
-                        } catch (e) {
-                            console.error("GLB load failed:", e);
+                        // Position Handling
+                        let pos;
+                        if (spot.type === '3d' || spot.type === 'image' || spot.is_perspective) {
+                            pos = new THREE.Vector3(spot.position_x, spot.position_y, spot.position_z);
+                        } else {
+                            pos = new THREE.Vector3(spot.position_x, spot.position_y, spot.position_z).normalize().multiplyScalar(4000);
                         }
+                        
+                        // Check for direct 3D model (.glb only)
+                        if (spot.model_path && spot.model_path.toLowerCase().endsWith('.glb')) {
+                            try {
+                                const modelUrl = '{{ Storage::url("") }}/' + spot.model_path;
+                                console.log(`Attempting to load 3D model for spot ${spot.id}: ${modelUrl}`);
+                                modelObj = await loadGLB(modelUrl, spot);
+                                console.log(`3D model loaded successfully for spot ${spot.id}`);
+                                
+                                // Create a Proxy Infospot for interaction (Increased size for easier hover)
+                                const transparentPixel = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+                                ispot = new PANOLENS.Infospot(2000, transparentPixel);
+                                ispot.is3DModel = true;
+                                ispot.modelObj = modelObj;
+
+                                // Add model directly to panorama, not as child
+                                modelObj.position.copy(pos);
+                                pano.add(modelObj);
+
+                                // Link positions for bounce
+                                addBounce(ispot);
+                                // For 3D models, we need the model to follow the ispot's bounce
+                                // In the render loop, we can sync them
+                                ispot.syncPosition = true;
+                            } catch (e) {
+                                console.error(`GLB load failed for spot ${spot.id}:`, e);
+                            }
+                        }
+
+                        if (!ispot) {
+                            // Determine the texture/icon URL
+                            let textureUrl = (spot.type === 'info') ? infoUrl : (spot.type === '3d' ? threedUrl : arrowUrl);
+                            if (spot.model_path && !spot.model_path.toLowerCase().endsWith('.glb')) {
+                                textureUrl = '{{ Storage::url("") }}/' + spot.model_path;
+                            }
+
+                            if (spot.is_perspective || spot.type === 'image') {
+                                // Render as 3D Mesh for perspective mode
+                                const geometry = new THREE.PlaneGeometry(600, 600);
+                                const texture = new THREE.TextureLoader().load(textureUrl);
+                                const material = new THREE.MeshBasicMaterial({ 
+                                    map: texture, transparent: true, side: THREE.DoubleSide,
+                                    alphaTest: 0.1, depthTest: false, depthWrite: false
+                                });
+                                ispot = new THREE.Mesh(geometry, material);
+                                ispot.renderOrder = 1000;
+                                ispot.rotation.order = 'YXZ';
+                                ispot.rotation.set(spot.rotation_x || 0, spot.rotation_y || 0, spot.rotation_z || 0);
+                                ispot.scale.set(spot.scale_x || 1, spot.scale_y || 1, 1);
+                                ispot.isPerspectiveMesh = true;
+                            } else {
+                                // Standard Billboard
+                                ispot = new PANOLENS.Infospot(UNIFORM_SIZE, textureUrl);
+                                ispot.renderOrder = 1000;
+                            }
+                        }
+
+                        ispot.spotData = spot;
+                        if (spot.type === 'nav') ispot.isNavMarker = true;
+
+                        ispot.position.copy(pos);
+                        ispot.addEventListener('click', () => { handleSpotClick(spot); });
+
+                        // Smart Hover Logic
+                        ispot.addEventListener('hoverenter', () => {
+                            if (ispot.is3DModel) {
+                                const s = 1000 * 1.2;
+                                new TWEEN.Tween(ispot.modelObj.scale).to({ 
+                                    x: (spot.scale_x || 1) * s, y: (spot.scale_y || 1) * s, z: (spot.scale_z || spot.scale_x || 1) * s 
+                                }, 300).easing(TWEEN.Easing.Back.Out).start();
+                            } else if (ispot.isPerspectiveMesh) {
+                                new TWEEN.Tween(ispot.scale).to({ x: (spot.scale_x || 1) * 1.2, y: (spot.scale_y || 1) * 1.2, z: 1.2 }, 300).easing(TWEEN.Easing.Back.Out).start();
+                            } else {
+                                ispot.scale.set(1.3, 1.3, 1.3);
+                            }
+                        });
+
+                        ispot.addEventListener('hoverleave', () => {
+                            if (ispot.is3DModel) {
+                                const s = 1000;
+                                new TWEEN.Tween(ispot.modelObj.scale).to({ 
+                                    x: (spot.scale_x || 1) * s, y: (spot.scale_y || 1) * s, z: (spot.scale_z || spot.scale_x || 1) * s 
+                                }, 300).easing(TWEEN.Easing.Back.Out).start();
+                            } else if (ispot.isPerspectiveMesh) {
+                                new TWEEN.Tween(ispot.scale).to({ x: spot.scale_x || 1, y: spot.scale_y || 1, z: 1 }, 300).easing(TWEEN.Easing.Back.Out).start();
+                            } else {
+                                ispot.scale.set(1, 1, 1);
+                            }
+                        });
+
+                        addBounce(ispot);
+                        if (ispot) pano.add(ispot);
                     }
-
-                    if (!ispot) {
-                        if (spot.is_perspective) {
-                            // Render as 3D Mesh for perspective mode
-                            const iconUrl = (spot.type === 'info') ? infoUrl : (spot.type === '3d' ? threedUrl : arrowUrl);
-                            const geometry = new THREE.PlaneGeometry(600, 600);
-                            const texture = new THREE.TextureLoader().load(iconUrl);
-                            const material = new THREE.MeshBasicMaterial({ 
-                                map: texture, transparent: true, side: THREE.DoubleSide,
-                                alphaTest: 0.1, depthTest: false, depthWrite: false
-                            });
-                            ispot = new THREE.Mesh(geometry, material);
-                            ispot.renderOrder = 999;
-                            ispot.rotation.order = 'YXZ';
-                            ispot.rotation.set(spot.rotation_x || 0, spot.rotation_y || 0, spot.rotation_z || 0);
-                            ispot.scale.set(spot.scale_x || 1, spot.scale_y || 1, 1);
-                            ispot.isPerspectiveMesh = true;
-                        } else {
-                            // Standard Billboard
-                            const iconUrl = (spot.type === 'info') ? infoUrl : (spot.type === '3d' ? threedUrl : arrowUrl);
-                            ispot = new PANOLENS.Infospot(UNIFORM_SIZE, iconUrl);
-                        }
-                    }
-
-                    ispot.position.copy(pos);
-                    ispot.addEventListener('click', () => { handleSpotClick(spot); });
-
-                    // Smart Hover Logic
-                    ispot.addEventListener('hoverenter', () => {
-                        if (ispot.is3DModel) {
-                            const s = 100 * 1.2;
-                            new TWEEN.Tween(ispot.modelObj.scale).to({ 
-                                x: (spot.scale_x || 1) * s, y: (spot.scale_y || 1) * s, z: (spot.scale_z || spot.scale_x || 1) * s 
-                            }, 300).easing(TWEEN.Easing.Back.Out).start();
-                        } else if (ispot.isPerspectiveMesh) {
-                            new TWEEN.Tween(ispot.scale).to({ x: (spot.scale_x || 1) * 1.2, y: (spot.scale_y || 1) * 1.2, z: 1.2 }, 300).easing(TWEEN.Easing.Back.Out).start();
-                        } else {
-                            ispot.scale.set(1.3, 1.3, 1.3);
-                        }
-                    });
-
-                    ispot.addEventListener('hoverleave', () => {
-                        if (ispot.is3DModel) {
-                            const s = 100;
-                            new TWEEN.Tween(ispot.modelObj.scale).to({ 
-                                x: (spot.scale_x || 1) * s, y: (spot.scale_y || 1) * s, z: (spot.scale_z || spot.scale_x || 1) * s 
-                            }, 300).easing(TWEEN.Easing.Back.Out).start();
-                        } else if (ispot.isPerspectiveMesh) {
-                            new TWEEN.Tween(ispot.scale).to({ x: spot.scale_x || 1, y: spot.scale_y || 1, z: 1 }, 300).easing(TWEEN.Easing.Back.Out).start();
-                        } else {
-                            ispot.scale.set(1, 1, 1);
-                        }
-                    });
-
-                    if (!ispot.is3DModel) addBounce(ispot);
-                    if (ispot) pano.add(ispot);
-                });
+                })();
             }
 
             // Preload neighbors when this panorama loads
@@ -568,19 +790,33 @@
         }
 
         function handleSpotClick(spot) {
-            if (spot.type === 'info' || spot.type === '3d') {
+            if (spot.type === 'info' || spot.type === '3d' || spot.type === 'image') {
                 // Build assets array — prefer assets relation, fallback to legacy model_path
                 let assets = [];
                 if (spot.assets && spot.assets.length > 0) {
                     assets = spot.assets.map(a => ({
                         file_type: a.file_type,
-                        url: '{{ Storage::url("") }}' + a.file_path,
+                        url: '{{ Storage::url("") }}/' + a.file_path,
                         label: a.label || null
                     }));
                 } else if (spot.model_path) {
-                    assets = [{ file_type: '3d', url: '{{ Storage::url("") }}' + spot.model_path, label: null }];
+                    assets = [{ file_type: '3d', url: '{{ Storage::url("") }}/' + spot.model_path, label: null }];
                 }
-                openModal(spot.title || "Info", spot.content_id || "", spot.content_en || "", assets);
+                let products = [];
+                if (spot.products && spot.products.length > 0) {
+                    products = spot.products.map(p => ({
+                        id: p.id,
+                        name: p.name,
+                        description_id: p.description_id,
+                        description_en: p.description_en,
+                        assets: (p.assets || []).map(a => ({
+                            file_type: a.file_type,
+                            url: '{{ Storage::url("") }}/' + a.file_path,
+                            label: a.label || null
+                        }))
+                    }));
+                }
+                openModal(spot.title || "Info", spot.content_id || "", spot.content_en || "", assets, products);
             } else if (spot.type === 'nav') {
                 if (spot.target_scene_id) {
                     const targetPano = getOrCreatePanorama(spot.target_scene_id);
@@ -593,11 +829,98 @@
             }
         }
 
+        // --- Manual Rotation & Cursor Logic ---
+        let modelDragging = null;
+        let lastPointerX = 0;
+        let totalDragDistance = 0;
+        const dragThreshold = 5; // Pixels to distinguish click vs drag
+
+        container.addEventListener('pointerdown', (e) => {
+            const rect = container.getBoundingClientRect();
+            const mouse = new THREE.Vector2(((e.clientX - rect.left) / rect.width) * 2 - 1, -((e.clientY - rect.top) / rect.height) * 2 + 1);
+            const raycaster = new THREE.Raycaster();
+            raycaster.setFromCamera(mouse, viewer.getCamera());
+            
+            if (!viewer.panorama) return;
+            const intersects = raycaster.intersectObjects(viewer.panorama.children, true);
+            
+            if (intersects.length > 0) {
+                let target = intersects[0].object;
+                while (target.parent && !target.is3DModel && !target.isPerspectiveMesh) {
+                    target = target.parent;
+                }
+
+                if ((target.is3DModel || target.isPerspectiveMesh) && !target.isNavMarker) {
+                    modelDragging = target;
+                    modelDragging.isBeingDragged = false; // Don't start yet
+                    lastPointerX = e.clientX;
+                    totalDragDistance = 0;
+                }
+            }
+        });
+
+        container.addEventListener('pointermove', (e) => {
+            const rect = container.getBoundingClientRect();
+            const mouse = new THREE.Vector2(((e.clientX - rect.left) / rect.width) * 2 - 1, -((e.clientY - rect.top) / rect.height) * 2 + 1);
+            
+            if (modelDragging) {
+                const deltaX = e.clientX - lastPointerX;
+                totalDragDistance += Math.abs(deltaX);
+
+                // Only start rotating after threshold
+                if (!modelDragging.isBeingDragged && totalDragDistance > dragThreshold) {
+                    modelDragging.isBeingDragged = true;
+                    viewer.getControl().enabled = false;
+                    container.style.cursor = 'grabbing';
+                }
+
+                if (modelDragging.isBeingDragged) {
+                    if (modelDragging.is3DModel && modelDragging.modelObj) {
+                        modelDragging.modelObj.rotation.y += deltaX * 0.01;
+                    } else {
+                        modelDragging.rotation.y += deltaX * 0.01;
+                    }
+                    lastPointerX = e.clientX;
+                }
+            } else {
+                // Hover cursor logic
+                const raycaster = new THREE.Raycaster();
+                raycaster.setFromCamera(mouse, viewer.getCamera());
+                if (!viewer.panorama) return;
+                const intersects = raycaster.intersectObjects(viewer.panorama.children, true);
+                
+                let isOverModel = false;
+                if (intersects.length > 0) {
+                    let target = intersects[0].object;
+                    while (target.parent && !target.is3DModel && !target.isPerspectiveMesh) {
+                        target = target.parent;
+                    }
+                    if ((target.is3DModel || target.isPerspectiveMesh) && !target.isNavMarker) {
+                        isOverModel = true;
+                    }
+                }
+                container.style.cursor = isOverModel ? 'pointer' : '';
+            }
+        });
+
+        window.addEventListener('pointerup', (e) => {
+            if (modelDragging) {
+                modelDragging.isBeingDragged = false;
+                modelDragging = null;
+                viewer.getControl().enabled = true;
+                container.style.cursor = '';
+            }
+        });
+
         function walkToTarget(pano, targetPosition, title, subtitle, targetSceneId = null) {
             // Sembunyikan ikon di panorama lama agar tidak "mengikuti" saat transisi
             if(viewer.panorama) {
                 viewer.panorama.children.forEach(c => {
-                    if (c instanceof PANOLENS.Infospot || c.isPerspectiveMesh) c.visible = false;
+                    if (c instanceof PANOLENS.Infospot || c.isPerspectiveMesh || c.is3DModel || c.isGLBModel) {
+                        c.visible = false;
+                        // Also hide the physical model if it's a 3D proxy
+                        if (c.modelObj) c.modelObj.visible = false;
+                    }
                 });
             }
 
@@ -675,9 +998,9 @@
                 card.className = `scene-card ${scene.id == currentSceneData?.id ? 'active' : ''}`;
                 card.dataset.id = scene.id;
                 
-                const imageUrl = '{{ Storage::url("") }}' + scene.image_path;
+                const thumbUrl = scene.thumbnail_path ? ('{{ Storage::url("") }}' + scene.thumbnail_path) : ('{{ Storage::url("") }}' + scene.image_path);
                 card.innerHTML = `
-                    <img src="${imageUrl}" alt="${scene.name}">
+                    <img src="${thumbUrl}" alt="${scene.name}">
                     <div class="scene-card-label">${scene.name}</div>
                 `;
 
@@ -849,17 +1172,14 @@
 
             let voice = currentModalLang === 'id' ? "Indonesian Female" : "UK English Female";
 
-            document.getElementById('btn-play').style.display = 'none';
-            document.getElementById('btn-stop').style.display = 'inline-block';
-
             responsiveVoice.speak(plainText, voice, {
                 onstart: () => {
-                    document.getElementById('btn-play').style.display = 'none';
-                    document.getElementById('btn-stop').style.display = 'inline-block';
+                    document.getElementById('btn-play').classList.add('hidden');
+                    document.getElementById('btn-stop').classList.remove('hidden');
                 },
                 onend: () => {
-                    document.getElementById('btn-play').style.display = 'inline-block';
-                    document.getElementById('btn-stop').style.display = 'none';
+                    document.getElementById('btn-play').classList.remove('hidden');
+                    document.getElementById('btn-stop').classList.add('hidden');
                 }
             });
         }
@@ -870,8 +1190,8 @@
             }
             const btnPlay = document.getElementById('btn-play');
             const btnStop = document.getElementById('btn-stop');
-            if (btnPlay) btnPlay.style.display = 'inline-block';
-            if (btnStop) btnStop.style.display = 'none';
+            if (btnPlay) btnPlay.classList.remove('hidden');
+            if (btnStop) btnStop.classList.add('hidden');
         }
 
         function switchTab(lang) {
@@ -880,11 +1200,22 @@
 
             document.getElementById('btn-tab-id').classList.remove('active');
             document.getElementById('btn-tab-en').classList.remove('active');
+            document.getElementById('tab-id-container').classList.remove('active');
+            document.getElementById('tab-en-container').classList.remove('active');
+            
             document.getElementById('tab-id').classList.remove('active');
             document.getElementById('tab-en').classList.remove('active');
 
             document.getElementById('btn-tab-' + lang).classList.add('active');
+            document.getElementById('tab-' + lang + '-container').classList.add('active');
             document.getElementById('tab-' + lang).classList.add('active');
+
+            // Move VO controls to active tab container
+            const vo = document.getElementById('vo-controls-wrapper');
+            const target = document.getElementById('tab-' + lang + '-container');
+            if (vo && target) {
+                target.appendChild(vo);
+            }
         }
 
         function toggleEnlarge() {
@@ -908,10 +1239,20 @@
         /* ---- Vanilla Carousel state ---- */
         let _vcIndex = 0;
         let _vcTotal = 0;
+        let _currentAssets = [];
+        let _currentProducts = [];
+        let _activeProductId = null;
+        let _spotTextId = '';
+        let _spotTextEn = '';
 
         function vcGoto(idx) {
             _vcIndex = Math.max(0, Math.min(idx, _vcTotal - 1));
-            document.getElementById('vc-track').style.transform = `translateX(-${_vcIndex * 100}%)`;
+            
+            // Fix: Translate percentage must be relative to the track's total width.
+            // Since each slide is 100% of the container, the track is (_vcTotal * 100%) wide.
+            // To move 1 slide, we move (100 / _vcTotal)%.
+            const movePct = (_vcTotal > 0) ? (_vcIndex * (100 / _vcTotal)) : 0;
+            document.getElementById('vc-track').style.transform = `translateX(-${movePct}%)`;
 
             // dots
             document.querySelectorAll('.vc-dot').forEach((d, i) => d.classList.toggle('active', i === _vcIndex));
@@ -921,6 +1262,18 @@
             const nextBtn = document.getElementById('vc-next');
             if (prevBtn) prevBtn.disabled = _vcIndex === 0;
             if (nextBtn) nextBtn.disabled = _vcIndex === _vcTotal - 1;
+
+            // Update Descriptions
+            const activeProduct = _currentProducts.find(p => p.id === _activeProductId);
+
+            if (activeProduct) {
+                document.getElementById('tab-id').innerHTML = activeProduct.description_id || '';
+                document.getElementById('tab-en').innerHTML = activeProduct.description_en || activeProduct.description_id || '';
+            } else {
+                // Fallback to spot's own description if no product is active (Legacy Mode)
+                document.getElementById('tab-id').innerHTML = _spotTextId || '';
+                document.getElementById('tab-en').innerHTML = _spotTextEn || '';
+            }
 
             // reset zoom on slide change
             _imgZoomReset();
@@ -933,12 +1286,17 @@
             const track  = document.getElementById('vc-track');
             const dotsEl = document.getElementById('vc-dots');
             const pane   = document.getElementById('modal-pane-assets');
+            
+            // Check current enlargement state to apply correct height to new slides
+            const isEnlarged = document.getElementById('modal-layout-wrapper').classList.contains('assets-enlarged');
+            const slideHeight = isEnlarged ? '60vh' : '300px';
 
             // Reset
             track.innerHTML  = '';
             dotsEl.innerHTML = '';
             _vcIndex = 0;
             _vcTotal = assets.length;
+            _currentAssets = assets; 
 
             if (!assets || assets.length === 0) {
                 pane.style.display = 'none';
@@ -946,11 +1304,13 @@
             }
 
             pane.style.display = 'block';
+            track.style.width = (_vcTotal * 100) + '%'; // Force track to be (total * 100%) wide
 
             assets.forEach((asset, i) => {
                 // --- Slide ---
                 const slide = document.createElement('div');
                 slide.className = 'vc-slide';
+                slide.style.width = (100 / _vcTotal) + '%'; // Each slide is (1/total)% of the track
 
                 const badge = document.createElement('span');
                 badge.className = `vc-badge ${asset.file_type === '3d' ? 'vc-badge-3d' : 'vc-badge-2d'}`;
@@ -962,10 +1322,12 @@
                     img.src     = asset.url;
                     img.alt     = asset.label || 'Image';
                     img.loading = 'lazy';
+                    img.style.height = slideHeight; // Apply current height state
                     slide.appendChild(img);
                 } else {
                     const wrap = document.createElement('div');
                     wrap.className = 'mv-wrap';
+                    wrap.style.height = slideHeight; // Apply current height state
                     wrap.innerHTML = `<model-viewer src="${asset.url}" auto-rotate camera-controls shadow-intensity="1" touch-action="pan-y" loading="eager"></model-viewer>`;
                     slide.appendChild(wrap);
                 }
@@ -1003,6 +1365,8 @@
             // Disable prev on first slide
             document.getElementById('vc-prev').disabled = true;
             document.getElementById('vc-next').disabled = isSingle;
+
+            vcGoto(0);
         }
 
         /* ---- Image zoom via mouse scroll ---- */
@@ -1127,10 +1491,45 @@
             });
         })();
 
-        function openModal(title, textId, textEn, assets = []) {
-            document.getElementById('modal-title').innerText = title;
-            document.getElementById('tab-id').innerHTML  = textId || '';
-            document.getElementById('tab-en').innerHTML  = textEn || textId || '';
+        function openModal(title, textId, textEn, assets = [], products = []) {
+            _currentAssets = assets;
+            _currentProducts = products;
+            _activeProductId = null;
+            _spotTextId = textId;
+            _spotTextEn = textEn;
+
+            // Title Logic: If 1 product, use product name as title
+            let displayTitle = title;
+            if (products && products.length === 1) {
+                displayTitle = products[0].name;
+            }
+            document.getElementById('modal-title').innerText = displayTitle;
+
+            // Handle Product Tabs
+            const tabsContainer = document.getElementById('product-tabs');
+            tabsContainer.innerHTML = '';
+            if (products && products.length > 1) {
+                tabsContainer.classList.remove('hidden');
+                products.forEach((p, i) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'product-tab' + (i === 0 ? ' active' : '');
+                    btn.dataset.id = p.id;
+                    btn.innerText = p.name;
+                    btn.onclick = () => switchProduct(p.id);
+                    tabsContainer.appendChild(btn);
+                });
+                // Switch to first product
+                switchProduct(products[0].id);
+            } else if (products && products.length === 1) {
+                tabsContainer.classList.add('hidden');
+                switchProduct(products[0].id);
+            } else {
+                tabsContainer.classList.add('hidden');
+                // No products, just show assets (legacy)
+                document.getElementById('tab-id').innerHTML = '';
+                document.getElementById('tab-en').innerHTML = '';
+                buildCarousel(assets);
+            }
 
             switchTab('id');
 
@@ -1139,9 +1538,18 @@
                 if (viewer.getControl()) viewer.getControl().autoRotate = false;
             }
 
-            buildCarousel(assets);
-
             document.getElementById('modal').classList.add('active');
+        }
+
+        function switchProduct(productId) {
+            _activeProductId = productId;
+            const product = _currentProducts.find(p => p.id === productId);
+            if (product) {
+                document.querySelectorAll('.product-tab').forEach(tab => {
+                    tab.classList.toggle('active', tab.dataset.id == productId);
+                });
+                buildCarousel(product.assets);
+            }
         }
 
         function closeModal() {

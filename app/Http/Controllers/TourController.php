@@ -12,6 +12,7 @@ class TourController extends Controller
         $tour = Tour::with([
             'scenes.infospots.targetScene', 
             'scenes.infospots.assets',
+            'scenes.infospots.products.assets',
             'sitePlans.hotspots.scene'
         ])->first();
         

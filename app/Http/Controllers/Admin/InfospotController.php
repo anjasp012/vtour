@@ -19,7 +19,7 @@ class InfospotController extends Controller
     public function store(Request $request, Scene $scene)
     {
         $validated = $request->validate([
-            'type' => 'required|in:info,nav,3d',
+            'type' => 'required|in:info,nav,3d,image',
             'position_x' => 'required|integer',
             'position_y' => 'required|integer',
             'position_z' => 'required|integer',
@@ -33,20 +33,40 @@ class InfospotController extends Controller
             'rotation_z' => 'nullable|numeric',
             'scale_x' => 'nullable|numeric',
             'scale_y' => 'nullable|numeric',
-            'model_file' => 'nullable|file' // 20MB limit
+            'model_file' => 'nullable|file',
+            'marker_image' => 'nullable|image|max:5120',
+            'is_multi' => 'boolean',
+            'product_desc_id' => 'nullable|string',
+            'product_desc_en' => 'nullable|string'
         ]);
 
         if ($request->hasFile('model_file')) {
             $validated['model_path'] = $request->file('model_file')->store('infospots/models', 'public');
+        } elseif ($request->hasFile('marker_image')) {
+            $validated['model_path'] = $request->file('marker_image')->store('infospots/markers', 'public');
         }
 
-        // Remove file object from array before database insertion
+        // Remove objects/fields not in infospots table before database insertion
         unset($validated['model_file']);
+        unset($validated['marker_image']);
+        unset($validated['product_desc_id']);
+        unset($validated['product_desc_en']);
 
-        // Handle checkbox default
+        // Handle checkbox/hidden defaults
         $validated['is_perspective'] = $request->has('is_perspective');
+        $isMulti = $request->boolean('is_multi');
+        $validated['is_multi'] = $isMulti;
 
-        $scene->infospots()->create($validated);
+        $infospot = $scene->infospots()->create($validated);
+
+        // If Single Product, create the default product
+        if (!$isMulti) {
+            $infospot->products()->create([
+                'name' => $infospot->title ?? 'Default Product',
+                'description_id' => $request->product_desc_id,
+                'description_en' => $request->product_desc_en,
+            ]);
+        }
 
         return redirect()->route('admin.scenes.show', $scene)->with('success', 'Infospot added successfully.');
     }
@@ -62,7 +82,7 @@ class InfospotController extends Controller
     public function update(Request $request, Infospot $infospot)
     {
         $validated = $request->validate([
-            'type' => 'required|in:info,nav,3d',
+            'type' => 'required|in:info,nav,3d,image',
             'position_x' => 'required|integer',
             'position_y' => 'required|integer',
             'position_z' => 'required|integer',
@@ -76,7 +96,11 @@ class InfospotController extends Controller
             'rotation_z' => 'nullable|numeric',
             'scale_x' => 'nullable|numeric',
             'scale_y' => 'nullable|numeric',
-            'model_file' => 'nullable|file|mimes:glb|max:20480'
+            'model_file' => 'nullable|file|mimes:glb|max:20480',
+            'marker_image' => 'nullable|image|max:5120',
+            'is_multi' => 'boolean',
+            'product_desc_id' => 'nullable|string',
+            'product_desc_en' => 'nullable|string'
         ]);
 
         if ($request->hasFile('model_file')) {
@@ -85,15 +109,44 @@ class InfospotController extends Controller
                 Storage::disk('public')->delete($infospot->model_path);
             }
             $validated['model_path'] = $request->file('model_file')->store('infospots/models', 'public');
+        } elseif ($request->hasFile('marker_image')) {
+            // Delete old model/marker if exists
+            if ($infospot->model_path && Storage::disk('public')->exists($infospot->model_path)) {
+                Storage::disk('public')->delete($infospot->model_path);
+            }
+            $validated['model_path'] = $request->file('marker_image')->store('infospots/markers', 'public');
         }
 
         // Handle checkbox (if unchecked, and not in validated array)
         $validated['is_perspective'] = $request->has('is_perspective');
+        $isMulti = $request->boolean('is_multi');
+        $validated['is_multi'] = $isMulti;
 
-        // Remove file object from array before database update
+        // Remove objects/fields not in infospots table before database update
         unset($validated['model_file']);
+        unset($validated['marker_image']);
+        unset($validated['product_desc_id']);
+        unset($validated['product_desc_en']);
 
         $infospot->update($validated);
+
+        // If Single Product, sync the default product
+        if (!$isMulti) {
+            $product = $infospot->products()->first();
+            if ($product) {
+                $product->update([
+                    'name' => $infospot->title ?? 'Default Product',
+                    'description_id' => $request->product_desc_id,
+                    'description_en' => $request->product_desc_en,
+                ]);
+            } else {
+                $infospot->products()->create([
+                    'name' => $infospot->title ?? 'Default Product',
+                    'description_id' => $request->product_desc_id,
+                    'description_en' => $request->product_desc_en,
+                ]);
+            }
+        }
 
         return redirect()->route('admin.scenes.show', $infospot->scene_id)->with('success', 'Infospot updated successfully.');
     }

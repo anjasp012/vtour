@@ -36,4 +36,9 @@ class InfospotAsset extends Model
     {
         return $this->file_type === '2d';
     }
+
+    public function product()
+    {
+        return $this->belongsTo(InfospotProduct::class, 'infospot_product_id');
+    }
 }

@@ -22,4 +22,9 @@ class Infospot extends Model
     {
         return $this->hasMany(InfospotAsset::class)->orderBy('sort_order');
     }
+
+    public function products()
+    {
+        return $this->hasMany(InfospotProduct::class)->orderBy('sort_order');
+    }
 }

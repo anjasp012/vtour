@@ -42,6 +42,7 @@ class SceneController extends Controller
 
         $tour = $this->getTour();
         $imagePath = $request->file('image')->store('scenes/images', 'public');
+        $thumbnailPath = $this->generateThumbnail($imagePath);
 
         if ($request->has('is_start_scene') && $request->is_start_scene) {
             $tour->scenes()->update(['is_start_scene' => false]);
@@ -50,6 +51,7 @@ class SceneController extends Controller
         $newScene = $tour->scenes()->create([
             'name' => $validated['name'],
             'image_path' => $imagePath,
+            'thumbnail_path' => $thumbnailPath,
             'is_start_scene' => $request->has('is_start_scene') ? true : false,
             'description_id' => $request->description_id,
             'description_en' => $request->description_en,
@@ -103,7 +105,13 @@ class SceneController extends Controller
             if (Storage::disk('public')->exists($scene->image_path)) {
                 Storage::disk('public')->delete($scene->image_path);
             }
-            $data['image_path'] = $request->file('image')->store('scenes/images', 'public');
+            if ($scene->thumbnail_path && Storage::disk('public')->exists($scene->thumbnail_path)) {
+                Storage::disk('public')->delete($scene->thumbnail_path);
+            }
+            
+            $imagePath = $request->file('image')->store('scenes/images', 'public');
+            $data['image_path'] = $imagePath;
+            $data['thumbnail_path'] = $this->generateThumbnail($imagePath);
         }
 
         $scene->update($data);
@@ -115,6 +123,9 @@ class SceneController extends Controller
     {
         if (Storage::disk('public')->exists($scene->image_path)) {
             Storage::disk('public')->delete($scene->image_path);
+        }
+        if ($scene->thumbnail_path && Storage::disk('public')->exists($scene->thumbnail_path)) {
+            Storage::disk('public')->delete($scene->thumbnail_path);
         }
         
         $scene->delete();
@@ -143,5 +154,55 @@ class SceneController extends Controller
             'lon'     => $scene->initial_lon,
             'lat'     => $scene->initial_lat,
         ]);
+    }
+
+    private function generateThumbnail($imagePath)
+    {
+        try {
+            $fullPath = storage_path('app/public/' . $imagePath);
+            if (!file_exists($fullPath)) return null;
+
+            $info = getimagesize($fullPath);
+            $mime = $info['mime'];
+
+            switch ($mime) {
+                case 'image/jpeg':
+                    $src = imagecreatefromjpeg($fullPath);
+                    break;
+                case 'image/png':
+                    $src = imagecreatefrompng($fullPath);
+                    break;
+                default:
+                    return null;
+            }
+
+            if (!$src) return null;
+
+            $width = imagesx($src);
+            $height = imagesy($src);
+
+            // Thumbnail target width: 1024px (standard for low-res pano)
+            $newWidth = 1024;
+            $newHeight = ($height / $width) * $newWidth;
+
+            $tmp = imagecreatetruecolor($newWidth, $newHeight);
+            imagecopyresampled($tmp, $src, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+
+            $thumbName = 'thumb_' . basename($imagePath);
+            $thumbDir = dirname($imagePath);
+            $thumbPath = $thumbDir . '/' . $thumbName;
+            $thumbFullPath = storage_path('app/public/' . $thumbPath);
+
+            // Save as JPEG with quality 60 (very light)
+            imagejpeg($tmp, $thumbFullPath, 60);
+
+            imagedestroy($src);
+            imagedestroy($tmp);
+
+            return $thumbPath;
+        } catch (\Exception $e) {
+            \Log::error("Thumbnail generation failed: " . $e->getMessage());
+            return null;
+        }
     }
 }

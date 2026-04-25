@@ -42,4 +42,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
         ->name('infospot-assets.destroy');
     Route::post('infospot-assets/reorder', [AdminInfospotAssetController::class, 'reorder'])
         ->name('infospot-assets.reorder');
+
+    // Infospot Products
+    Route::get('infospots/{infospot}/products', [\App\Http\Controllers\Admin\InfospotProductController::class, 'index'])
+        ->name('infospots.products.index');
+    Route::post('infospots/{infospot}/products', [\App\Http\Controllers\Admin\InfospotProductController::class, 'store'])
+        ->name('infospots.products.store');
+    Route::patch('infospot-products/{product}', [\App\Http\Controllers\Admin\InfospotProductController::class, 'update'])
+        ->name('infospot-products.update');
+    Route::delete('infospot-products/{product}', [\App\Http\Controllers\Admin\InfospotProductController::class, 'destroy'])
+        ->name('infospot-products.destroy');
 });

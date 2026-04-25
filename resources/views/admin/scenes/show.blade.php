@@ -93,153 +93,201 @@
             </div>
 
             <!-- Form Mode -->
-            <div id="state-form" class="hidden animate-fade-in space-y-6">
+            <div id="state-form" style="display: none" class="animate-fade-in space-y-6">
                 <form id="infospot-form" method="POST" enctype="multipart/form-data" class="space-y-6">
                     @csrf
                     <div id="method-put"></div>
 
-                    <!-- Behavior Section -->
-                    <div class="space-y-4">
-                        <div class="flex items-center justify-between border-b border-slate-100 pb-2">
-                            <label class="text-[9px] font-bold text-slate-400 uppercase tracking-[2px]">Properties</label>
-                            <input type="hidden" name="type" id="input-type">
-                        </div>
-                        
-                        <div class="space-y-3">
-                            <div class="p-3 bg-slate-50 border border-slate-200 rounded flex items-center justify-between shadow-sm">
-                                <div>
-                                    <label class="block text-slate-800 font-bold text-[9px] uppercase tracking-widest">3D Perspective</label>
-                                    <p class="text-[8px] text-slate-400 font-bold uppercase tracking-wider">Surface alignment</p>
-                                </div>
-                                <label class="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" name="is_perspective" id="input-perspective" value="1" class="sr-only peer">
-                                    <div class="w-8 h-4 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:rounded-full after:h-2 after:w-2 after:transition-all peer-checked:bg-blue-600 shadow-inner"></div>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Transformation Section -->
-                    <div id="transformation-controls" class="hidden space-y-3">
-                        <label class="text-[9px] font-bold text-blue-600 uppercase tracking-[2px] block border-b border-blue-50 pb-2">3D Calibration</label>
-                        
-                        <div class="space-y-4 p-3 bg-slate-50 border border-slate-200 rounded shadow-inner">
-                            <div class="space-y-3">
-                                <div class="space-y-1.5">
-                                    <div class="flex justify-between text-[8px] font-bold text-slate-500 uppercase"><span>Rotate X</span><span id="label-rx" class="text-blue-600 font-mono">0°</span></div>
-                                    <input type="range" name="rotation_x" id="input-rx" min="-3.14" max="3.14" step="0.01" value="0" class="inspector-slider">
-                                </div>
-                                <div class="space-y-1.5">
-                                    <div class="flex justify-between text-[8px] font-bold text-slate-500 uppercase"><span>Rotate Y</span><span id="label-ry" class="text-blue-600 font-mono">0°</span></div>
-                                    <input type="range" name="rotation_y" id="input-ry" min="-3.14" max="3.14" step="0.01" value="0" class="inspector-slider">
-                                </div>
-                                <div class="space-y-1.5">
-                                    <div class="flex justify-between text-[8px] font-bold text-slate-500 uppercase"><span>Rotate Z</span><span id="label-rz" class="text-blue-600 font-mono">0°</span></div>
-                                    <input type="range" name="rotation_z" id="input-rz" min="-3.14" max="3.14" step="0.01" value="0" class="inspector-slider">
-                                </div>
-                            </div>
-                            
-                            <div class="grid grid-cols-2 gap-3 border-t border-slate-200 pt-3 mt-1">
-                                <div class="space-y-1.5">
-                                    <div class="flex justify-between text-[8px] font-bold text-slate-500 uppercase"><span>Scale X</span><span id="label-sx" class="text-emerald-600 font-mono">1.0</span></div>
-                                    <input type="range" name="scale_x" id="input-sx" min="0.1" max="5" step="0.1" value="1" class="inspector-slider">
-                                </div>
-                                <div class="space-y-1.5">
-                                    <div class="flex justify-between text-[8px] font-bold text-slate-500 uppercase"><span>Scale Y</span><span id="label-sy" class="text-emerald-600 font-mono">1.0</span></div>
-                                    <input type="range" name="scale_y" id="input-sy" min="0.1" max="5" step="0.1" value="1" class="inspector-slider">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Metadata Section (Bilingual) -->
+                    <!-- 1. Identity & Content Section -->
                     <div id="fields-info" class="space-y-6">
-                        <label class="text-[9px] font-bold text-slate-400 uppercase tracking-[2px] block border-b border-slate-100 pb-2">Content</label>
+                        <label class="text-[9px] font-bold text-slate-400 uppercase tracking-[2px] block border-b border-slate-100 pb-2">Content Details</label>
                         
                         <div class="space-y-4">
-                            <!-- Media Assets Panel -->
-                            <div class="space-y-2 p-3 bg-slate-900 rounded border border-slate-800 shadow-inner">
-                                <div class="flex items-center justify-between mb-2">
-                                    <label class="text-[8px] font-bold text-slate-500 uppercase tracking-widest">Media Assets</label>
-                                    <button type="button" id="btn-add-asset-row"
-                                        class="text-[7px] font-bold bg-slate-700 hover:bg-slate-600 text-slate-300 px-2 py-1 rounded tracking-widest uppercase transition-colors flex items-center gap-1">
-                                        <i class="fas fa-plus"></i> Add File
-                                    </button>
-                                </div>
-
-                                <!-- Existing assets list (shown in edit mode) -->
-                                <div id="existing-assets-list" class="space-y-1.5 hidden"></div>
-
-                                <!-- New file rows -->
-                                <div id="new-asset-rows" class="space-y-2"></div>
-                                <p id="no-asset-hint" class="text-[8px] text-slate-600 italic text-center py-2">Klik &quot;+ Add File&quot; untuk upload.</p>
-
-                                <!-- Upload action (only visible when there are new rows) -->
-                                <div id="asset-upload-wrap" class="hidden pt-2 border-t border-slate-800">
-                                    <button type="button" id="btn-upload-assets"
-                                        class="w-full py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[8px] font-bold uppercase tracking-widest rounded transition-colors flex items-center justify-center gap-1.5">
-                                        <i class="fas fa-cloud-upload-alt"></i> Upload Files
-                                    </button>
-                                    <div id="asset-upload-loading" class="hidden items-center justify-center gap-2 py-1">
-                                        <div class="w-3 h-3 border-2 border-slate-600 border-t-indigo-500 rounded-full animate-spin"></div>
-                                        <span class="text-[8px] text-slate-400 uppercase tracking-widest">Uploading...</span>
-                                    </div>
-                                </div>
-                            </div>
-
+                            <!-- Node Title -->
                             <div class="space-y-1.5">
                                 <label class="text-[9px] font-bold text-slate-500 uppercase tracking-widest ml-0.5">Node Title</label>
                                 <input type="text" name="title" id="input-title" class="modern-input" placeholder="Enter node title...">
+                                <p class="text-[7px] text-slate-500 italic px-1">Note: In Single Product mode, node title will be used as product name.</p>
                             </div>
 
-                            <!-- 3D Model Primary Upload -->
-                            <div id="fields-3d" class="hidden space-y-2 p-3 bg-indigo-950/30 rounded border border-indigo-500/20 shadow-inner">
-                                <label class="text-[8px] font-bold text-indigo-400 uppercase tracking-widest block mb-1">Primary 3D Model (Floating Object)</label>
-                                <div class="space-y-2">
-                                    <input type="file" name="model_file" id="input-model-file" accept=".glb" 
-                                           class="w-full text-[9px] text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-[9px] file:font-bold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 transition-all cursor-pointer">
-                                    <div id="current-model-info" class="hidden flex items-center gap-2 p-1.5 bg-indigo-900/40 rounded border border-indigo-500/20">
-                                        <i class="fas fa-cube text-[10px] text-indigo-400"></i>
-                                        <span id="current-model-name" class="text-[8px] text-indigo-200 truncate flex-1"></span>
-                                        <span class="text-[7px] text-indigo-400 font-bold uppercase tracking-widest">Active</span>
+                            <!-- Single Product Content Wrapper (Shown if is_multi == false) -->
+                            <div id="single-product-wrapper" class="space-y-4 animate-fade-in hidden">
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div class="space-y-1.5">
+                                        <button type="button" onclick="openQuillEditor('id')" id="btn-open-editor-id" class="w-full text-left p-2.5 bg-slate-800 border border-slate-700 rounded group transition-all hover:border-indigo-500/50">
+                                            <div class="flex items-center justify-between mb-1">
+                                                <span class="text-[7px] font-bold text-indigo-400 uppercase tracking-widest">Deskripsi (ID)</span>
+                                                <i class="fas fa-edit text-[8px] text-slate-600 group-hover:text-indigo-400"></i>
+                                            </div>
+                                            <p id="preview-id" class="text-[6px] text-slate-500 line-clamp-2 leading-relaxed italic">Klik untuk menulis...</p>
+                                        </button>
+                                        <textarea id="product-desc-id" name="product_desc_id" class="hidden"></textarea>
                                     </div>
-                                    <p class="text-[7px] text-slate-500 italic">Upload file .glb untuk merender objek 3D langsung di panorama.</p>
+                                    <div class="space-y-1.5">
+                                        <button type="button" onclick="openQuillEditor('en')" id="btn-open-editor-en" class="w-full text-left p-2.5 bg-slate-800 border border-slate-700 rounded group transition-all hover:border-indigo-500/50">
+                                            <div class="flex items-center justify-between mb-1">
+                                                <span class="text-[7px] font-bold text-indigo-400 uppercase tracking-widest">Description (EN)</span>
+                                                <i class="fas fa-edit text-[8px] text-slate-600 group-hover:text-indigo-400"></i>
+                                            </div>
+                                            <p id="preview-en" class="text-[6px] text-slate-500 line-clamp-2 leading-relaxed italic">Click to write...</p>
+                                        </button>
+                                        <textarea id="product-desc-en" name="product_desc_en" class="hidden"></textarea>
+                                    </div>
                                 </div>
+                                
+                                <!-- Asset Panel for Single Product -->
+                                <div id="single-product-assets" class="p-3 bg-slate-900 rounded border border-slate-800 shadow-inner space-y-2">
+                                     <div class="flex items-center justify-between mb-2">
+                                        <label class="text-[8px] font-bold text-slate-500 uppercase tracking-widest">Media Assets</label>
+                                        <button type="button" onclick="addNewAssetRow('single')"
+                                            class="text-[7px] font-bold bg-slate-700 hover:bg-slate-600 text-slate-300 px-2 py-1 rounded tracking-widest uppercase transition-colors flex items-center gap-1">
+                                            <i class="fas fa-plus"></i> Add File
+                                        </button>
+                                    </div>
+                                    <div id="single-existing-assets" class="space-y-1.5 hidden"></div>
+                                    <div id="single-new-assets" class="space-y-2"></div>
+                                    <p id="single-no-asset-hint" class="text-[8px] text-slate-600 italic text-center py-2">Klik &quot;+ Add File&quot; untuk upload.</p>
+                                    
+                                    <div id="single-upload-wrap" class="hidden pt-2 border-t border-slate-800">
+                                        <button type="button" id="btn-upload-single-assets"
+                                            class="w-full py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[8px] font-bold uppercase tracking-widest rounded transition-colors flex items-center justify-center gap-1.5">
+                                            <i class="fas fa-cloud-upload-alt"></i> Upload Files
+                                        </button>
+                                        <div id="single-upload-loading" class="hidden items-center justify-center gap-2 py-1">
+                                            <div class="w-3 h-3 border-2 border-slate-600 border-t-indigo-500 rounded-full animate-spin"></div>
+                                            <span class="text-[8px] text-slate-400 uppercase tracking-widest">Uploading...</span>
+                                        </div>
+                                    </div>
+                                </div>
+
                             </div>
 
-                            <div class="space-y-3">
-                                <!-- Indonesian -->
-                                <div class="space-y-1">
-                                    <label class="text-[8px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                                        <span class="w-1 h-1 bg-slate-400 rounded-full"></span> Indonesian
-                                    </label>
-                                    <textarea name="content_id" id="input-desc-id" class="hidden"></textarea>
-                                    <button type="button" class="narasi-btn" id="btn-open-editor-id"
-                                        onclick="openQuillEditor('id')">
-                                        <span style="font-size:10px">🇮🇩</span>
-                                        <span class="preview-text" id="preview-id">Klik untuk menulis narasi...</span>
-                                        <i class="fas fa-pen-to-square text-[10px] opacity-40 ml-2"></i>
+                            <!-- Multi Product Groups Panel (Shown if is_multi == true) -->
+                            <div id="multi-product-wrapper" class="space-y-2 p-3 bg-slate-900 rounded border border-slate-800 shadow-inner hidden">
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="text-[8px] font-bold text-slate-500 uppercase tracking-widest">Product Groups</label>
+                                    <button type="button" id="btn-add-product"
+                                        class="text-[7px] font-bold bg-slate-700 hover:bg-slate-600 text-slate-300 px-2 py-1 rounded tracking-widest uppercase transition-colors flex items-center gap-1">
+                                        <i class="fas fa-plus"></i> New Product
                                     </button>
                                 </div>
+                                <div id="product-list" class="space-y-1.5">
+                                    <p class="text-[7px] text-slate-600 italic text-center py-1">No products yet.</p>
+                                </div>
 
-                                <!-- English -->
-                                <div class="space-y-1">
-                                    <label class="text-[8px] font-bold text-blue-400 uppercase tracking-widest flex items-center gap-1.5">
-                                        <span class="w-1 h-1 bg-blue-400 rounded-full"></span> English
-                                    </label>
-                                    <textarea name="content_en" id="input-desc-en" class="hidden"></textarea>
-                                    <button type="button" class="narasi-btn" id="btn-open-editor-en"
-                                        onclick="openQuillEditor('en')">
-                                        <span style="font-size:10px">🇬🇧</span>
-                                        <span class="preview-text" id="preview-en">Click to write narration...</span>
-                                        <i class="fas fa-pen-to-square text-[10px] opacity-40 ml-2"></i>
-                                    </button>
+                                <!-- Product Form (Hidden) -->
+                                <div id="product-form-wrap" class="hidden space-y-2 pt-2 border-t border-slate-800 animate-fade-in">
+                                    <input type="hidden" id="edit-product-id">
+                                    <input type="text" id="product-name" placeholder="Nama Produk" class="w-full bg-slate-800 border border-slate-700 text-slate-300 text-[8px] rounded px-2 py-1.5 focus:outline-none focus:border-indigo-500">
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div class="space-y-1.5">
+                                            <button type="button" onclick="openQuillEditor('id', 'multi')" id="btn-open-editor-id-multi" class="w-full text-left p-2.5 bg-slate-800 border border-slate-700 rounded group transition-all hover:border-indigo-500/50">
+                                                <div class="flex items-center justify-between mb-1">
+                                                    <span class="text-[7px] font-bold text-indigo-400 uppercase tracking-widest">Deskripsi (ID)</span>
+                                                    <i class="fas fa-edit text-[8px] text-slate-600 group-hover:text-indigo-400"></i>
+                                                </div>
+                                                <p id="preview-id-multi" class="text-[6px] text-slate-500 line-clamp-2 leading-relaxed italic">Klik untuk menulis...</p>
+                                            </button>
+                                            <textarea id="product-desc-id-multi" class="hidden"></textarea>
+                                        </div>
+                                        <div class="space-y-1.5">
+                                            <button type="button" onclick="openQuillEditor('en', 'multi')" id="btn-open-editor-en-multi" class="w-full text-left p-2.5 bg-slate-800 border border-slate-700 rounded group transition-all hover:border-indigo-500/50">
+                                                <div class="flex items-center justify-between mb-1">
+                                                    <span class="text-[7px] font-bold text-indigo-400 uppercase tracking-widest">Description (EN)</span>
+                                                    <i class="fas fa-edit text-[8px] text-slate-600 group-hover:text-indigo-400"></i>
+                                                </div>
+                                                <p id="preview-en-multi" class="text-[6px] text-slate-500 line-clamp-2 leading-relaxed italic">Click to write...</p>
+                                            </button>
+                                            <textarea id="product-desc-en-multi" class="hidden"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <button type="button" id="btn-save-product" class="flex-1 py-1 bg-indigo-600 hover:bg-indigo-700 text-white text-[7px] font-bold uppercase tracking-widest rounded transition-colors">Simpan Produk</button>
+                                        <button type="button" id="btn-cancel-product" class="px-3 py-1 bg-slate-700 hover:bg-slate-600 text-slate-300 text-[7px] font-bold uppercase tracking-widest rounded transition-colors">Batal</button>
+                                    </div>
+
+                                    <!-- Media Assets Panel (Nested within product) -->
+                                    <div id="product-assets-section" class="hidden space-y-2 pt-4 border-t border-slate-800 animate-fade-in">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <label class="text-[8px] font-bold text-slate-500 uppercase tracking-widest">Media Assets for this Product</label>
+                                            <button type="button" id="btn-add-asset-row"
+                                                class="text-[7px] font-bold bg-slate-700 hover:bg-slate-600 text-slate-300 px-2 py-1 rounded tracking-widest uppercase transition-colors flex items-center gap-1">
+                                                <i class="fas fa-plus"></i> Add File
+                                            </button>
+                                        </div>
+                                        <div id="existing-assets-list" class="space-y-1.5 hidden"></div>
+                                        <div id="new-asset-rows" class="space-y-2"></div>
+                                        <p id="no-asset-hint" class="text-[8px] text-slate-600 italic text-center py-2">Klik &quot;+ Add File&quot; untuk upload.</p>
+                                        <div id="asset-upload-wrap" class="hidden pt-2 border-t border-slate-800">
+                                            <button type="button" id="btn-upload-assets"
+                                                class="w-full py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[8px] font-bold uppercase tracking-widest rounded transition-colors flex items-center justify-center gap-1.5">
+                                                <i class="fas fa-cloud-upload-alt"></i> Upload Files
+                                            </button>
+                                            <div id="asset-upload-loading" class="hidden items-center justify-center gap-2 py-1">
+                                                <div class="w-3 h-3 border-2 border-slate-600 border-t-indigo-500 rounded-full animate-spin"></div>
+                                                <span class="text-[8px] text-slate-400 uppercase tracking-widest">Uploading...</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Navigation Section -->
+                    <!-- 2. Marker Visual Style -->
+                    <div id="wrapper-marker-visual" class="space-y-4 p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                        <label class="text-[9px] font-bold text-slate-400 uppercase tracking-[2px] block">Marker Visual</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button type="button" onclick="setMarkerType('info')" id="btn-marker-info" class="marker-type-btn active flex flex-col items-center gap-1.5 p-2 rounded-lg border-2 border-slate-100 bg-white hover:border-blue-200 transition-all">
+                                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                                    <i class="fas fa-info-circle"></i>
+                                </div>
+                                <span class="text-[8px] font-black uppercase tracking-widest text-slate-500">Icon</span>
+                            </button>
+                            <button type="button" onclick="setMarkerType('image')" id="btn-marker-image" class="marker-type-btn flex flex-col items-center gap-1.5 p-2 rounded-lg border-2 border-slate-100 bg-white hover:border-blue-200 transition-all">
+                                <div class="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center text-orange-600">
+                                    <i class="fas fa-image"></i>
+                                </div>
+                                <span class="text-[8px] font-black uppercase tracking-widest text-slate-500">2D Image</span>
+                            </button>
+                            <button type="button" onclick="setMarkerType('3d')" id="btn-marker-3d" class="marker-type-btn flex flex-col items-center gap-1.5 p-2 rounded-lg border-2 border-slate-100 bg-white hover:border-blue-200 transition-all">
+                                <div class="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center text-purple-600">
+                                    <i class="fas fa-cube"></i>
+                                </div>
+                                <span class="text-[8px] font-black uppercase tracking-widest text-slate-500">3D Object</span>
+                            </button>
+                        </div>
+
+                        <!-- 2D Image Upload -->
+                        <div id="marker-image-upload" class="hidden space-y-2 mt-4 animate-fade-in">
+                            <label class="text-[8px] font-bold text-slate-500 uppercase tracking-widest block ml-0.5">Marker Image (2D)</label>
+                            <input type="file" name="marker_image" id="input-marker-image" accept="image/*" 
+                                   class="w-full text-[9px] text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-[9px] file:font-bold file:bg-orange-600 file:text-white hover:file:bg-orange-700 transition-all cursor-pointer">
+                            <p class="text-[7px] text-slate-500 italic">Pilih gambar 2D untuk digunakan sebagai penanda di panorama.</p>
+                        </div>
+
+                        <!-- 3D Model Upload -->
+                        <div id="fields-3d" class="hidden space-y-2 mt-4 animate-fade-in">
+                            <label class="text-[8px] font-bold text-indigo-400 uppercase tracking-widest block ml-0.5">Primary 3D Model (Floating Object)</label>
+                            <div class="space-y-2">
+                                <input type="file" name="model_file" id="input-model-file" accept=".glb" 
+                                       class="w-full text-[9px] text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-[9px] file:font-bold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 transition-all cursor-pointer">
+                                <div id="current-model-info" class="hidden flex items-center gap-2 p-1.5 bg-indigo-900/40 rounded border border-indigo-500/20">
+                                    <i class="fas fa-cube text-[10px] text-indigo-400"></i>
+                                    <span id="current-model-name" class="text-[8px] text-indigo-200 truncate flex-1"></span>
+                                    <span class="text-[7px] text-indigo-400 font-bold uppercase tracking-widest">Active</span>
+                                </div>
+                                <p class="text-[7px] text-slate-500 italic">Upload file .glb untuk merender objek 3D langsung di panorama.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <style>
+                        .marker-type-btn.active { @apply border-blue-600 bg-blue-50 ring-4 ring-blue-100; }
+                        .marker-type-btn.active span { @apply text-blue-600; }
+                    </style>
+
+                    <!-- 3. Navigation Section -->
                     <div id="fields-nav" class="hidden space-y-4">
                         <div class="flex items-center justify-between border-b border-slate-100 pb-2">
                             <label class="text-[9px] font-bold text-slate-400 uppercase tracking-[2px]">Routing</label>
@@ -285,9 +333,60 @@
                         </div>
                     </div>
 
-                    <!-- Coordinate Display -->
+                    <!-- 4. Perspective & Calibration (3D Transform) -->
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                            <label class="text-[9px] font-bold text-slate-400 uppercase tracking-[2px]">3D Properties</label>
+                            <input type="hidden" name="type" id="input-type">
+                            <input type="hidden" name="is_multi" id="input-is-multi" value="0">
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <div class="p-3 bg-slate-50 border border-slate-200 rounded flex items-center justify-between shadow-sm">
+                                <div>
+                                    <label class="block text-slate-800 font-bold text-[9px] uppercase tracking-widest">3D Perspective</label>
+                                    <p class="text-[8px] text-slate-400 font-bold uppercase tracking-wider">Surface alignment</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="is_perspective" id="input-perspective" value="1" class="sr-only peer">
+                                    <div class="w-8 h-4 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:rounded-full after:h-2 after:w-2 after:transition-all peer-checked:bg-blue-600 shadow-inner"></div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Calibration Sliders -->
+                        <div id="transformation-controls" class="hidden space-y-3 animate-fade-in">
+                            <div class="space-y-4 p-3 bg-slate-50 border border-slate-200 rounded shadow-inner">
+                                <div class="space-y-3">
+                                    <div class="flex justify-between text-[8px] font-bold text-slate-500 uppercase"><span>Rotate X</span><span id="label-rx" class="text-blue-600 font-mono">0°</span></div>
+                                    <input type="range" name="rotation_x" id="input-rx" min="-3.14" max="3.14" step="0.01" value="0" class="inspector-slider">
+                                    
+                                    <div class="flex justify-between text-[8px] font-bold text-slate-500 uppercase"><span>Rotate Y</span><span id="label-ry" class="text-blue-600 font-mono">0°</span></div>
+                                    <input type="range" name="rotation_y" id="input-ry" min="-3.14" max="3.14" step="0.01" value="0" class="inspector-slider">
+                                    
+                                    <div class="flex justify-between text-[8px] font-bold text-slate-500 uppercase"><span>Rotate Z</span><span id="label-rz" class="text-blue-600 font-mono">0°</span></div>
+                                    <input type="range" name="rotation_z" id="input-rz" min="-3.14" max="3.14" step="0.01" value="0" class="inspector-slider">
+                                </div>
+                                
+                                <div class="grid grid-cols-2 gap-3 border-t border-slate-200 pt-3 mt-1">
+                                    <div class="space-y-1.5">
+                                        <div class="flex justify-between text-[8px] font-bold text-slate-500 uppercase"><span>Scale X</span><span id="label-sx" class="text-emerald-600 font-mono">1.0</span></div>
+                                        <input type="range" name="scale_x" id="input-sx" min="0.1" max="5" step="0.1" value="1" class="inspector-slider">
+                                    </div>
+                                    <div class="space-y-1.5">
+                                        <div class="flex justify-between text-[8px] font-bold text-slate-500 uppercase"><span>Scale Y</span><span id="label-sy" class="text-emerald-600 font-mono">1.0</span></div>
+                                        <input type="range" name="scale_y" id="input-sy" min="0.1" max="5" step="0.1" value="1" class="inspector-slider">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <!-- Coordinate Monitoring Section -->
                     <div class="p-4 bg-slate-900 border border-slate-800 rounded-lg flex flex-col gap-4">
-                        <span class="text-[8px] font-bold text-slate-500 uppercase tracking-[2px] border-b border-slate-800 pb-2">Coordinates</span>
+                        <span class="text-[8px] font-bold text-slate-500 uppercase tracking-[2px] border-b border-slate-800 pb-2">Coordinates Monitoring</span>
                         <div class="grid grid-cols-3 gap-4 font-mono text-[9px] font-bold">
                             <div class="flex flex-col gap-1.5">
                                 <div class="flex justify-between items-center text-white/40"><span class="text-blue-500">X</span><span id="val_x">0</span></div>
@@ -302,6 +401,17 @@
                                 <div class="h-0.5 bg-slate-800 rounded-full overflow-hidden"><div id="bar_z" class="h-full bg-indigo-600 transition-all duration-300" style="width: 0%"></div></div>
                             </div>
                         </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div class="flex justify-between text-[8px] font-bold text-slate-500 uppercase"><span>Fine-tune Position X</span><span id="label-px" class="text-blue-600 font-mono">0</span></div>
+                        <input type="range" id="slider-px" min="-10000" max="10000" step="10" class="inspector-slider">
+                        
+                        <div class="flex justify-between text-[8px] font-bold text-slate-500 uppercase"><span>Fine-tune Position Y</span><span id="label-py" class="text-emerald-600 font-mono">0</span></div>
+                        <input type="range" id="slider-py" min="-10000" max="10000" step="10" class="inspector-slider">
+                        
+                        <div class="flex justify-between text-[8px] font-bold text-slate-500 uppercase"><span>Fine-tune Position Z</span><span id="label-pz" class="text-indigo-600 font-mono">0</span></div>
+                        <input type="range" id="slider-pz" min="-10000" max="10000" step="10" class="inspector-slider">
                     </div>
 
                     <input type="hidden" name="position_x" id="pos_x">
@@ -332,17 +442,17 @@
 <div id="context-menu" class="hidden fixed z-[999] bg-[#1a1a1a] border border-white/5 rounded shadow-2xl py-2 w-48 text-white font-bold text-[9px] uppercase tracking-widest">
     <div id="menu-add-info">
         <button onclick="handleMenuAction('add_info')" class="w-full text-left px-5 py-3 hover:bg-blue-600 flex items-center justify-between group transition-colors">
-            <span>Add Info Node</span> <i class="fas fa-plus opacity-30 group-hover:opacity-100"></i>
+            <span>Add Single Produk</span> <i class="fas fa-plus opacity-30 group-hover:opacity-100"></i>
+        </button>
+    </div>
+    <div id="menu-add-multi">
+        <button onclick="handleMenuAction('add_multi')" class="w-full text-left px-5 py-3 hover:bg-emerald-600 flex items-center justify-between group border-t border-white/5 transition-colors">
+            <span>Add Multi Produk</span> <i class="fas fa-th-large opacity-30 group-hover:opacity-100"></i>
         </button>
     </div>
     <div id="menu-add-nav">
         <button onclick="handleMenuAction('add_nav')" class="w-full text-left px-5 py-3 hover:bg-blue-600 flex items-center justify-between group border-t border-white/5 transition-colors">
             <span>Add Nav Link</span> <i class="fas fa-link opacity-30 group-hover:opacity-100"></i>
-        </button>
-    </div>
-    <div id="menu-add-3d">
-        <button onclick="handleMenuAction('add_3d')" class="w-full text-left px-5 py-3 hover:bg-purple-600 flex items-center justify-between group border-t border-white/5 transition-colors">
-            <span>Add 3D Object</span> <i class="fas fa-cube opacity-30 group-hover:opacity-100"></i>
         </button>
     </div>
     <div id="menu-divider" class="h-px bg-white/5 my-1 mx-2"></div>
@@ -640,8 +750,42 @@
 
     function animate3d() {
         requestAnimationFrame(animate3d);
-        const delta = clock.getDelta();
-        mixers.forEach(mixer => mixer.update(delta));
+        if (clock) {
+            const delta = clock.getDelta();
+            mixers.forEach(mixer => mixer.update(delta));
+        }
+        
+        // Sync 3D/2D model positions and apply visual animations
+        const time = Date.now() * 0.002; // Time factor for animations
+        Object.values(renderedSpots).forEach(marker => {
+            if (marker && (marker.is3DModel || marker.isPerspectiveMesh)) {
+                // If it's a 3D model proxy, sync the modelObj
+                if (marker.is3DModel && marker.modelObj) {
+                    marker.modelObj.position.copy(marker.position);
+                    
+                    if (editingId != marker.spotData.id) {
+                        marker.modelObj.position.y += Math.sin(time) * 50; 
+                        marker.modelObj.rotation.y += 0.005; 
+                    }
+                } 
+                // If it's a 2D Perspective mesh, it doesn't have modelObj, it IS the object
+                else if (marker.isPerspectiveMesh) {
+                    if (editingId != marker.spotData.id) {
+                        if (!marker.baseY) marker.baseY = marker.position.y;
+                        marker.position.y = marker.baseY + Math.sin(time) * 50;
+                        
+                        // Don't rotate navigation links
+                        if (marker.spotData.type !== 'nav') {
+                            marker.rotation.y += 0.005;
+                        }
+                    } else {
+                        // While editing, we don't apply visual bounce to avoid fighting with sliders
+                        // Just ensure baseY is updated if the object was moved via drag/sliders
+                        marker.baseY = marker.position.y;
+                    }
+                }
+            }
+        });
     }
     animate3d();
 
@@ -654,8 +798,8 @@
                 const model = gltf.scene;
                 
                 // Set initial transform (Scale up significantly for world-space visibility)
-                const s = 100; // Base multiplier for 3D units vs panorama radius
-                model.position.set(spotData.position_x, spotData.position_y, spotData.position_z);
+                const s = 1000; 
+                model.position.set(0, 0, 0);
                 model.rotation.set(spotData.rotation_x || 0, spotData.rotation_y || 0, spotData.rotation_z || 0);
                 model.scale.set(
                     (spotData.scale_x || 1) * s, 
@@ -666,6 +810,18 @@
                 // Base metadata
                 model.is3DModel = true;
                 model.spotData = spotData;
+
+                // Set maximum renderOrder and disable depthTest for "always on top" visibility
+                model.traverse(node => {
+                    if (node.isMesh) {
+                        node.renderOrder = 9999;
+                        if (node.material) {
+                            node.material.depthTest = false;
+                            node.material.depthWrite = false;
+                            node.material.transparent = true;
+                        }
+                    }
+                });
 
                 // Handle Animations
                 if (gltf.animations && gltf.animations.length > 0) {
@@ -712,7 +868,7 @@
 
         const startY = infospot.position.y;
         infospot.bounceTween = new TWEEN.Tween(infospot.position)
-            .to({ y: startY + 200 }, 1000)
+            .to({ y: startY + 150 }, 1500)
             .easing(TWEEN.Easing.Quadratic.InOut)
             .repeat(Infinity)
             .yoyo(true)
@@ -749,34 +905,65 @@
                 const idx = mixers.indexOf(oldMarker.mixer);
                 if (idx > -1) mixers.splice(idx, 1);
             }
+            if (oldMarker.modelObj) {
+                panorama.remove(oldMarker.modelObj);
+            }
             panorama.remove(oldMarker);
             delete renderedSpots[spotData.id];
         }
 
-        const iconUrl = spotData.type === 'info' ? iconTextures.info : (spotData.type === '3d' ? iconTextures.threed : iconTextures.nav);
+        let iconUrl = iconTextures.info;
+        if (spotData.type === 'nav') iconUrl = iconTextures.nav;
+        if (spotData.type === '3d') iconUrl = iconTextures.threed;
+        if (spotData.type === 'image' && spotData.model_path) iconUrl = '{{ url('storage') }}/' + spotData.model_path;
+        
         let marker;
         let modelObj = null;
 
-        // Position Normalization (Ensure inside the 5000 radius sphere)
-        const pos = new THREE.Vector3(spotData.position_x, spotData.position_y, spotData.position_z).normalize().multiplyScalar(4000);
+        // Position Handling: 
+        // For standard icons, normalize to a sphere. 
+        // For 3D models/Perspective, use absolute coordinates for precision.
+        let pos;
+        if (spotData.type === '3d' || spotData.type === 'image' || spotData.is_perspective) {
+            pos = new THREE.Vector3(spotData.position_x, spotData.position_y, spotData.position_z);
+        } else {
+            pos = new THREE.Vector3(spotData.position_x, spotData.position_y, spotData.position_z).normalize().multiplyScalar(4000);
+        }
 
-        if (spotData.model_path) {
+        // Check for direct 3D model (.glb only)
+        if (spotData.model_path && spotData.model_path.toLowerCase().endsWith('.glb')) {
             try {
-                const modelUrl = '{{ url('storage') }}/' + spotData.model_path;
+                const modelUrl = '{{ Storage::url("") }}/' + spotData.model_path;
                 modelObj = await loadGLB(modelUrl, spotData);
-                
-                // Create a Proxy Infospot for interaction
-                marker = new PANOLENS.Infospot(800, PANOLENS.DataImage.Info); // Large hit area
-                marker.material.opacity = 0; // Invisible icon
-                marker.add(modelObj);
-                
-                // Reset model internal position to 0 (since it's a child of marker)
-                modelObj.position.set(0, 0, 0);
+                           // Create a Proxy Infospot for interaction (Increase size for easier hover)
+                const transparentPixel = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+                marker = new PANOLENS.Infospot(2000, transparentPixel);
                 marker.is3DModel = true;
                 marker.modelObj = modelObj;
+                
+                // Add directly to panorama, not as child of marker
+                modelObj.position.copy(pos);
+                panorama.add(modelObj);
             } catch (err) {
                 console.error("Failed to load GLB:", err);
             }
+        }
+
+        if (!marker && spotData.model_path && !spotData.model_path.toLowerCase().endsWith('.glb')) {
+             const customIconUrl = '{{ url('storage') }}/' + spotData.model_path;
+             const geometry = new THREE.PlaneGeometry(600, 600);
+             const texture = new THREE.TextureLoader().load(customIconUrl);
+             const material = new THREE.MeshBasicMaterial({ 
+                 map: texture, transparent: true, side: THREE.DoubleSide,
+                 alphaTest: 0.1, depthTest: false, depthWrite: false
+             });
+             marker = new THREE.Mesh(geometry, material);
+             marker.renderOrder = 999;
+             marker.rotation.order = 'YXZ';
+             marker.rotation.set(spotData.rotation_x || 0, spotData.rotation_y || 0, spotData.rotation_z || 0);
+             marker.scale.set(spotData.scale_x || 1, spotData.scale_y || 1, 1);
+             marker.isPerspectiveMesh = true;
+             marker.isCustomImage = true;
         }
 
         if (!marker) {
@@ -795,6 +982,7 @@
                 marker.isPerspectiveMesh = true;
             } else {
                 marker = new PANOLENS.Infospot(600, iconUrl);
+                marker.renderOrder = 1000;
             }
         }
 
@@ -809,7 +997,7 @@
         // Smart Hover Logic
         marker.addEventListener('hoverenter', () => {
             if (marker.is3DModel) {
-                const s = 100 * 1.2;
+                const s = 1000 * 1.2;
                 new TWEEN.Tween(marker.modelObj.scale).to({ 
                     x: (spotData.scale_x || 1) * s, 
                     y: (spotData.scale_y || 1) * s, 
@@ -824,7 +1012,7 @@
 
         marker.addEventListener('hoverleave', () => {
             if (marker.is3DModel) {
-                const s = 100;
+                const s = 1000;
                 new TWEEN.Tween(marker.modelObj.scale).to({ 
                     x: (spotData.scale_x || 1) * s, 
                     y: (spotData.scale_y || 1) * s, 
@@ -856,19 +1044,23 @@
     const btnReposition = document.getElementById('btn-reposition');
     const toast = document.getElementById('instruction-toast');
     const toastText = document.getElementById('toast-text');
-
+    const fields3D = document.getElementById('fields-3d');
+    const singleProductWrapper = document.getElementById('single-product-wrapper');
+    const multiProductWrapper = document.getElementById('multi-product-wrapper');
+    const visualWrapper = document.getElementById('wrapper-marker-visual');
     const inputPerspective = document.getElementById('input-perspective');
     const transformControls = document.getElementById('transformation-controls');
     const inputRx = document.getElementById('input-rx'), inputRy = document.getElementById('input-ry'), inputRz = document.getElementById('input-rz');
     const inputSx = document.getElementById('input-sx'), inputSy = document.getElementById('input-sy');
     const labelRx = document.getElementById('label-rx'), labelRy = document.getElementById('label-ry'), labelRz = document.getElementById('label-rz');
     const labelSx = document.getElementById('label-sx'), labelSy = document.getElementById('label-sy');
+    
+    let originalSpotState = null;
 
     const valX = document.getElementById('val_x'), valY = document.getElementById('val_y'), valZ = document.getElementById('val_z');
     const barX = document.getElementById('bar_x'), barY = document.getElementById('bar_y'), barZ = document.getElementById('bar_z');
     const pos_x = document.getElementById('pos_x'), pos_y = document.getElementById('pos_y'), pos_z = document.getElementById('pos_z');
     
-    const fields3D = document.getElementById('fields-3d');
     const inputModelFile = document.getElementById('input-model-file');
     const currentModelInfo = document.getElementById('current-model-info');
     const currentModelName = document.getElementById('current-model-name');
@@ -886,6 +1078,69 @@
         });
     });
 
+    const sPx = document.getElementById('slider-px'), sPy = document.getElementById('slider-py'), sPz = document.getElementById('slider-pz');
+    const lPx = document.getElementById('label-px'), lPy = document.getElementById('label-py'), lPz = document.getElementById('label-pz');
+
+    sPx.addEventListener('input', () => {
+        const val = parseInt(sPx.value);
+        pos_x.value = val;
+        lPx.innerText = val;
+        const vx = parseInt(sPx.value), vy = parseInt(sPy.value), vz = parseInt(sPz.value);
+        updatePosDisplay(vx, vy, vz);
+        
+        let marker = null;
+        if (editingId && renderedSpots[editingId]) marker = renderedSpots[editingId];
+        else if (ghostMarker) marker = ghostMarker;
+
+        if (marker) {
+            marker.position.set(vx, vy, vz);
+            if (marker.isPerspectiveMesh) marker.baseY = vy;
+            if (marker.modelObj) {
+                marker.modelObj.position.set(vx, vy, vz);
+            }
+        }
+    });
+
+    sPy.addEventListener('input', () => {
+        const val = parseInt(sPy.value);
+        pos_y.value = val;
+        lPy.innerText = val;
+        const vx = parseInt(sPx.value), vy = parseInt(sPy.value), vz = parseInt(sPz.value);
+        updatePosDisplay(vx, vy, vz);
+        
+        let marker = null;
+        if (editingId && renderedSpots[editingId]) marker = renderedSpots[editingId];
+        else if (ghostMarker) marker = ghostMarker;
+
+        if (marker) {
+            marker.position.set(vx, vy, vz);
+            if (marker.isPerspectiveMesh) marker.baseY = vy;
+            if (marker.modelObj) {
+                marker.modelObj.position.set(vx, vy, vz);
+            }
+        }
+    });
+
+    sPz.addEventListener('input', () => {
+        const val = parseInt(sPz.value);
+        pos_z.value = val;
+        lPz.innerText = val;
+        const vx = parseInt(sPx.value), vy = parseInt(sPy.value), vz = parseInt(sPz.value);
+        updatePosDisplay(vx, vy, vz);
+        
+        let marker = null;
+        if (editingId && renderedSpots[editingId]) marker = renderedSpots[editingId];
+        else if (ghostMarker) marker = ghostMarker;
+
+        if (marker) {
+            marker.position.set(vx, vy, vz);
+            if (marker.isPerspectiveMesh) marker.baseY = vy;
+            if (marker.modelObj) {
+                marker.modelObj.position.set(vx, vy, vz);
+            }
+        }
+    });
+
     function updateLabels() {
         labelRx.innerText = `${Math.round(inputRx.value * 180 / Math.PI)}°`;
         labelRy.innerText = `${Math.round(inputRy.value * 180 / Math.PI)}°`;
@@ -895,46 +1150,65 @@
     }
 
     function updateRealtimePreview() {
-        if (!editingId || !renderedSpots[editingId]) return;
-        const currentData = existingSpots.find(s => s.id == editingId);
-        if (currentData) {
-            const needsRebuild = (!!currentData.is_perspective !== inputPerspective.checked);
-            currentData.is_perspective = inputPerspective.checked;
-            currentData.rotation_x = parseFloat(inputRx.value);
-            currentData.rotation_y = parseFloat(inputRy.value);
-            currentData.rotation_z = parseFloat(inputRz.value);
-            currentData.scale_x = parseFloat(inputSx.value);
-            currentData.scale_y = parseFloat(inputSy.value);
+        let marker = null;
+        let spotData = null;
 
-            if (needsRebuild) renderMarker(currentData);
-            else {
-                const marker = renderedSpots[editingId];
-                if (marker.is3DModel) {
-                    marker.modelObj.rotation.set(currentData.rotation_x, currentData.rotation_y, currentData.rotation_z);
-                    const s = 100;
-                    const sz = currentData.scale_z || currentData.scale_x || 1;
-                    marker.modelObj.scale.set(currentData.scale_x * s, currentData.scale_y * s, sz * s);
-                } else if (marker.isPerspectiveMesh) {
-                    marker.rotation.set(currentData.rotation_x, currentData.rotation_y, currentData.rotation_z);
-                    marker.scale.set(currentData.scale_x, currentData.scale_y, 1);
-                }
+        if (editingId && renderedSpots[editingId]) {
+            marker = renderedSpots[editingId];
+            spotData = existingSpots.find(s => s.id == editingId);
+        } else if (ghostMarker) {
+            marker = ghostMarker;
+            // Create a fake spotData for ghost marker updates
+            spotData = {
+                rotation_x: parseFloat(inputRx.value),
+                rotation_y: parseFloat(inputRy.value),
+                rotation_z: parseFloat(inputRz.value),
+                scale_x: parseFloat(inputSx.value),
+                scale_y: parseFloat(inputSy.value),
+                is_perspective: inputPerspective.checked
+            };
+        }
+
+        if (marker && spotData) {
+            spotData.is_perspective = inputPerspective.checked;
+            spotData.rotation_x = parseFloat(inputRx.value);
+            spotData.rotation_y = parseFloat(inputRy.value);
+            spotData.rotation_z = parseFloat(inputRz.value);
+            spotData.scale_x = parseFloat(inputSx.value);
+            spotData.scale_y = parseFloat(inputSy.value);
+
+            if (marker.is3DModel && marker.modelObj) {
+                marker.modelObj.rotation.set(spotData.rotation_x, spotData.rotation_y, spotData.rotation_z);
+                const s = 1000;
+                marker.modelObj.scale.set(spotData.scale_x * s, spotData.scale_y * s, (spotData.scale_z || spotData.scale_x) * s);
+            } else if (marker.isPerspectiveMesh || (marker.isCustomImage && inputPerspective.checked)) {
+                marker.rotation.set(spotData.rotation_x, spotData.rotation_y, spotData.rotation_z);
+                marker.scale.set(spotData.scale_x, spotData.scale_y, 1);
             }
         }
     }
 
     inputType.addEventListener('change', (e) => {
-        if(e.target.value === 'nav') {
+        const type = e.target.value;
+        
+        if(type === 'nav') {
             fieldsInfo.classList.add('hidden');
             fieldsNav.classList.remove('hidden');
-            fields3D.classList.add('hidden');
-        } else if(e.target.value === '3d') {
+            if(fields3D) fields3D.classList.add('hidden');
+            if(visualWrapper) visualWrapper.classList.add('hidden');
+            if(singleProductWrapper) singleProductWrapper.classList.add('hidden');
+            if(multiProductWrapper) multiProductWrapper.classList.add('hidden');
+        } else if(type === '3d') {
             fieldsInfo.classList.remove('hidden');
             fieldsNav.classList.add('hidden');
-            fields3D.classList.remove('hidden');
+            if(fields3D) fields3D.classList.remove('hidden');
+            if(visualWrapper) visualWrapper.classList.remove('hidden');
+            // Product wrappers will be toggled by the 'is_multi' input logic
         } else {
             fieldsInfo.classList.remove('hidden');
             fieldsNav.classList.add('hidden');
-            fields3D.classList.add('hidden');
+            if(fields3D) fields3D.classList.add('hidden');
+            if(visualWrapper) visualWrapper.classList.remove('hidden');
         }
     });
 
@@ -980,19 +1254,56 @@
         ctxMenu.style.top = `${y}px`; ctxMenu.style.left = `${x}px`;
         if (mode === 'spot') {
             document.getElementById('menu-add-info').classList.add('hidden');
+            document.getElementById('menu-add-multi').classList.add('hidden');
             document.getElementById('menu-add-nav').classList.add('hidden');
-            document.getElementById('menu-add-3d').classList.add('hidden');
             document.getElementById('menu-edit').classList.remove('hidden');
             document.getElementById('menu-delete').classList.remove('hidden');
             document.getElementById('menu-divider').classList.remove('hidden');
         } else {
             document.getElementById('menu-add-info').classList.remove('hidden');
+            document.getElementById('menu-add-multi').classList.remove('hidden');
             document.getElementById('menu-add-nav').classList.remove('hidden');
-            document.getElementById('menu-add-3d').classList.remove('hidden');
             document.getElementById('menu-edit').classList.add('hidden');
             document.getElementById('menu-delete').classList.add('hidden');
             document.getElementById('menu-divider').classList.add('hidden');
         }
+    }
+
+    window.setMarkerType = function(type) {
+        inputType.value = type;
+        
+        // Update Buttons
+        document.querySelectorAll('.marker-type-btn').forEach(btn => btn.classList.remove('active'));
+        const activeBtn = document.getElementById(`btn-marker-${type === 'nav' ? 'info' : type}`);
+        if (activeBtn) activeBtn.classList.add('active');
+
+        // Toggle Fields
+        const imgUpload = document.getElementById('marker-image-upload');
+        if (imgUpload) imgUpload.classList.toggle('hidden', type !== 'image');
+        
+        const f3d = document.getElementById('fields-3d');
+        if (f3d) f3d.classList.toggle('hidden', type !== '3d');
+
+        const vWrap = document.getElementById('wrapper-marker-visual');
+        if (vWrap) vWrap.classList.toggle('hidden', type === 'nav');
+        
+        if (type === 'nav') {
+            if (fieldsInfo) fieldsInfo.classList.add('hidden');
+            if (singleProductWrapper) singleProductWrapper.classList.add('hidden');
+            if (multiProductWrapper) multiProductWrapper.classList.add('hidden');
+        }
+        
+        // Perspective setting defaults
+        if (type === '3d' || type === 'image') {
+            inputPerspective.checked = true;
+        } else {
+            inputPerspective.checked = false;
+        }
+        inputPerspective.dispatchEvent(new Event('change'));
+        inputType.dispatchEvent(new Event('change'));
+
+        // Update Instruction/Labels
+        updateLabels();
     }
 
     function hideContextMenu() { ctxMenu.classList.add('hidden'); }
@@ -1000,14 +1311,26 @@
 
     window.handleMenuAction = function(action) {
         hideContextMenu();
-        if (action === 'add_info' || action === 'add_nav' || action === 'add_3d') {
+        if (action === 'add_info' || action === 'add_multi' || action === 'add_nav') {
             let type = 'info';
             if (action === 'add_nav') type = 'nav';
-            if (action === 'add_3d') type = '3d';
+            
+            document.getElementById('input-is-multi').value = (action === 'add_multi' ? '1' : '0');
+            document.getElementById('input-title').value = ''; // Reset first
+            
             if (lastRightClickCoords) {
-                inputType.value = type;
+                setMarkerType(type);
                 openForm('create');
-                inputType.dispatchEvent(new Event('change'));
+                
+                if (action === 'add_multi') {
+                    document.getElementById('input-title').value = "Multi Product Info";
+                    addNewAssetRow();
+                } else if (action === 'add_info') {
+                    document.getElementById('input-title').value = "New Product";
+                } else if (action === 'add_nav') {
+                    document.getElementById('input-title').value = "New Navigation";
+                }
+                
                 pos_x.value = lastRightClickCoords.x; pos_y.value = lastRightClickCoords.y; pos_z.value = lastRightClickCoords.z;
                 updatePosDisplay(lastRightClickCoords.x, lastRightClickCoords.y, lastRightClickCoords.z);
                 
@@ -1038,7 +1361,7 @@
 
     function updatePosDisplay(x, y, z) {
         valX.innerText = x; valY.innerText = y; valZ.innerText = z;
-        const max = 5000;
+        const max = 10000;
         barX.style.width = Math.min(Math.abs(x)/max * 100, 100) + '%';
         barY.style.width = Math.min(Math.abs(y)/max * 100, 100) + '%';
         barZ.style.width = Math.min(Math.abs(z)/max * 100, 100) + '%';
@@ -1056,7 +1379,198 @@
         addNewAssetRow();
     });
 
-    function addNewAssetRow() {
+    document.getElementById('btn-add-product').addEventListener('click', () => {
+        resetProductForm();
+        document.getElementById('product-form-wrap').classList.remove('hidden');
+    });
+
+    document.getElementById('btn-cancel-product').addEventListener('click', () => {
+        document.getElementById('product-form-wrap').classList.add('hidden');
+    });
+
+    document.getElementById('btn-save-product').addEventListener('click', async () => {
+        const id = document.getElementById('edit-product-id').value;
+        const name = document.getElementById('product-name').value;
+        const descId = document.getElementById('product-desc-id-multi').value;
+        const descEn = document.getElementById('product-desc-en-multi').value;
+
+        if (!name) { alert('Nama produk wajib diisi.'); return; }
+        if (!currentUploadInfospotId) { alert('Simpan node dahulu.'); return; }
+
+        try {
+            const url = id 
+                ? `{{ url('admin/infospot-products') }}/${id}` 
+                : `{{ url('admin/infospots') }}/${currentUploadInfospotId}/products`;
+            const method = id ? 'PATCH' : 'POST';
+
+            const res = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                body: JSON.stringify({ name, description_id: descId, description_en: descEn })
+            });
+            const data = await res.json();
+            if (data.success) {
+                if (!id) {
+                    // If newly created, we could automatically switch to edit mode to allow assets
+                    // For now, let's just refresh the product list
+                }
+                document.getElementById('product-form-wrap').classList.add('hidden');
+                loadProducts(currentUploadInfospotId);
+                // Also update the global asset list if we had one (but we removed it)
+                // loadExistingAssets(currentUploadInfospotId);
+            }
+        } catch (e) { alert('Gagal simpan produk.'); }
+    });
+
+    function resetProductForm() {
+        document.getElementById('edit-product-id').value = '';
+        document.getElementById('product-name').value = '';
+        document.getElementById('product-desc-id').value = '';
+        document.getElementById('product-desc-en').value = '';
+        document.getElementById('product-desc-id-multi').value = '';
+        document.getElementById('product-desc-en-multi').value = '';
+        
+        // Reset previews for both modes
+        _updateNarasiPreview('id', '', 'multi');
+        _updateNarasiPreview('en', '', 'multi');
+        _updateNarasiPreview('id', '', 'single');
+        _updateNarasiPreview('en', '', 'single');
+        
+        // Reset assets for product
+        document.getElementById('product-assets-section').classList.add('hidden');
+        document.getElementById('existing-assets-list').innerHTML = '';
+        document.getElementById('new-asset-rows').innerHTML = '';
+        
+        // Reset single product assets
+        document.getElementById('single-existing-assets').innerHTML = '';
+        document.getElementById('single-new-assets').innerHTML = '';
+        document.getElementById('single-existing-assets').classList.add('hidden');
+        document.getElementById('single-no-asset-hint').classList.remove('hidden');
+    }
+
+    let infospotProducts = [];
+
+    async function loadProducts(infospotId) {
+        const isMulti = document.getElementById('input-is-multi').value === '1';
+        const list = document.getElementById('product-list');
+        list.innerHTML = '<p class="text-[7px] text-slate-500 italic text-center py-1">Loading...</p>';
+        
+        try {
+            const res = await fetch(`{{ url('admin/infospots') }}/${infospotId}/products`);
+            const data = await res.json();
+            infospotProducts = data.products || [];
+
+            if (isMulti) {
+                // Multi Product Logic
+                const btnAddProduct = document.getElementById('btn-add-product');
+                if(btnAddProduct) btnAddProduct.classList.remove('hidden');
+
+                if (infospotProducts.length === 0) {
+                    list.innerHTML = '<p class="text-[7px] text-slate-600 italic text-center py-1">No products yet.</p>';
+                } else {
+                    list.innerHTML = infospotProducts.map(p => `
+                        <div class="flex items-center justify-between p-2 bg-slate-800 rounded border border-slate-700 group hover:border-indigo-500/50 transition-all">
+                            <div class="flex flex-col">
+                                <span class="text-[8px] font-bold text-slate-200">${p.name}</span>
+                                <span class="text-[6px] text-slate-500 uppercase tracking-widest">${p.assets_count || 0} Assets</span>
+                            </div>
+                            <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button type="button" onclick="editProduct(${p.id}, '${p.name.replace(/'/g, "\\'")}', '${(p.description_id || "").replace(/'/g, "\\'")}', '${(p.description_en || "").replace(/'/g, "\\'")}')" class="text-indigo-400 hover:text-indigo-300"><i class="fas fa-edit text-[8px]"></i></button>
+                                <button type="button" onclick="deleteProduct(${p.id})" class="text-slate-500 hover:text-rose-400"><i class="fas fa-trash text-[8px]"></i></button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } else {
+                // Single Product Logic
+                if (infospotProducts.length > 0) {
+                    const p = infospotProducts[0];
+                    document.getElementById('edit-product-id').value = p.id;
+                    document.getElementById('product-desc-id').value = p.description_id || '';
+                    document.getElementById('product-desc-en').value = p.description_en || '';
+                    
+                    window._updateNarasiPreview('id', p.description_id || '', 'single');
+                    window._updateNarasiPreview('en', p.description_en || '', 'single');
+                    
+                    // Set as active upload product for assets
+                    currentUploadInfospotId = infospotId;
+                    loadExistingAssets(infospotId, p.id);
+                } else {
+                    // Create placeholder if none exists yet
+                    document.getElementById('product-desc-id').value = '';
+                    document.getElementById('product-desc-en').value = '';
+                    window._updateNarasiPreview('id', '', 'single');
+                    window._updateNarasiPreview('en', '', 'single');
+                }
+            }
+        } catch(e) { console.error('Error loading products:', e); }
+    }
+
+    // Helper: update preview button text
+    window._updateNarasiPreview = function(lang, html, mode = 'single') {
+        const suffix = mode === 'multi' ? '-multi' : '';
+        const tmp   = document.createElement('div');
+        tmp.innerHTML = html || '';
+        const plain = (tmp.innerText || '').trim();
+        const btn   = document.getElementById('btn-open-editor-' + lang + suffix);
+        const prev  = document.getElementById('preview-' + lang + suffix);
+        if (!prev) return;
+        
+        if (plain) {
+            prev.innerText = plain.substring(0, 80) + (plain.length > 80 ? '...' : '');
+            if (btn) btn.classList.add('has-content');
+        } else {
+            prev.innerText = lang === 'id' ? 'Klik untuk menulis narasi...' : 'Click to write narration...';
+            if (btn) btn.classList.remove('has-content');
+        }
+    }
+
+
+    window.editProduct = function(id, name, descId, descEn) {
+        document.getElementById('edit-product-id').value = id;
+        document.getElementById('product-name').value = name;
+        document.getElementById('product-desc-id-multi').value = descId;
+        document.getElementById('product-desc-en-multi').value = descEn;
+        
+        // Update previews
+        _updateNarasiPreview('id', descId, 'multi');
+        _updateNarasiPreview('en', descEn, 'multi');
+
+        document.getElementById('product-form-wrap').classList.remove('hidden');
+        document.getElementById('product-assets-section').classList.remove('hidden');
+        
+        // Reset asset fields for product
+        document.getElementById('new-asset-rows').innerHTML = '';
+        updateAssetUploadVisibility();
+        
+        // Load assets for THIS product
+        loadExistingAssets(currentUploadInfospotId, id);
+    };
+
+    window.deleteProduct = async function(id) {
+        if (!confirm('Hapus produk ini? Assets di dalamnya akan ikut terhapus.')) return;
+        try {
+            await fetch(`{{ url('admin/infospot-products') }}/${id}`, {
+                method: 'DELETE',
+                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+            });
+            loadProducts(currentUploadInfospotId);
+            updateProductSelectors();
+            loadExistingAssets(currentUploadInfospotId);
+        } catch (e) { alert('Gagal hapus.'); }
+    };
+
+    function updateProductSelectors() {
+        document.querySelectorAll('.asset-product-select').forEach(sel => {
+            const currentVal = sel.value;
+            sel.innerHTML = '<option value="">(No Product)</option>' + infospotProducts.map(p => `
+                <option value="${p.id}">${p.name}</option>
+            `).join('');
+            sel.value = currentVal;
+        });
+    }
+
+    function addNewAssetRow(mode = 'multi') {
         const idx = assetRowIndex++;
         const row = document.createElement('div');
         row.className = 'flex flex-col gap-1.5 p-2 bg-slate-800 rounded border border-slate-700';
@@ -1067,7 +1581,7 @@
                     <option value="2d">🖼 2D Image</option>
                     <option value="3d">🧊 3D GLB</option>
                 </select>
-                <button type="button" class="remove-asset-row text-slate-500 hover:text-rose-400 transition-colors">
+                <button type="button" class="remove-asset-row text-slate-500 hover:text-rose-400 transition-colors ml-auto">
                     <i class="fas fa-times text-[10px]"></i>
                 </button>
             </div>
@@ -1079,31 +1593,53 @@
         const fileInput  = row.querySelector('.asset-file');
         typeSelect.addEventListener('change', () => {
             fileInput.accept = typeSelect.value === '3d' ? '.glb' : 'image/*';
-            fileInput.value = '';
         });
+
         row.querySelector('.remove-asset-row').addEventListener('click', () => {
             row.remove();
-            updateAssetUploadVisibility();
+            updateAssetUploadVisibility(mode);
         });
 
-        document.getElementById('new-asset-rows').appendChild(row);
-        updateAssetUploadVisibility();
+        const targetId = mode === 'single' ? 'single-new-assets' : 'new-asset-rows';
+        document.getElementById(targetId).appendChild(row);
+        updateAssetUploadVisibility(mode);
     }
 
-    function updateAssetUploadVisibility() {
-        const hasRows = document.getElementById('new-asset-rows').children.length > 0;
-        document.getElementById('asset-upload-wrap').classList.toggle('hidden', !hasRows);
-        document.getElementById('no-asset-hint').classList.toggle('hidden', hasRows);
+    function updateAssetUploadVisibility(mode = 'multi') {
+        const rowId = mode === 'single' ? 'single-new-assets' : 'new-asset-rows';
+        const wrapId = mode === 'single' ? 'single-upload-wrap' : 'asset-upload-wrap';
+        const hintId = mode === 'single' ? 'single-no-asset-hint' : 'no-asset-hint';
+        
+        const container = document.getElementById(rowId);
+        const wrap = document.getElementById(wrapId);
+        const hint = document.getElementById(hintId);
+        
+        if (container.children.length > 0) {
+            wrap.classList.remove('hidden');
+            if (hint) hint.classList.add('hidden');
+        } else {
+            wrap.classList.add('hidden');
+            if (hint) hint.classList.remove('hidden');
+        }
     }
+
+
 
     // ---- Load existing assets via AJAX ----
-    async function loadExistingAssets(infospotId) {
-        const container = document.getElementById('existing-assets-list');
-        container.innerHTML = '<p class="text-[8px] text-slate-500 italic text-center py-2">Loading...</p>';
+    async function loadExistingAssets(infospotId, productId = null) {
+        const isMulti = document.getElementById('input-is-multi').value === '1';
+        const targetId = isMulti ? 'existing-assets-list' : 'single-existing-assets';
+        const container = document.getElementById(targetId);
+        if (!container) return;
+
+        container.innerHTML = '<p class="text-[8px] text-slate-500 italic text-center py-2">Loading assets...</p>';
         container.classList.remove('hidden');
 
         try {
-            const res = await fetch(`{{ url('admin/infospots') }}/${infospotId}/assets`, {
+            let url = `{{ url('admin/infospots') }}/${infospotId}/assets`;
+            if (productId) url += `?product_id=${productId}`;
+
+            const res = await fetch(url, {
                 headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
             });
             const data = await res.json();
@@ -1127,7 +1663,8 @@
                         : 'bg-blue-900 text-blue-300'
                     } uppercase tracking-widest">${a.file_type === '3d' ? '3D' : '2D'}</span>
                     <span class="text-[8px] text-slate-300 truncate flex-1 min-w-0">${a.label || a.filename}</span>
-                    <button type="button" onclick="deleteAsset(${a.id})" title="Hapus"
+                    ${a.product ? `<span class="text-[7px] text-indigo-400 bg-indigo-900/40 px-1 rounded truncate max-w-[50px] border border-indigo-500/20">${a.product.name}</span>` : ''}
+                    <button type="button" onclick="deleteAsset(${a.id}, ${productId})" title="Hapus"
                         class="shrink-0 text-slate-500 hover:text-rose-400 transition-colors">
                         <i class="fas fa-trash-alt text-[9px]"></i>
                     </button>
@@ -1216,7 +1753,7 @@
     }
 
     // ---- Delete asset ----
-    window.deleteAsset = async function(assetId) {
+    window.deleteAsset = async function(assetId, productId = null) {
         if (!confirm('Hapus asset ini?')) return;
         try {
             const res = await fetch(`{{ url('admin/infospot-assets') }}/${assetId}`, {
@@ -1229,26 +1766,30 @@
             });
             const data = await res.json();
             if (data.success) {
-                document.getElementById(`asset-row-${assetId}`)?.remove();
-                const list = document.getElementById('existing-assets-list');
-                if (!list.querySelector('[id^="asset-row-"]')) {
-                    list.innerHTML = '<p class="text-[8px] text-slate-600 italic text-center py-1">Belum ada asset.</p>';
-                }
+                // Refresh specific product list or loadProducts
+                if (productId) loadExistingAssets(currentUploadInfospotId, productId);
+                loadProducts(currentUploadInfospotId); 
             }
         } catch(e) { alert('Gagal menghapus asset.'); }
     };
 
-    // ---- Upload new assets ----
-    document.getElementById('btn-upload-assets').addEventListener('click', async () => {
+    // ---- Upload new assets (Generic) ----
+    async function performAssetUpload(mode = 'multi') {
         if (!currentUploadInfospotId) { alert('Simpan node dahulu sebelum upload asset.'); return; }
 
-        const rows = document.getElementById('new-asset-rows').querySelectorAll('[data-index]');
+        const rowId = mode === 'single' ? 'single-new-assets' : 'new-asset-rows';
+        const btnId = mode === 'single' ? 'btn-upload-single-assets' : 'btn-upload-assets';
+        const loadingId = mode === 'single' ? 'single-upload-loading' : 'asset-upload-loading';
+
+        const rows = document.getElementById(rowId).querySelectorAll('[data-index]');
         if (rows.length === 0) return;
 
         const formData = new FormData();
         formData.append('_token', '{{ csrf_token() }}');
 
         let hasFile = false;
+        const productId = document.getElementById('edit-product-id').value;
+
         rows.forEach((row, i) => {
             const fileInput = row.querySelector('.asset-file');
             const typeSelect = row.querySelector('.asset-type-select');
@@ -1257,14 +1798,15 @@
                 formData.append(`assets[${i}][file]`, fileInput.files[0]);
                 formData.append(`assets[${i}][file_type]`, typeSelect.value);
                 formData.append(`assets[${i}][label]`, label.value);
+                if (productId) formData.append(`assets[${i}][infospot_product_id]`, productId);
                 hasFile = true;
             }
         });
 
         if (!hasFile) { alert('Pilih minimal satu file.'); return; }
 
-        const btn = document.getElementById('btn-upload-assets');
-        const loading = document.getElementById('asset-upload-loading');
+        const btn = document.getElementById(btnId);
+        const loading = document.getElementById(loadingId);
         btn.classList.add('hidden');
         loading.classList.remove('hidden');
         loading.style.display = 'flex';
@@ -1277,9 +1819,10 @@
             });
             const data = await res.json();
             if (data.success) {
-                document.getElementById('new-asset-rows').innerHTML = '';
-                updateAssetUploadVisibility();
-                loadExistingAssets(currentUploadInfospotId);
+                document.getElementById(rowId).innerHTML = '';
+                updateAssetUploadVisibility(mode);
+                loadExistingAssets(currentUploadInfospotId, productId);
+                loadProducts(currentUploadInfospotId); // Update asset counts
                 showInstruction('ASSETS UPLOADED.');
             } else {
                 alert('Upload gagal: ' + (data.message || 'Unknown error'));
@@ -1290,27 +1833,34 @@
             loading.classList.add('hidden');
             loading.style.display = '';
         }
-    });
+    }
+
+    // Attach listeners
+    const btnMultiUpload = document.getElementById('btn-upload-assets');
+    if (btnMultiUpload) btnMultiUpload.addEventListener('click', () => performAssetUpload('multi'));
+    
+    const btnSingleUpload = document.getElementById('btn-upload-single-assets');
+    if (btnSingleUpload) btnSingleUpload.addEventListener('click', () => performAssetUpload('single'));
 
     function openForm(mode, spot = null) {
-        listState.classList.add('hidden');
-        createForm.classList.remove('hidden');
+        listState.style.display = 'none';
+        createForm.style.display = 'block';
+        
+        // Always reset basic product form fields first
+        resetProductForm();
+
         if (mode === 'create') {
             titleHeader.innerText = inputType.value === '3d' ? "New 3D Object" : "New Node";
             formEl.reset();
-            document.getElementById('input-desc-id').value = '';
-            document.getElementById('input-desc-en').value = '';
-            // Reset asset panel
-            document.getElementById('existing-assets-list').innerHTML = '';
-            document.getElementById('existing-assets-list').classList.add('hidden');
-            document.getElementById('new-asset-rows').innerHTML = '';
-            document.getElementById('asset-upload-wrap').classList.add('hidden');
-            document.getElementById('no-asset-hint').classList.remove('hidden');
             currentUploadInfospotId = null;
             methodPut.innerHTML = '';
             formEl.action = "{{ route('admin.scenes.infospots.store', $scene) }}";
             formDelete.classList.add('hidden');
             
+            const isMulti = document.getElementById('input-is-multi').value === '1';
+            document.getElementById('single-product-wrapper').classList.toggle('hidden', isMulti);
+            document.getElementById('multi-product-wrapper').classList.toggle('hidden', !isMulti);
+
             // Reset 3D Model Field
             inputModelFile.value = '';
             currentModelInfo.classList.add('hidden');
@@ -1321,13 +1871,14 @@
             }
             inputPerspective.dispatchEvent(new Event('change'));
         } else {
-            titleHeader.innerText = spot.type === '3d' ? "3D Object Inspector" : "Inspector";
-            inputType.value = spot.type;
-            inputType.dispatchEvent(new Event('change'));
+            titleHeader.innerText = spot.type === '3d' ? "3D Object Inspector" : (spot.type === 'image' ? "2D Image Inspector" : "Inspector");
+            setMarkerType(spot.type);
             
-            // Handle 3D Model Info in Edit mode
+            // Handle 3D/Image Model Info in Edit mode
             inputModelFile.value = '';
-            if (spot.type === '3d' && spot.model_path) {
+            document.getElementById('input-marker-image').value = '';
+            
+            if ((spot.type === '3d' || spot.type === 'image') && spot.model_path) {
                 currentModelInfo.classList.remove('hidden');
                 currentModelName.innerText = spot.model_path.split('/').pop();
             } else {
@@ -1344,21 +1895,32 @@
             
             document.getElementById('input-title').value = spot.title || '';
             document.getElementById('input-target').value = spot.target_scene_id || '';
-            document.getElementById('input-desc-id').value = spot.content_id || '';
-            document.getElementById('input-desc-en').value = spot.content_en || '';
-            // Update narasi preview buttons
-            _updateNarasiPreview('id', spot.content_id || '');
-            _updateNarasiPreview('en', spot.content_en || '');
+            document.getElementById('input-is-multi').value = spot.is_multi ? '1' : '0';
 
-            // Load existing assets
-            loadExistingAssets(spot.id);
+            // Toggle wrappers
+            const isMultiMode = !!spot.is_multi;
+            document.getElementById('single-product-wrapper').classList.toggle('hidden', isMultiMode);
+            document.getElementById('multi-product-wrapper').classList.toggle('hidden', !isMultiMode);
 
-            // Reset new-file rows
-            document.getElementById('new-asset-rows').innerHTML = '';
-            document.getElementById('asset-upload-wrap').classList.add('hidden');
-            document.getElementById('no-asset-hint').classList.remove('hidden');
+            // Load existing products
+            loadProducts(spot.id);
+
+            // Populate Position Sliders
+            document.getElementById('slider-px').value = spot.position_x;
+            document.getElementById('slider-py').value = spot.position_y;
+            document.getElementById('slider-pz').value = spot.position_z;
+
+            // Populate Transformation Sliders
+            inputRx.value = spot.rotation_x || 0;
+            inputRy.value = spot.rotation_y || 0;
+            inputRz.value = spot.rotation_z || 0;
+            inputSx.value = spot.scale_x || 1;
+            inputSy.value = spot.scale_y || 1;
+
+            // Trigger preview update
+            updateRealtimePreview();
+
             currentUploadInfospotId = spot.id;
-
             methodPut.innerHTML = '<input type="hidden" name="_method" value="PUT">';
             formEl.action = `{{ url('admin/infospots') }}/${spot.id}`; 
             formDelete.action = `{{ url('admin/infospots') }}/${spot.id}`;
@@ -1368,15 +1930,49 @@
 
     window.editInfospot = function(id, spotData) {
         editingId = id;
+        
+        // Capture original state for revert on cancel
+        originalSpotState = {
+            position_x: spotData.position_x,
+            position_y: spotData.position_y,
+            position_z: spotData.position_z,
+            rotation_x: spotData.rotation_x || 0,
+            rotation_y: spotData.rotation_y || 0,
+            rotation_z: spotData.rotation_z || 0,
+            scale_x: spotData.scale_x || 1,
+            scale_y: spotData.scale_y || 1,
+            is_perspective: !!spotData.is_perspective
+        };
+
         viewer.tweenControlCenter(new THREE.Vector3(spotData.position_x, spotData.position_y, spotData.position_z), 500);
         openForm('edit', spotData);
     };
 
     window.cancelForm = function() {
-        createForm.classList.add('hidden');
-        listState.classList.remove('hidden');
+        // If we were editing, revert changes to the marker
+        if (editingId && renderedSpots[editingId] && originalSpotState) {
+            const marker = renderedSpots[editingId];
+            const s = originalSpotState;
+            
+            marker.position.set(s.position_x, s.position_y, s.position_z);
+            if (marker.isPerspectiveMesh) marker.baseY = s.position_y;
+            
+            if (marker.is3DModel && marker.modelObj) {
+                marker.modelObj.position.copy(marker.position);
+                marker.modelObj.rotation.set(s.rotation_x, s.rotation_y, s.rotation_z);
+                const scaleVal = 1000;
+                marker.modelObj.scale.set(s.scale_x * scaleVal, s.scale_y * scaleVal, (s.scale_z || s.scale_x) * scaleVal);
+            } else if (marker.isPerspectiveMesh) {
+                marker.rotation.set(s.rotation_x, s.rotation_y, s.rotation_z);
+                marker.scale.set(s.scale_x, s.scale_y, 1);
+            }
+        }
+
+        createForm.style.display = 'none';
+        listState.style.display = 'block';
         titleHeader.innerText = "Inspector";
         editingId = null;
+        originalSpotState = null;
         if(ghostMarker && ghostMarker.parent) panorama.remove(ghostMarker);
         coordDisplay.classList.add('hidden');
     };
@@ -1409,6 +2005,7 @@
                 const p = panoramaIntersects[0].point;
                 const x = Math.round(p.x), y = Math.round(p.y), z = Math.round(p.z);
                 dragMarker.position.set(x, y, z);
+                if (dragMarker.baseY !== undefined) dragMarker.baseY = y; // Update base for 2D bounce
                 updatePosDisplay(x, y, z);
                 pos_x.value = x; pos_y.value = y; pos_z.value = z;
             }
@@ -1625,6 +2222,7 @@
     /* ---- Quill Editor Popup Logic ---- */
     let _quill = null;
     let _quillLang = null; // 'id' or 'en'
+    let _quillMode = 'single'; // 'single' or 'multi'
 
     // Init Quill once DOM is ready
     document.addEventListener('DOMContentLoaded', () => {
@@ -1643,9 +2241,11 @@
         });
     });
 
-    window.openQuillEditor = function(lang) {
+    window.openQuillEditor = function(lang, mode = 'single') {
         _quillLang = lang;
-        const textarea = document.getElementById('input-desc-' + lang);
+        _quillMode = mode;
+        const suffix = mode === 'multi' ? '-multi' : '';
+        const textarea = document.getElementById('product-desc-' + lang + suffix);
         const isId = lang === 'id';
 
         // Set popup title
@@ -1668,23 +2268,26 @@
     window.applyQuillContent = function() {
         if (!_quillLang) return;
         const html = _quill.root.innerHTML;
+        const suffix = _quillMode === 'multi' ? '-multi' : '';
 
         // Write to hidden textarea
-        document.getElementById('input-desc-' + _quillLang).value = html;
+        document.getElementById('product-desc-' + _quillLang + suffix).value = html;
 
         // Update preview button text (strip tags for preview)
         const plain = _quill.getText().trim();
-        const btnId = 'btn-open-editor-' + _quillLang;
-        const prevId = 'preview-' + _quillLang;
+        const btnId = 'btn-open-editor-' + _quillLang + suffix;
+        const prevId = 'preview-' + _quillLang + suffix;
         const btn    = document.getElementById(btnId);
         const prev   = document.getElementById(prevId);
 
-        if (plain) {
-            prev.innerText = plain.substring(0, 80) + (plain.length > 80 ? '...' : '');
-            btn.classList.add('has-content');
-        } else {
-            prev.innerText = _quillLang === 'id' ? 'Klik untuk menulis narasi...' : 'Click to write narration...';
-            btn.classList.remove('has-content');
+        if (prev) {
+            if (plain) {
+                prev.innerText = plain.substring(0, 80) + (plain.length > 80 ? '...' : '');
+                if (btn) btn.classList.add('has-content');
+            } else {
+                prev.innerText = _quillLang === 'id' ? 'Klik untuk menulis narasi...' : 'Click to write narration...';
+                if (btn) btn.classList.remove('has-content');
+            }
         }
 
         closeQuillEditor();
@@ -1695,22 +2298,6 @@
         if (e.target === document.getElementById('quill-popup-overlay')) closeQuillEditor();
     });
 
-    // Helper: update preview button after loading spot
-    window._updateNarasiPreview = function(lang, html) {
-        const tmp   = document.createElement('div');
-        tmp.innerHTML = html || '';
-        const plain = (tmp.innerText || '').trim();
-        const btn   = document.getElementById('btn-open-editor-' + lang);
-        const prev  = document.getElementById('preview-' + lang);
-        if (!btn || !prev) return;
-        if (plain) {
-            prev.innerText = plain.substring(0, 80) + (plain.length > 80 ? '...' : '');
-            btn.classList.add('has-content');
-        } else {
-            prev.innerText = lang === 'id' ? 'Klik untuk menulis narasi...' : 'Click to write narration...';
-            btn.classList.remove('has-content');
-        }
-    }
 </script>
 
 @endsection

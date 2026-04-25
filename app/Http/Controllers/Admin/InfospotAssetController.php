@@ -13,16 +13,23 @@ class InfospotAssetController extends Controller
     /**
      * List assets for a given infospot (JSON for AJAX).
      */
-    public function index(Infospot $infospot)
+    public function index(Request $request, Infospot $infospot)
     {
-        $assets = $infospot->assets()->get()->map(fn ($a) => [
+        $query = $infospot->assets();
+        
+        if ($request->has('product_id')) {
+            $query->where('infospot_product_id', $request->product_id);
+        }
+
+        $assets = $query->with('product')->get()->map(fn ($a) => [
             'id'        => $a->id,
             'file_type' => $a->file_type,
             'file_path' => $a->file_path,
             'filename'  => basename($a->file_path),
-            'label'     => $a->label,
-            'url'       => asset('storage/' . $a->file_path),
-            'sort_order'=> $a->sort_order,
+            'label'          => $a->label,
+            'url'            => asset('storage/' . $a->file_path),
+            'sort_order'     => $a->sort_order,
+            'product'        => $a->product ? ['id' => $a->product->id, 'name' => $a->product->name] : null,
         ]);
 
         return response()->json(['assets' => $assets]);
@@ -39,6 +46,7 @@ class InfospotAssetController extends Controller
             'assets.*.file'       => 'required|file|max:102400', // 100MB max
             'assets.*.file_type'  => 'required|in:3d,2d',
             'assets.*.label'      => 'nullable|string|max:255',
+            'assets.*.infospot_product_id' => 'nullable|integer|exists:infospot_products,id',
         ]);
 
         $lastOrder = $infospot->assets()->max('sort_order') ?? -1;
@@ -57,10 +65,11 @@ class InfospotAssetController extends Controller
             $path   = $file->store($folder, 'public');
 
             $infospot->assets()->create([
-                'file_type'  => $type,
-                'file_path'  => $path,
-                'label'      => $label,
-                'sort_order' => ++$lastOrder,
+                'file_type'      => $type,
+                'file_path'      => $path,
+                'label'          => $label,
+                'infospot_product_id' => $meta['infospot_product_id'] ?? null,
+                'sort_order'     => ++$lastOrder,
             ]);
         }
 
