@@ -318,7 +318,7 @@
                 width: 80px;
                 height: 55px;
             }
-            
+
             #scene-list-panel {
                 /* Mobile Exactly 4 items: (55px * 4) + (6px * 3 gaps) = 220 + 18 = 238px */
                 max-height: 238px !important;
@@ -418,7 +418,8 @@
         .res-sidebar-panel {
             position: absolute;
             left: calc(100% + 12px);
-            top: -10px; /* Slight offset up for better centering */
+            top: -10px;
+            /* Slight offset up for better centering */
             background: rgba(15, 23, 42, 0.95);
             backdrop-filter: blur(30px);
             -webkit-backdrop-filter: blur(30px);
@@ -495,7 +496,7 @@
                 left: calc(100% + 8px);
                 top: -8px;
             }
-            
+
             .res-sidebar-panel::before {
                 font-size: 6px;
                 margin-bottom: 1px;
@@ -530,8 +531,17 @@
 
         /* Enhanced VO Animation */
         @keyframes vo-play-energetic {
-            0%, 100% { transform: scale(1); filter: brightness(1); }
-            50% { transform: scale(1.3); filter: brightness(1.1) drop-shadow(0 0 5px rgba(255,255,255,0.5)); }
+
+            0%,
+            100% {
+                transform: scale(1);
+                filter: brightness(1);
+            }
+
+            50% {
+                transform: scale(1.3);
+                filter: brightness(1.1) drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
+            }
         }
 
         #btn-play i {
@@ -641,22 +651,24 @@
                                 <button id="btn-tab-researcher"
                                     class="px-3 py-2 rounded-md bg-white/5 border border-white/10 text-[9px] font-bold text-slate-400 uppercase tracking-widest hover:bg-white/10 transition-all [&.active]:bg-emerald-500/20 [&.active]:border-emerald-500/50 [&.active]:text-emerald-400"
                                     onclick="switchTab('researcher')">
-                                    <i class="fas fa-user-tie md:mr-1"></i> <span class="hidden md:inline">Researcher</span>
+                                    <i class="fas fa-user-tie md:mr-1"></i> <span
+                                        class="hidden md:inline">Researcher</span>
                                 </button>
                                 <button id="btn-tab-contact"
                                     class="px-3 py-2 rounded-md bg-white/5 border border-white/10 text-[9px] font-bold text-slate-400 uppercase tracking-widest hover:bg-white/10 transition-all [&.active]:bg-sky-500/20 [&.active]:border-sky-500/50 [&.active]:text-sky-400"
                                     onclick="switchTab('contact')">
-                                    <i class="fas fa-address-book md:mr-1"></i> <span class="hidden md:inline">Contact</span>
+                                    <i class="fas fa-address-book md:mr-1"></i> <span
+                                        class="hidden md:inline">Contact</span>
                                 </button>
                             </div>
 
                             <!-- VO Controls Template -->
-                            <div id="vo-controls-wrapper" class="flex items-center h-full animate-fade-in pl-2 gap-1.5">
+                            <div id="vo-controls-wrapper" class="flex items-center h-full animate-fade-in gap-1.5">
                                 <button id="btn-play"
-                                    class="w-7 h-7 flex items-center justify-center bg-white text-black rounded-md text-[11px] cursor-pointer hover:bg-white/90 transition-all shadow-sm"
+                                    class="w-7 h-full flex items-center justify-center bg-white text-black text-[11px] cursor-pointer hover:bg-white/90 transition-all shadow-sm"
                                     onclick="playNarration()"><i class="fas fa-volume-up"></i></button>
                                 <button id="btn-stop"
-                                    class="w-7 h-7 flex items-center justify-center bg-white text-black rounded-md text-[11px] cursor-pointer hidden hover:bg-white/90 transition-all shadow-sm"
+                                    class="w-7 h-full flex items-center justify-center bg-white text-black text-[11px] cursor-pointer hidden hover:bg-white/90 transition-all shadow-sm"
                                     onclick="stopNarration()"><i class="fas fa-stop"></i></button>
                             </div>
                         </div>
@@ -729,7 +741,7 @@
                                 title="Quality Selection">
                                 <span id="res-active-label" class="text-[10px] font-black text-primary">SD</span>
                             </button>
-                            
+
                             <div id="res-sidebar-panel" class="res-sidebar-panel minimized">
                                 <div class="res-row">
                                     <button data-res="low">SD</button>
@@ -1019,7 +1031,7 @@
             pano.loadStage = 0; // 0: low, 1: mid, 2: high
             pano.cachedTextures = {}; // Store textures for switching back
             panoramas[sceneId] = pano;
-            
+
             textureLoader.load(lowUrl, (tex) => {
                 tex.generateMipmaps = false;
                 tex.minFilter = THREE.LinearFilter;
@@ -1028,7 +1040,7 @@
 
             pano.addEventListener('load', () => {
                 if (pano.material) pano.material.depthWrite = false;
-                
+
                 // CRITICAL: Panolens' internal loader might finish LATER than our custom upgrade.
                 // We must re-apply the target texture after the 'load' event to ensure it isn't overwritten.
                 const targetStage = selectedResolution === 'low' ? 0 : (selectedResolution === 'medium' ? 1 : 2);
@@ -1046,7 +1058,7 @@
                 pano.cachedTextures[stage] = texture;
 
                 const targetStage = selectedResolution === 'low' ? 0 : (selectedResolution === 'medium' ? 1 : 2);
-                
+
                 // Apply if it's the target stage, OR if it's an upgrade towards the target
                 if (stage === targetStage || (stage < targetStage && stage > pano.loadStage)) {
                     console.log(`- ${stageName} applied for ${sceneData.name}`);
@@ -1458,8 +1470,9 @@
                         viewer.setPanorama(pano);
 
                         // Check for upgrade on current pano every time we enter
-                        const targetStage = selectedResolution === 'low' ? 0 : (selectedResolution === 'medium' ? 1 : 2);
-                        
+                        const targetStage = selectedResolution === 'low' ? 0 : (selectedResolution === 'medium' ?
+                            1 : 2);
+
                         if (pano.loadStage < targetStage) {
                             // If we have it in cache, apply immediately
                             if (pano.cachedTextures && pano.cachedTextures[targetStage]) {
@@ -1656,7 +1669,8 @@
 
             // Sync button state on system fullscreen change
             const syncFS = () => {
-                const fse = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+                const fse = document.fullscreenElement || document.webkitFullscreenElement || document
+                    .mozFullScreenElement || document.msFullscreenElement;
                 const isPseudo = document.documentElement.classList.contains('pseudo-fullscreen');
                 const fsBtn = document.getElementById('toggle-fullscreen');
                 if (fsBtn) fsBtn.classList.toggle('btn-active', !!fse || isPseudo);
@@ -1705,13 +1719,19 @@
 
                         if (viewer && viewer.panorama) {
                             const curPano = viewer.panorama;
-                            if (res === 'low' && curPano.cachedTextures[0]) _applyTextureToPano(curPano, curPano.cachedTextures[0], 0);
-                            else if (res === 'medium' && curPano.cachedTextures[1]) _applyTextureToPano(curPano, curPano.cachedTextures[1], 1);
-                            else if (res === 'high' && curPano.cachedTextures[2]) _applyTextureToPano(curPano, curPano.cachedTextures[2], 2);
+                            if (res === 'low' && curPano.cachedTextures[0]) _applyTextureToPano(curPano,
+                                curPano.cachedTextures[0], 0);
+                            else if (res === 'medium' && curPano.cachedTextures[1]) _applyTextureToPano(
+                                curPano, curPano.cachedTextures[1], 1);
+                            else if (res === 'high' && curPano.cachedTextures[2]) _applyTextureToPano(
+                                curPano, curPano.cachedTextures[2], 2);
 
-                            if ((res === 'medium' && curPano.loadStage < 1) || (res === 'high' && curPano.loadStage < 2)) _forceUpgrade(curPano);
+                            if ((res === 'medium' && curPano.loadStage < 1) || (res === 'high' &&
+                                    curPano.loadStage < 2)) _forceUpgrade(curPano);
 
-                            if ((res === 'low') || (res === 'medium' && curPano.loadStage >= 1) || (res === 'high' && curPano.loadStage >= 2)) hdLoader.classList.remove('visible');
+                            if ((res === 'low') || (res === 'medium' && curPano.loadStage >= 1) || (
+                                    res === 'high' && curPano.loadStage >= 2)) hdLoader.classList
+                                .remove('visible');
                             else hdLoader.classList.add('visible');
 
                             _updateAllPanoramas();
