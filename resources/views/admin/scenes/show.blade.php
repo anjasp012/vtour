@@ -71,7 +71,7 @@
                 
                 <div class="space-y-1.5" id="infospots-list-container">
                     @forelse($scene->infospots as $spot)
-                        <button onclick="editInfospot({{ $spot->id }}, {{ json_encode($spot) }})" class="w-full flex items-center justify-between p-3 bg-white border border-slate-100 rounded-lg hover:border-blue-500 hover:bg-blue-50/10 transition-all group text-left shadow-sm">
+                        <button id="spot-card-{{ $spot->id }}" onclick="editInfospot({{ $spot->id }}, {{ json_encode($spot) }})" class="spot-card-btn w-full flex items-center justify-between p-3 bg-white border border-slate-100 rounded-lg hover:border-blue-500 hover:bg-blue-50/10 transition-all group text-left shadow-sm">
                             <div class="flex items-center gap-3">
                                 <div class="w-8 h-8 {{ $spot->type == 'info' ? 'bg-blue-50 text-blue-600' : ($spot->type == '3d' ? 'bg-purple-50 text-purple-600' : 'bg-slate-100 text-slate-600') }} rounded flex items-center justify-center text-[10px] shadow-inner">
                                     <i class="fas {{ $spot->type == 'info' ? 'fa-info' : ($spot->type == '3d' ? 'fa-cube' : 'fa-location-arrow') }}"></i>
@@ -322,6 +322,11 @@
                     <style>
                         .marker-type-btn.active { @apply border-blue-600 bg-blue-50 ring-4 ring-blue-100; }
                         .marker-type-btn.active span { @apply text-blue-600; }
+                        .spot-card-btn.active { 
+                            border-color: #2563eb !important; 
+                            background-color: #eff6ff !important; 
+                            box-shadow: 0 0 0 4px #dbeafe !important;
+                        }
                     </style>
 
                     <!-- 3. Navigation Section -->
@@ -747,24 +752,6 @@
     const panorama = new PANOLENS.ImagePanorama('{{ Storage::url($scene->high_res_path) }}');
     viewer.add(panorama);
 
-    // Selection Indicator Ring
-    let selectionRing = null;
-    function initSelectionRing() {
-        const geometry = new THREE.RingGeometry(400, 480, 32);
-        const material = new THREE.MeshBasicMaterial({ 
-            color: 0x6366f1, 
-            side: THREE.DoubleSide, 
-            transparent: true, 
-            opacity: 0.8,
-            depthTest: false
-        });
-        selectionRing = new THREE.Mesh(geometry, material);
-        selectionRing.visible = false;
-        selectionRing.renderOrder = 10001;
-        panorama.add(selectionRing);
-    }
-    initSelectionRing();
-
     // Apply saved initial view in Editor
     panorama.addEventListener('load', () => {
         if (panorama.material) panorama.material.depthWrite = false;
@@ -843,19 +830,6 @@
                 }
             }
         });
-
-        // Update Selection Ring
-        if (selectionRing && selectionRing.visible && editingId) {
-            const marker = renderedSpots[editingId];
-            if (marker) {
-                selectionRing.position.copy(marker.position);
-                selectionRing.lookAt(viewer.getCamera().position);
-                const s = 1 + Math.sin(Date.now() * 0.005) * 0.15;
-                selectionRing.scale.set(s, s, s);
-            } else {
-                selectionRing.visible = false;
-            }
-        }
     }
     animate3d();
 
@@ -2075,6 +2049,14 @@
     window.editInfospot = function(id, spotData) {
         editingId = id;
         
+        // UI Indicator: highlight active card
+        document.querySelectorAll('.spot-card-btn').forEach(btn => btn.classList.remove('active'));
+        const activeCard = document.getElementById('spot-card-' + id);
+        if (activeCard) {
+            activeCard.classList.add('active');
+            activeCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        
         // Capture original state for revert on cancel
         originalSpotState = {
             position_x: spotData.position_x,
@@ -2089,22 +2071,6 @@
         };
 
         viewer.tweenControlCenter(new THREE.Vector3(spotData.position_x, spotData.position_y, spotData.position_z), 500);
-        
-        // Show selection ring
-        if (selectionRing) {
-            selectionRing.visible = true;
-            selectionRing.position.set(spotData.position_x, spotData.position_y, spotData.position_z);
-        }
-
-        // Highlight in sidebar list
-        document.querySelectorAll('#infospots-list-container button').forEach(btn => {
-            btn.classList.remove('ring-2', 'ring-indigo-500', 'bg-indigo-50/30', 'border-indigo-200');
-        });
-        const activeBtn = Array.from(document.querySelectorAll('#infospots-list-container button')).find(btn => btn.getAttribute('onclick').includes(`editInfospot(${id}`));
-        if (activeBtn) {
-            activeBtn.classList.add('ring-2', 'ring-indigo-500', 'bg-indigo-50/30', 'border-indigo-200');
-        }
-
         openForm('edit', spotData);
     };
 
@@ -2131,18 +2097,14 @@
         createForm.style.display = 'none';
         listState.style.display = 'block';
         titleHeader.innerText = "Inspector";
+        
+        // Clear active card indicator
+        document.querySelectorAll('.spot-card-btn').forEach(btn => btn.classList.remove('active'));
+        
         editingId = null;
         originalSpotState = null;
         if(ghostMarker && ghostMarker.parent) panorama.remove(ghostMarker);
         coordDisplay.classList.add('hidden');
-
-        // Hide selection ring
-        if (selectionRing) selectionRing.visible = false;
-
-        // Remove sidebar highlight
-        document.querySelectorAll('#infospots-list-container button').forEach(btn => {
-            btn.classList.remove('ring-2', 'ring-indigo-500', 'bg-indigo-50/30', 'border-indigo-200');
-        });
     };
 
     function showInstruction(msg) {
