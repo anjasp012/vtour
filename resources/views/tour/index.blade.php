@@ -271,14 +271,15 @@
             scrollbar-color: #6366f1 rgba(255, 255, 255, 0.1);
             overscroll-behavior: contain;
             -webkit-overflow-scrolling: touch;
-            /* Exactly 10 items: (65px * 10) + (6px * 9 gaps) = 650 + 54 = 704px */
-            max-height: 704px;
+            /* Exactly 8 items: (65px * 8) + (6px * 7 gaps) = 520 + 42 = 562px */
+            /* We also limit to 60vh to ensure it doesn't go off-screen on smaller monitors */
+            max-height: min(562px, 60vh);
+            overflow-y: auto !important;
             padding-right: 8px;
         }
 
         #scene-list-panel::-webkit-scrollbar {
             width: 6px;
-            display: block;
         }
 
         #scene-list-panel::-webkit-scrollbar-track {
@@ -530,7 +531,7 @@
         /* Enhanced VO Animation */
         @keyframes vo-play-energetic {
             0%, 100% { transform: scale(1); filter: brightness(1); }
-            50% { transform: scale(1.3); filter: brightness(1.5) drop-shadow(0 0 12px #6366f1); }
+            50% { transform: scale(1.3); filter: brightness(1.1) drop-shadow(0 0 5px rgba(255,255,255,0.5)); }
         }
 
         #btn-play i {
@@ -541,7 +542,6 @@
         #btn-stop i {
             animation: vo-play-energetic 0.6s infinite ease-in-out;
             display: inline-block;
-            color: #f43f5e; /* rose-500 */
         }
     </style>
 </head>
@@ -651,12 +651,12 @@
                             </div>
 
                             <!-- VO Controls Template -->
-                            <div id="vo-controls-wrapper" class="flex items-center h-full animate-fade-in pl-1">
+                            <div id="vo-controls-wrapper" class="flex items-center h-full animate-fade-in pl-2 gap-1.5">
                                 <button id="btn-play"
-                                    class="py-1.5 px-3 flex items-center justify-center text-primary text-[10px] cursor-pointer hover:bg-primary/20 transition-all h-full"
-                                    onclick="playNarration()"><i class="fas fa-play"></i></button>
+                                    class="w-7 h-7 flex items-center justify-center bg-white text-black rounded-md text-[11px] cursor-pointer hover:bg-white/90 transition-all shadow-sm"
+                                    onclick="playNarration()"><i class="fas fa-volume-up"></i></button>
                                 <button id="btn-stop"
-                                    class="py-1.5 px-3 flex items-center justify-center text-rose-500 text-[10px] cursor-pointer hidden hover:bg-rose-500/20 transition-all h-full"
+                                    class="w-7 h-7 flex items-center justify-center bg-white text-black rounded-md text-[11px] cursor-pointer hidden hover:bg-white/90 transition-all shadow-sm"
                                     onclick="stopNarration()"><i class="fas fa-stop"></i></button>
                             </div>
                         </div>
@@ -743,7 +743,7 @@
 
                 <!-- Scene List Sidebar (Toggleable, Below controls) -->
                 <div id="scene-list-panel"
-                    class="flex flex-col gap-[6px] max-h-[calc(100vh-250px)] overflow-y-auto transition-all duration-500 ease-in-out [&.minimized]:opacity-0 [&.minimized]:-translate-x-[40px] [&.minimized]:pointer-events-none [&.minimized]:blur-[10px]">
+                    class="flex flex-col gap-[6px] transition-all duration-500 ease-in-out [&.minimized]:opacity-0 [&.minimized]:-translate-x-[40px] [&.minimized]:pointer-events-none [&.minimized]:blur-[10px]">
                     <!-- Items dynamic -->
                 </div>
             </div>
