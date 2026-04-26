@@ -527,21 +527,50 @@
             }
         }
 
-        /* VO Animation */
-        @keyframes vo-play-pulse {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.2); opacity: 0.7; }
-            100% { transform: scale(1); opacity: 1; }
+        /* Enhanced VO Animation */
+        @keyframes vo-ripple {
+            0% { transform: scale(0.8); opacity: 0.8; }
+            100% { transform: scale(1.8); opacity: 0; }
+        }
+
+        @keyframes vo-play-energetic {
+            0%, 100% { transform: scale(1); filter: brightness(1); }
+            50% { transform: scale(1.25); filter: brightness(1.4) drop-shadow(0 0 8px #6366f1); }
+        }
+
+        #btn-play {
+            position: relative;
+        }
+
+        #btn-play::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            border: 2px solid #6366f1;
+            animation: vo-ripple 2s infinite;
+            pointer-events: none;
         }
 
         #btn-play i {
-            animation: vo-play-pulse 1.5s infinite ease-in-out;
+            animation: vo-play-energetic 1.5s infinite ease-in-out;
             display: inline-block;
         }
 
         #btn-stop i {
-            animation: vo-play-pulse 0.8s infinite ease-in-out;
+            animation: vo-play-energetic 0.6s infinite ease-in-out;
             display: inline-block;
+            color: #f43f5e; /* rose-500 */
+        }
+
+        #btn-stop::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            border: 2px solid #f43f5e;
+            animation: vo-ripple 1s infinite;
+            pointer-events: none;
         }
     </style>
 </head>
