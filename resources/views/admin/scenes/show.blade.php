@@ -1934,7 +1934,7 @@
                                 <span class="text-[6px] text-slate-500 uppercase tracking-widest">${p.assets_count || 0} Assets</span>
                             </div>
                             <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button type="button" onclick="editProduct(${p.id}, '${p.name.replace(/'/g, "\\'")}', '${(p.description_id || "").replace(/'/g, "\\'")}', '${(p.description_en || "").replace(/'/g, "\\'")}', '${(p.researcher || "").replace(/'/g, "\\'")}', '${(p.contact_person || "").replace(/'/g, "\\'")}')" class="text-indigo-400 hover:text-indigo-300"><i class="fas fa-edit text-[8px]"></i></button>
+                                <button type="button" onclick="editProductFromList(${p.id})" class="text-indigo-400 hover:text-indigo-300"><i class="fas fa-edit text-[8px]"></i></button>
                                 <button type="button" onclick="deleteProduct(${p.id})" class="text-slate-500 hover:text-rose-400"><i class="fas fa-trash text-[8px]"></i></button>
                             </div>
                         </div>
@@ -1973,9 +1973,12 @@
             }
         }
 
-        // Helper: update preview button text
-
-
+        window.editProductFromList = function(id) {
+            const p = infospotProducts.find(item => item.id == id);
+            if (p) {
+                editProduct(p.id, p.name, p.description_id, p.description_en, p.researcher, p.contact_person);
+            }
+        };
 
         window.editProduct = function(id, name, descId, descEn, researcher, contact) {
             document.getElementById('edit-product-id').value = id;
