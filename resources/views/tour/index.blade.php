@@ -268,14 +268,12 @@
            ============================================= */
         #scene-list-panel {
             scrollbar-width: thin;
-            scrollbar-color: #6366f1 transparent;
+            scrollbar-color: #6366f1 rgba(255, 255, 255, 0.1);
             overscroll-behavior: contain;
             -webkit-overflow-scrolling: touch;
-            /* Desktop: (65px * 4) + (6px * 3 gaps) = 260 + 18 = 278px */
+            /* Exactly 4 items: (65px * 4) + (6px * 3 gaps) = 260 + 18 = 278px */
             max-height: 278px;
-            /* Fade effect at bottom to indicate more content */
-            mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
-            -webkit-mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
+            padding-right: 8px;
         }
 
         #scene-list-panel::-webkit-scrollbar {
@@ -284,14 +282,15 @@
         }
 
         #scene-list-panel::-webkit-scrollbar-track {
-            background: transparent;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            margin: 2px 0;
         }
 
         #scene-list-panel::-webkit-scrollbar-thumb {
             background: #6366f1;
-            border-radius: 20px;
-            /* Using border to make the thumb appear shorter/smaller and 'floating' */
-            border: 2px solid rgba(15, 23, 42, 0.95);
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.4);
         }
 
         #scene-list-panel::-webkit-scrollbar-thumb:hover {
@@ -320,7 +319,7 @@
             }
             
             #scene-list-panel {
-                /* Mobile: (55px * 4) + (6px * 3 gaps) = 220 + 18 = 238px */
+                /* Mobile Exactly 4 items: (55px * 4) + (6px * 3 gaps) = 220 + 18 = 238px */
                 max-height: 238px !important;
                 scroll-snap-type: y mandatory;
             }
