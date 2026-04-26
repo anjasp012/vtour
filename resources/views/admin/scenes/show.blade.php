@@ -1020,6 +1020,12 @@
         sunLight.position.set(1000, 2000, 1000);
         viewer.add(sunLight);
 
+        // Invert scroll zoom direction: scroll forward = zoom out, scroll backward = zoom in
+        const controls = viewer.getControl();
+        const originalDollyIn = controls.dollyIn;
+        controls.dollyIn = controls.dollyOut;
+        controls.dollyOut = originalDollyIn;
+
 
 
         const panorama = new PANOLENS.ImagePanorama('{{ Storage::url($scene->high_res_path) }}');
