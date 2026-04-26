@@ -268,6 +268,8 @@
            ============================================= */
         #scene-list-panel {
             scrollbar-width: none;
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
         }
 
         #scene-list-panel::-webkit-scrollbar {
@@ -285,6 +287,7 @@
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             background: rgba(0, 0, 0, 0.5);
             flex-shrink: 0;
+            scroll-snap-align: start;
         }
 
         /* Mobile adjustment for scene-card */
@@ -292,6 +295,12 @@
             .scene-card {
                 width: 80px;
                 height: 55px;
+            }
+            
+            #scene-list-panel {
+                /* Height calculation for 3.5 scenes: (55px * 3.5) + (6px * 3 gaps) = 192.5 + 18 = 210.5px */
+                max-height: 211px !important;
+                scroll-snap-type: y mandatory;
             }
         }
 
