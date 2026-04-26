@@ -864,7 +864,7 @@
         const UNIFORM_SIZE = 500;
         let currentSceneData = null;
 
-        async function createStyledIcon(iconString, color = '#6366f1', rotation = 0) {
+        async function createStyledIcon(iconString, color = '#6366f1', rotation = 0, font = 'bold 80px Arial') {
             await document.fonts.ready;
             const canvas = document.createElement('canvas');
             canvas.width = 150;
@@ -881,7 +881,7 @@
             ctx.fillStyle = color;
             ctx.fill();
             ctx.fillStyle = "white";
-            ctx.font = 'bold 80px Arial';
+            ctx.font = font;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(iconString, 75, 80);
@@ -1589,9 +1589,10 @@
         }
 
         async function initTour() {
-            infoUrl = await createStyledIcon('i', '#2563eb');
-            arrowUrl = await createStyledIcon('⮝', '#4f46e5');
-            threedUrl = await createStyledIcon('3D', '#7c3aed');
+            const faFont = '900 80px "Font Awesome 6 Free"';
+            infoUrl = await createStyledIcon('\uf129', '#2563eb', 0, faFont);
+            arrowUrl = await createStyledIcon('\uf062', '#4f46e5', 0, faFont);
+            threedUrl = await createStyledIcon('\uf1b2', '#7c3aed', 0, faFont);
 
             viewer = new PANOLENS.Viewer({
                 container: container,
