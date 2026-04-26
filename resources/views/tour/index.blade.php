@@ -298,6 +298,31 @@
             background: #818cf8;
         }
 
+        /* Fix Tailwind CSS Reset for Rich Text Content */
+        [id^="tab-"] ul {
+            list-style-type: disc !important;
+            padding-left: 1.25rem !important;
+            margin-top: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        [id^="tab-"] ol {
+            list-style-type: decimal !important;
+            padding-left: 1.25rem !important;
+            margin-top: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        [id^="tab-"] li {
+            display: list-item !important;
+            margin-bottom: 0.4rem;
+        }
+        
+        [id^="tab-"] a {
+            color: #6366f1;
+            text-decoration: underline;
+        }
+
         .scene-card {
             position: relative;
             width: 100px;

@@ -658,6 +658,19 @@
         padding: 20px 24px;
         min-height: 320px;
     }
+    #quill-popup-editor .ql-editor ul {
+        list-style-type: disc !important;
+        padding-left: 1.5rem !important;
+        margin-bottom: 1rem;
+    }
+    #quill-popup-editor .ql-editor ol {
+        list-style-type: decimal !important;
+        padding-left: 1.5rem !important;
+        margin-bottom: 1rem;
+    }
+    #quill-popup-editor .ql-editor li {
+        display: list-item !important;
+    }
     #quill-popup-editor .ql-editor.ql-blank::before { color: rgba(148,163,184,0.4); }
     #quill-popup-footer {
         display: flex;
