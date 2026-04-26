@@ -267,13 +267,30 @@
            SCENE LIST — Sidebar Thumbnails
            ============================================= */
         #scene-list-panel {
-            scrollbar-width: none;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(99, 102, 241, 0.5) transparent;
             overscroll-behavior: contain;
             -webkit-overflow-scrolling: touch;
+            /* Desktop: (65px * 4) + (6px * 3 gaps) = 260 + 18 = 278px */
+            max-height: 278px;
         }
 
         #scene-list-panel::-webkit-scrollbar {
-            display: none;
+            width: 4px;
+            display: block;
+        }
+
+        #scene-list-panel::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #scene-list-panel::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, 0.4);
+            border-radius: 10px;
+        }
+
+        #scene-list-panel::-webkit-scrollbar-thumb:hover {
+            background: rgba(99, 102, 241, 0.7);
         }
 
         .scene-card {
@@ -298,8 +315,8 @@
             }
             
             #scene-list-panel {
-                /* Height calculation for 3.5 scenes: (55px * 3.5) + (6px * 3 gaps) = 192.5 + 18 = 210.5px */
-                max-height: 211px !important;
+                /* Mobile: (55px * 4) + (6px * 3 gaps) = 220 + 18 = 238px */
+                max-height: 238px !important;
                 scroll-snap-type: y mandatory;
             }
         }
@@ -705,7 +722,7 @@
 
                 <!-- Scene List Sidebar (Toggleable, Below controls) -->
                 <div id="scene-list-panel"
-                    class="flex flex-col gap-[6px] max-h-[calc(100vh-250px)] overflow-y-auto scrollbar-none transition-all duration-500 ease-in-out [&.minimized]:opacity-0 [&.minimized]:-translate-x-[40px] [&.minimized]:pointer-events-none [&.minimized]:blur-[10px]">
+                    class="flex flex-col gap-[6px] max-h-[calc(100vh-250px)] overflow-y-auto transition-all duration-500 ease-in-out [&.minimized]:opacity-0 [&.minimized]:-translate-x-[40px] [&.minimized]:pointer-events-none [&.minimized]:blur-[10px]">
                     <!-- Items dynamic -->
                 </div>
             </div>
