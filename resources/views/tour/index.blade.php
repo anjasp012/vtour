@@ -268,15 +268,18 @@
            ============================================= */
         #scene-list-panel {
             scrollbar-width: thin;
-            scrollbar-color: rgba(99, 102, 241, 0.5) transparent;
+            scrollbar-color: #6366f1 transparent;
             overscroll-behavior: contain;
             -webkit-overflow-scrolling: touch;
             /* Desktop: (65px * 4) + (6px * 3 gaps) = 260 + 18 = 278px */
             max-height: 278px;
+            /* Fade effect at bottom to indicate more content */
+            mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
         }
 
         #scene-list-panel::-webkit-scrollbar {
-            width: 4px;
+            width: 6px;
             display: block;
         }
 
@@ -285,12 +288,14 @@
         }
 
         #scene-list-panel::-webkit-scrollbar-thumb {
-            background: rgba(99, 102, 241, 0.4);
-            border-radius: 10px;
+            background: #6366f1;
+            border-radius: 20px;
+            /* Using border to make the thumb appear shorter/smaller and 'floating' */
+            border: 2px solid rgba(15, 23, 42, 0.95);
         }
 
         #scene-list-panel::-webkit-scrollbar-thumb:hover {
-            background: rgba(99, 102, 241, 0.7);
+            background: #818cf8;
         }
 
         .scene-card {
