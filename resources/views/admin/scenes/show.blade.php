@@ -1077,28 +1077,32 @@
             // Sync 3D/2D model positions and apply visual animations
             const time = Date.now() * 0.002; // Time factor for animations
             Object.values(renderedSpots).forEach(marker => {
+                const isBeingEdited = (editingId == marker.spotData.id);
+                const isBeingDragged = (isDragging && dragMarker === marker);
+
                 if (marker && (marker.is3DModel || marker.isPerspectiveMesh)) {
                     // If it's a 3D model proxy, sync the modelObj
-                    // Sync 3D/2D model positions and apply visual animations
                     if (marker.is3DModel && marker.modelObj) {
                         marker.modelObj.position.copy(marker.position);
 
-                        // Only bounce when NOT being edited to avoid fighting with sliders/drag
-                        if (editingId != marker.spotData.id) {
+                        // Only apply auto-animation if not being interacted with
+                        if (!isBeingEdited && !isBeingDragged) {
                             marker.modelObj.position.y += Math.sin(time) * 50;
-                            // marker.modelObj.rotation.y += 0.005; // DISABLED in Admin to prevent jump on click
+                            marker.modelObj.rotation.y += 0.005;
                         }
                     }
-                    // If it's a 2D Perspective mesh
+                    // If it's a 2D Perspective mesh, it doesn't have modelObj, it IS the object
                     else if (marker.isPerspectiveMesh) {
-                        if (editingId != marker.spotData.id) {
+                        if (!isBeingEdited && !isBeingDragged) {
                             if (!marker.baseY) marker.baseY = marker.position.y;
                             marker.position.y = marker.baseY + Math.sin(time) * 50;
-                            
-                            // Don't rotate navigation links or items in Admin to keep it clean
-                            // marker.rotation.y += 0.005; 
+
+                            // Don't rotate navigation links
+                            if (marker.spotData.type !== 'nav') {
+                                marker.rotation.y += 0.005;
+                            }
                         } else {
-                            // While editing, we don't apply visual bounce
+                            // While editing/dragging, ensure baseY stays updated if moved
                             marker.baseY = marker.position.y;
                         }
                     }
@@ -1324,6 +1328,7 @@
 
             // Smart Hover Logic
             marker.addEventListener('hoverenter', () => {
+                if (editingId == spotData.id) return;
                 if (marker.is3DModel) {
                     const s = 1000 * 1.2;
                     new TWEEN.Tween(marker.modelObj.scale).to({
@@ -1343,6 +1348,7 @@
             });
 
             marker.addEventListener('hoverleave', () => {
+                if (editingId == spotData.id) return;
                 if (marker.is3DModel) {
                     const s = 1000;
                     new TWEEN.Tween(marker.modelObj.scale).to({
