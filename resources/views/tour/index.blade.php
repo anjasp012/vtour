@@ -1640,11 +1640,7 @@
                 viewer.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
             }
 
-            // Invert scroll zoom direction
-            const controls = viewer.getControl();
-            const originalDollyIn = controls.dollyIn;
-            controls.dollyIn = controls.dollyOut;
-            controls.dollyOut = originalDollyIn;
+
 
             // Inisialisasi awal: Scene dengan urutan (order) terkecil otomatis jadi Start Scene
             let startSceneData = tourData.scenes[0];
