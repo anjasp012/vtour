@@ -920,18 +920,31 @@
                 mixers.forEach(mixer => mixer.update(delta));
             }
 
+            const time = Date.now() * 0.002;
+
             // Only process current panorama to save CPU/Battery on mobile
             if (typeof viewer !== 'undefined' && viewer.panorama) {
                 viewer.panorama.children.forEach(child => {
-                    // Sync 3D model positions
-                    if (child.is3DModel && child.modelObj && child.syncPosition) {
+                    // Sync 3D model positions and apply visual animations
+                    if (child.is3DModel && child.modelObj) {
                         child.modelObj.position.copy(child.position);
-                    }
 
-                    // Auto-rotate 3D items
-                    if ((child.is3DModel || child.isPerspectiveMesh) && !child.isNavMarker && !child
-                        .isBeingDragged) {
-                        child.rotation.y += 0.005;
+                        if (!child.isBeingDragged) {
+                            child.modelObj.position.y += Math.sin(time) * 50;
+                            child.modelObj.rotation.y += 0.005;
+                        }
+                    }
+                    // If it's a 2D Perspective mesh, it doesn't have modelObj, it IS the object
+                    else if (child.isPerspectiveMesh) {
+                        if (!child.isBeingDragged) {
+                            if (!child.baseY) child.baseY = child.position.y;
+                            child.position.y = child.baseY + Math.sin(time) * 50;
+
+                            // Don't rotate navigation links
+                            if (!child.isNavMarker) {
+                                child.rotation.y += 0.005;
+                            }
+                        }
                     }
                 });
             }
@@ -960,6 +973,10 @@
                     model.traverse(node => {
                         if (node.isMesh) {
                             node.renderOrder = 9999;
+                            if (node.material) {
+                                node.material.depthWrite = true;
+                                node.material.transparent = true;
+                            }
                         }
                     });
 
@@ -1321,7 +1338,9 @@
                             }
                         });
 
-                        addBounce(ispot);
+                        if (!ispot.is3DModel && !ispot.isPerspectiveMesh) {
+                            addBounce(ispot);
+                        }
                         if (ispot) pano.add(ispot);
                     }
                 })();
