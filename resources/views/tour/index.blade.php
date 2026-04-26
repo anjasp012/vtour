@@ -528,28 +528,9 @@
         }
 
         /* Enhanced VO Animation */
-        @keyframes vo-ripple {
-            0% { transform: scale(0.8); opacity: 0.8; }
-            100% { transform: scale(1.8); opacity: 0; }
-        }
-
         @keyframes vo-play-energetic {
             0%, 100% { transform: scale(1); filter: brightness(1); }
-            50% { transform: scale(1.25); filter: brightness(1.4) drop-shadow(0 0 8px #6366f1); }
-        }
-
-        #btn-play {
-            position: relative;
-        }
-
-        #btn-play::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 50%;
-            border: 2px solid #6366f1;
-            animation: vo-ripple 2s infinite;
-            pointer-events: none;
+            50% { transform: scale(1.3); filter: brightness(1.5) drop-shadow(0 0 12px #6366f1); }
         }
 
         #btn-play i {
@@ -561,16 +542,6 @@
             animation: vo-play-energetic 0.6s infinite ease-in-out;
             display: inline-block;
             color: #f43f5e; /* rose-500 */
-        }
-
-        #btn-stop::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 50%;
-            border: 2px solid #f43f5e;
-            animation: vo-ripple 1s infinite;
-            pointer-events: none;
         }
     </style>
 </head>

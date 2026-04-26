@@ -320,8 +320,23 @@
                     </div>
 
                     <style>
-                        .marker-type-btn.active { @apply border-blue-600 bg-blue-50 ring-4 ring-blue-100; }
-                        .marker-type-btn.active span { @apply text-blue-600; }
+                        .marker-type-btn.active { 
+                            border-color: #3b82f6 !important; 
+                            background-color: #eff6ff !important; 
+                            ring: 4px;
+                            ring-color: #dbeafe;
+                            box-shadow: 0 0 0 4px #dbeafe !important;
+                        }
+                        .marker-type-btn.active span { 
+                            color: #2563eb !important; 
+                        }
+                        .marker-type-btn.active .w-8 {
+                            background-color: #3b82f6 !important;
+                            color: #ffffff !important;
+                        }
+                        .marker-type-btn.active i {
+                            color: #ffffff !important;
+                        }
                         .spot-card-btn.active { 
                             border-color: #2563eb !important; 
                             background-color: #eff6ff !important; 
