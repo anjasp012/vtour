@@ -892,27 +892,26 @@
     }
 
     // Helper: Create Styled Icon
-    function createStyledIcon(iconContent, color = '#2563eb', rotation = 0) {
-        return new Promise((resolve) => {
-            const canvas = document.createElement('canvas');
-            canvas.width = 150; canvas.height = 150;
-            const ctx = canvas.getContext('2d');
-            if(rotation) {
-                ctx.translate(75, 75);
-                ctx.rotate(rotation * Math.PI / 180);
-                ctx.translate(-75, -75);
-            }
-            ctx.beginPath();
-            ctx.arc(75, 75, 60, 0, 2 * Math.PI);
-            ctx.fillStyle = color;
-            ctx.fill();
-            ctx.fillStyle = "white";
-            ctx.font = 'bold 80px Arial';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(iconContent, 75, 80);
-            resolve(canvas.toDataURL());
-        });
+    async function createStyledIcon(iconContent, color = '#2563eb', rotation = 0, font = 'bold 80px Arial') {
+        await document.fonts.ready;
+        const canvas = document.createElement('canvas');
+        canvas.width = 150; canvas.height = 150;
+        const ctx = canvas.getContext('2d');
+        if(rotation) {
+            ctx.translate(75, 75);
+            ctx.rotate(rotation * Math.PI / 180);
+            ctx.translate(-75, -75);
+        }
+        ctx.beginPath();
+        ctx.arc(75, 75, 60, 0, 2 * Math.PI);
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.fillStyle = "white";
+        ctx.font = font;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(iconContent, 75, 80);
+        return canvas.toDataURL();
     }
 
     function addBounce(infospot) {
@@ -934,10 +933,11 @@
     let iconTextures = {};
 
     // Render existing spots
+    const faFont = '900 80px "Font Awesome 6 Free"';
     Promise.all([
-        createStyledIcon('i', '#2563eb'), // info
-        createStyledIcon('⮝', '#4f46e5'), // nav (Updated to vibrant indigo)
-        createStyledIcon('3D', '#7c3aed') // 3d (Purple cube-like theme)
+        createStyledIcon('\uf129', '#2563eb', 0, faFont), // info
+        createStyledIcon('\uf062', '#4f46e5', 0, faFont), // nav
+        createStyledIcon('\uf1b2', '#7c3aed', 0, faFont)  // 3d
     ]).then(async ([infoUrl, navUrl, threedUrl]) => {
         iconTextures.info = infoUrl;
         iconTextures.nav = navUrl;
