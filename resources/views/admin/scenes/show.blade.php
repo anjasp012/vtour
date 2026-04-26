@@ -747,6 +747,24 @@
     const panorama = new PANOLENS.ImagePanorama('{{ Storage::url($scene->high_res_path) }}');
     viewer.add(panorama);
 
+    // Selection Indicator Ring
+    let selectionRing = null;
+    function initSelectionRing() {
+        const geometry = new THREE.RingGeometry(400, 480, 32);
+        const material = new THREE.MeshBasicMaterial({ 
+            color: 0x6366f1, 
+            side: THREE.DoubleSide, 
+            transparent: true, 
+            opacity: 0.8,
+            depthTest: false
+        });
+        selectionRing = new THREE.Mesh(geometry, material);
+        selectionRing.visible = false;
+        selectionRing.renderOrder = 10001;
+        panorama.add(selectionRing);
+    }
+    initSelectionRing();
+
     // Apply saved initial view in Editor
     panorama.addEventListener('load', () => {
         if (panorama.material) panorama.material.depthWrite = false;
@@ -825,6 +843,19 @@
                 }
             }
         });
+
+        // Update Selection Ring
+        if (selectionRing && selectionRing.visible && editingId) {
+            const marker = renderedSpots[editingId];
+            if (marker) {
+                selectionRing.position.copy(marker.position);
+                selectionRing.lookAt(viewer.getCamera().position);
+                const s = 1 + Math.sin(Date.now() * 0.005) * 0.15;
+                selectionRing.scale.set(s, s, s);
+            } else {
+                selectionRing.visible = false;
+            }
+        }
     }
     animate3d();
 
@@ -2058,6 +2089,22 @@
         };
 
         viewer.tweenControlCenter(new THREE.Vector3(spotData.position_x, spotData.position_y, spotData.position_z), 500);
+        
+        // Show selection ring
+        if (selectionRing) {
+            selectionRing.visible = true;
+            selectionRing.position.set(spotData.position_x, spotData.position_y, spotData.position_z);
+        }
+
+        // Highlight in sidebar list
+        document.querySelectorAll('#infospots-list-container button').forEach(btn => {
+            btn.classList.remove('ring-2', 'ring-indigo-500', 'bg-indigo-50/30', 'border-indigo-200');
+        });
+        const activeBtn = Array.from(document.querySelectorAll('#infospots-list-container button')).find(btn => btn.getAttribute('onclick').includes(`editInfospot(${id}`));
+        if (activeBtn) {
+            activeBtn.classList.add('ring-2', 'ring-indigo-500', 'bg-indigo-50/30', 'border-indigo-200');
+        }
+
         openForm('edit', spotData);
     };
 
@@ -2088,6 +2135,14 @@
         originalSpotState = null;
         if(ghostMarker && ghostMarker.parent) panorama.remove(ghostMarker);
         coordDisplay.classList.add('hidden');
+
+        // Hide selection ring
+        if (selectionRing) selectionRing.visible = false;
+
+        // Remove sidebar highlight
+        document.querySelectorAll('#infospots-list-container button').forEach(btn => {
+            btn.classList.remove('ring-2', 'ring-indigo-500', 'bg-indigo-50/30', 'border-indigo-200');
+        });
     };
 
     function showInstruction(msg) {
