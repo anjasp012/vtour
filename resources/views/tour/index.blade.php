@@ -271,8 +271,8 @@
             scrollbar-color: #6366f1 rgba(255, 255, 255, 0.1);
             overscroll-behavior: contain;
             -webkit-overflow-scrolling: touch;
-            /* Exactly 4 items: (65px * 4) + (6px * 3 gaps) = 260 + 18 = 278px */
-            max-height: 278px;
+            /* Exactly 10 items: (65px * 10) + (6px * 9 gaps) = 650 + 54 = 704px */
+            max-height: 704px;
             padding-right: 8px;
         }
 
@@ -525,6 +525,23 @@
             to {
                 transform: rotate(360deg);
             }
+        }
+
+        /* VO Animation */
+        @keyframes vo-play-pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        #btn-play i {
+            animation: vo-play-pulse 1.5s infinite ease-in-out;
+            display: inline-block;
+        }
+
+        #btn-stop i {
+            animation: vo-play-pulse 0.8s infinite ease-in-out;
+            display: inline-block;
         }
     </style>
 </head>

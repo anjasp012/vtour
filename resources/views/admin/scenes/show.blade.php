@@ -634,7 +634,7 @@
     #quill-popup-editor .ql-editor {
         font-size: 14px;
         line-height: 1.75;
-        color: #cbd5e1;
+        color: #ffffff;
         padding: 20px 24px;
         min-height: 320px;
     }
@@ -2353,11 +2353,26 @@
                 toolbar: [
                     [{ header: [1, 2, 3, false] }],
                     ['bold', 'italic', 'underline'],
+                    [{ color: [] }, { background: [] }],
                     [{ list: 'ordered' }, { list: 'bullet' }],
-                    ['link'],
+                    ['link', 'image'],
                     ['clean']
-                ]
+                ],
+                clipboard: {
+                    matchVisual: false
+                }
             }
+        });
+
+        // Auto-white on paste: strip incoming color/background to fallback to editor default
+        _quill.clipboard.addMatcher(Node.ELEMENT_NODE, (node, delta) => {
+            delta.ops.forEach(op => {
+                if (op.attributes) {
+                    delete op.attributes.color;
+                    delete op.attributes.background;
+                }
+            });
+            return delta;
         });
     });
 
