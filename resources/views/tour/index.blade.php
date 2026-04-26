@@ -1641,10 +1641,8 @@
             }
 
             // Invert scroll zoom direction: scroll forward = zoom out, scroll backward = zoom in
-            const controls = viewer.getControl();
-            const originalDollyIn = controls.dollyIn;
-            controls.dollyIn = controls.dollyOut;
-            controls.dollyOut = originalDollyIn;
+            viewer.getControl().zoomSpeed = -1;
+
 
 
 
