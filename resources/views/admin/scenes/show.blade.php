@@ -1079,27 +1079,26 @@
             Object.values(renderedSpots).forEach(marker => {
                 if (marker && (marker.is3DModel || marker.isPerspectiveMesh)) {
                     // If it's a 3D model proxy, sync the modelObj
+                    // Sync 3D/2D model positions and apply visual animations
                     if (marker.is3DModel && marker.modelObj) {
                         marker.modelObj.position.copy(marker.position);
 
+                        // Only bounce when NOT being edited to avoid fighting with sliders/drag
                         if (editingId != marker.spotData.id) {
                             marker.modelObj.position.y += Math.sin(time) * 50;
-                            marker.modelObj.rotation.y += 0.005;
+                            // marker.modelObj.rotation.y += 0.005; // DISABLED in Admin to prevent jump on click
                         }
                     }
-                    // If it's a 2D Perspective mesh, it doesn't have modelObj, it IS the object
+                    // If it's a 2D Perspective mesh
                     else if (marker.isPerspectiveMesh) {
                         if (editingId != marker.spotData.id) {
                             if (!marker.baseY) marker.baseY = marker.position.y;
                             marker.position.y = marker.baseY + Math.sin(time) * 50;
-
-                            // Don't rotate navigation links
-                            if (marker.spotData.type !== 'nav') {
-                                marker.rotation.y += 0.005;
-                            }
+                            
+                            // Don't rotate navigation links or items in Admin to keep it clean
+                            // marker.rotation.y += 0.005; 
                         } else {
-                            // While editing, we don't apply visual bounce to avoid fighting with sliders
-                            // Just ensure baseY is updated if the object was moved via drag/sliders
+                            // While editing, we don't apply visual bounce
                             marker.baseY = marker.position.y;
                         }
                     }

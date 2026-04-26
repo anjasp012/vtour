@@ -974,9 +974,12 @@
                         if (node.isMesh) {
                             node.renderOrder = 9999;
                             if (node.material) {
+
+                                // Restore standard material behavior to prevent sorting artifacts
                                 node.material.depthWrite = true;
-                                node.material.transparent = true;
+                                // node.material.transparent = true; // REMOVED: causing "acak-acak" sorting issues
                             }
+
                         }
                     });
 
