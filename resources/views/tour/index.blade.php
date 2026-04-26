@@ -337,7 +337,8 @@
         }
 
         /* Pseudo-fullscreen for iOS/Safari */
-        .pseudo-fullscreen, .pseudo-fullscreen body {
+        .pseudo-fullscreen,
+        .pseudo-fullscreen body {
             position: fixed !important;
             top: 0 !important;
             left: 0 !important;
@@ -685,7 +686,7 @@
                                     class="w-7 h-full flex items-center justify-center bg-white text-black text-[11px] cursor-pointer hover:bg-white/90 transition-all shadow-sm"
                                     onclick="playNarration()"><i class="fas fa-volume-up"></i></button>
                                 <button id="btn-stop"
-                                    class="w-7 h-full flex items-center justify-center bg-white text-black text-[11px] cursor-pointer hidden hover:bg-white/90 transition-all shadow-sm"
+                                    class="w-7 h-full flex items-center justify-center bg-red-600 text-white text-[11px] cursor-pointer hidden hover:bg-white/90 transition-all shadow-sm"
                                     onclick="stopNarration()"><i class="fas fa-stop"></i></button>
                             </div>
                         </div>
