@@ -876,7 +876,7 @@
         const container = document.querySelector('#viewer-container');
         const loader = document.getElementById('loader');
         let viewer; // Global viewer instance
-        let infoUrl, arrowUrl, threedUrl; // Icon URLs
+        let infoUrl, arrowUrl, threedUrl, loadUrl; // Icon URLs
         const tourData = {
             scenes: {!! $scenes->toJson() !!},
             sitePlans: {!! $sitePlans->toJson() !!},
@@ -925,17 +925,24 @@
             // Only process current panorama to save CPU/Battery on mobile
             if (typeof viewer !== 'undefined' && viewer.panorama) {
                 viewer.panorama.children.forEach(child => {
-                    // Sync 3D model positions and apply visual animations
-                    if (child.is3DModel && child.modelObj) {
-                        child.modelObj.position.copy(child.position);
+                    // If it's a 3D Model Proxy (Infospot)
+                    if (child.is3DModel) {
+                        // Spinning animation for loading state (Sprite rotation)
+                        if (child.isLoading && child.material) {
+                            child.material.rotation += 0.05;
+                        }
 
-                        if (!child.isBeingDragged) {
-                            child.modelObj.position.y += Math.sin(time) * 50;
-                            child.modelObj.rotation.y += 0.005;
+                        // Sync 3D model positions and apply visual animations if loaded
+                        if (child.modelObj) {
+                            child.modelObj.position.copy(child.position);
+
+                            if (!child.isBeingDragged) {
+                                child.modelObj.position.y += Math.sin(time) * 50;
+                                child.modelObj.rotation.y += 0.005;
+                            }
                         }
                     }
-                    // If it's a 2D Perspective mesh, it doesn't have modelObj, it IS the object
-                    else if (child.isPerspectiveMesh) {
+                    // If it's a 2D Perspective mesh...
                         if (!child.isBeingDragged) {
                             if (!child.baseY) child.baseY = child.position.y;
                             child.position.y = child.baseY + Math.sin(time) * 50;
@@ -1221,25 +1228,54 @@
                         // Check for direct 3D model (.glb only) - ENFORCE type '3d'
                         if (ispotData.type === '3d' && ispotData.model_path && ispotData.model_path.toLowerCase()
                             .endsWith('.glb')) {
-                            try {
-                                const modelUrl = "{{ url('storage') }}/" + ispotData.model_path +
-                                    "?v={{ time() }}";
-                                console.log(`[3D-Load] Spot: ${ispotData.id}, URL: ${modelUrl}`);
-                                modelObj = await loadGLB(modelUrl, ispotData);
+                            const modelUrl = "{{ url('storage') }}/" + ispotData.model_path +
+                                "?v={{ time() }}";
 
+                            // Create ispot proxy with Loading Icon immediately
+                            ispot = new PANOLENS.Infospot(800, loadUrl);
+                            ispot.is3DModel = true;
+                            ispot.isLoading = true;
+                            ispot.position.copy(pos);
+                            pano.add(ispot);
+
+                            // Load GLB in background (non-blocking)
+                            loadGLB(modelUrl, ispotData).then(model => {
+                                ispot.isLoading = false;
+                                ispot.modelObj = model;
+                                ispot.rotation.z = 0; // Reset rotation
+
+                                model.position.copy(pos);
+                                model.scale.set(0, 0, 0); // Start from zero for animation
+                                pano.add(model);
+
+                                // Scale up animation
+                                const s = 300;
+                                new TWEEN.Tween(model.scale).to({
+                                    x: (ispotData.scale_x || 0.1) * s,
+                                    y: (ispotData.scale_y || 0.1) * s,
+                                    z: (ispotData.scale_z || ispotData.scale_x || 0.1) * s
+                                }, 1000).easing(TWEEN.Easing.Elastic.Out).start();
+
+                                // Switch icon to transparent
                                 const transparentPixel =
                                     'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
-                                ispot = new PANOLENS.Infospot(1000, transparentPixel);
-                                ispot.is3DModel = true;
-                                ispot.modelObj = modelObj;
+                                new THREE.TextureLoader().load(transparentPixel, (tex) => {
+                                    ispot.material.map = tex;
+                                    ispot.material.rotation = 0; // Reset
+                                    ispot.material.needsUpdate = true;
+                                });
 
-                                modelObj.position.copy(pos);
-                                pano.add(modelObj);
                                 addBounce(ispot);
                                 ispot.syncPosition = true;
-                            } catch (e) {
+                            }).catch(e => {
+                                ispot.isLoading = false;
                                 console.error(`[3D-Error] Spot: ${ispotData.id}:`, e);
-                            }
+                                // Fallback to threedUrl icon
+                                new THREE.TextureLoader().load(threedUrl, (tex) => {
+                                    ispot.material.map = tex;
+                                    ispot.material.needsUpdate = true;
+                                });
+                            });
                         }
 
                         if (!ispot) {
@@ -1653,6 +1689,7 @@
             infoUrl = await createStyledIcon('\uf129', '#2563eb', 0, faFont);
             arrowUrl = await createStyledIcon('\uf062', '#4f46e5', 0, faFont);
             threedUrl = await createStyledIcon('\uf1b2', '#7c3aed', 0, faFont);
+            loadUrl = await createStyledIcon('\uf110', '#6366f1', 0, faFont); // Spinner
 
             viewer = new PANOLENS.Viewer({
                 container: container,
