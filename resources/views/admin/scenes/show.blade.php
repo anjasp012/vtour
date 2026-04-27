@@ -1119,8 +1119,8 @@
                     console.log("GLB Loaded successfully:", url);
                     const model = gltf.scene;
 
-                    // Set initial transform (Scale up significantly for world-space visibility)
-                    const s = 1000;
+                    // Set initial transform (Scale up for world-space visibility)
+                    const s = 300;
                     model.position.set(0, 0, 0);
                     model.rotation.set(spotData.rotation_x || 0, spotData.rotation_y || 0, spotData
                         .rotation_z || 0);
@@ -1262,7 +1262,7 @@
                     // Create a Proxy Infospot for interaction (Increase size for easier hover)
                     const transparentPixel =
                         'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
-                    marker = new PANOLENS.Infospot(2000, transparentPixel);
+                    marker = new PANOLENS.Infospot(1000, transparentPixel);
                     marker.is3DModel = true;
                     marker.modelObj = modelObj;
 
@@ -1593,9 +1593,10 @@
 
                 if (marker.is3DModel && marker.modelObj) {
                     marker.modelObj.rotation.set(spotData.rotation_x, spotData.rotation_y, spotData.rotation_z);
-                    const s = 1000;
+                    const s = 300;
                     marker.modelObj.scale.set(spotData.scale_x * s, spotData.scale_y * s, (spotData.scale_z || spotData
                         .scale_x) * s);
+
                 } else if (marker.isPerspectiveMesh || (marker.isCustomImage && inputPerspective.checked)) {
                     marker.rotation.set(spotData.rotation_x, spotData.rotation_y, spotData.rotation_z);
                     marker.scale.set(spotData.scale_x, spotData.scale_y, 1);
@@ -1938,9 +1939,13 @@
                                 <span class="text-[8px] font-bold text-slate-200">${p.name}</span>
                                 <span class="text-[6px] text-slate-500 uppercase tracking-widest">${p.assets_count || 0} Assets</span>
                             </div>
-                            <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button type="button" onclick="editProductFromList(${p.id})" class="text-indigo-400 hover:text-indigo-300"><i class="fas fa-edit text-[8px]"></i></button>
-                                <button type="button" onclick="deleteProduct(${p.id})" class="text-slate-500 hover:text-rose-400"><i class="fas fa-trash text-[8px]"></i></button>
+                            <div class="flex items-center gap-3 opacity-60 group-hover:opacity-100 transition-opacity">
+                                <button type="button" onclick="editProductFromList(${p.id})" class="p-1 text-indigo-400 hover:text-indigo-300 transition-colors" title="Edit Produk">
+                                    <i class="fas fa-edit text-xs"></i>
+                                </button>
+                                <button type="button" onclick="deleteProduct(${p.id})" class="p-1 text-slate-500 hover:text-rose-400 transition-colors" title="Hapus Produk">
+                                    <i class="fas fa-trash text-xs"></i>
+                                </button>
                             </div>
                         </div>
                     `).join('');

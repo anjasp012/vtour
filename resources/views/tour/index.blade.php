@@ -956,8 +956,7 @@
                 loader3d.load(url, (gltf) => {
                     const model = gltf.scene;
 
-                    // Scale up significantly for world-space visibility
-                    const s = 1000; // Increased to 1000 for maximum visibility
+                    const s = 300; // Scaled for visibility
                     model.position.set(0, 0, 0); // Position is handled by proxy
                     model.rotation.set(spotData.rotation_x || 0, spotData.rotation_y || 0, spotData
                         .rotation_z || 0);
@@ -1229,7 +1228,7 @@
 
                                 const transparentPixel =
                                     'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
-                                ispot = new PANOLENS.Infospot(2000, transparentPixel);
+                                ispot = new PANOLENS.Infospot(1000, transparentPixel);
                                 ispot.is3DModel = true;
                                 ispot.modelObj = modelObj;
 
@@ -1302,7 +1301,7 @@
                         // Smart Hover Logic
                         ispot.addEventListener('hoverenter', () => {
                             if (ispot.is3DModel) {
-                                const s = 1000 * 1.2;
+                                const s = 300 * 1.2;
                                 new TWEEN.Tween(ispot.modelObj.scale).to({
                                     x: (ispotData.scale_x || 0.1) * s,
                                     y: (ispotData.scale_y || 0.1) * s,
@@ -1321,7 +1320,7 @@
 
                         ispot.addEventListener('hoverleave', () => {
                             if (ispot.is3DModel) {
-                                const s = 1000;
+                                const s = 300;
                                 new TWEEN.Tween(ispot.modelObj.scale).to({
                                     x: (ispotData.scale_x || 0.1) * s,
                                     y: (ispotData.scale_y || 0.1) * s,
