@@ -967,6 +967,7 @@
                     );
 
                     model.is3DModel = true;
+                    model.spotData = spotData;
 
                     // Set maximum renderOrder for "always on top" priority without breaking inner mesh depth
                     model.traverse(node => {
@@ -1417,6 +1418,7 @@
         // --- Manual Rotation & Cursor Logic ---
         let modelDragging = null;
         let lastPointerX = 0;
+        let lastPointerY = 0;
         let totalDragDistance = 0;
         const dragThreshold = 5; // Pixels to distinguish click vs drag
 
@@ -1436,10 +1438,11 @@
                     target = target.parent;
                 }
 
-                if ((target.is3DModel || target.isPerspectiveMesh) && !target.isNavMarker) {
+                if (target.is3DModel || target.isPerspectiveMesh) {
                     modelDragging = target;
                     modelDragging.isBeingDragged = false; // Don't start yet
                     lastPointerX = e.clientX;
+                    lastPointerY = e.clientY;
                     totalDragDistance = 0;
                 }
             }
@@ -1452,7 +1455,8 @@
 
             if (modelDragging) {
                 const deltaX = e.clientX - lastPointerX;
-                totalDragDistance += Math.abs(deltaX);
+                const deltaY = e.clientY - lastPointerY;
+                totalDragDistance += Math.abs(deltaX) + Math.abs(deltaY);
 
                 // Only start rotating after threshold
                 if (!modelDragging.isBeingDragged && totalDragDistance > dragThreshold) {
@@ -1462,12 +1466,17 @@
                 }
 
                 if (modelDragging.isBeingDragged) {
-                    if (modelDragging.is3DModel && modelDragging.modelObj) {
-                        modelDragging.modelObj.rotation.y += deltaX * 0.01;
-                    } else {
-                        modelDragging.rotation.y += deltaX * 0.01;
+                    if (!modelDragging.isNavMarker) {
+                        if (modelDragging.is3DModel && modelDragging.modelObj) {
+                            modelDragging.modelObj.rotation.y += deltaX * 0.01;
+                            modelDragging.modelObj.rotation.x += deltaY * 0.01;
+                        } else {
+                            modelDragging.rotation.y += deltaX * 0.01;
+                            modelDragging.rotation.x += deltaY * 0.01;
+                        }
                     }
                     lastPointerX = e.clientX;
+                    lastPointerY = e.clientY;
                 }
             } else {
                 // Hover cursor logic
@@ -1492,6 +1501,12 @@
 
         window.addEventListener('pointerup', (e) => {
             if (modelDragging) {
+                // If it was just a click (not a drag)
+                if (!modelDragging.isBeingDragged && totalDragDistance < dragThreshold) {
+                    if (modelDragging.spotData) {
+                        handleSpotClick(modelDragging.spotData);
+                    }
+                }
                 modelDragging.isBeingDragged = false;
                 modelDragging = null;
                 viewer.getControl().enabled = true;

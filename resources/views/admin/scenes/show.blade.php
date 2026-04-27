@@ -1845,7 +1845,7 @@
 
             try {
                 const url = id ?
-                    `{{ url('admin/infospot-products') }}/${id}` :
+                    `{{ url('admin/products') }}/${id}` :
                     `{{ url('admin/infospots') }}/${currentUploadInfospotId}/products`;
                 const method = id ? 'PATCH' : 'POST';
 
