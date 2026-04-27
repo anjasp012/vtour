@@ -968,6 +968,7 @@
                     );
 
                     model.is3DModel = true;
+                    model.spotData = spotData;
 
                     // Set maximum renderOrder for "always on top" priority without breaking inner mesh depth
                     model.traverse(node => {
@@ -1438,7 +1439,7 @@
                     target = target.parent;
                 }
 
-                if ((target.is3DModel || target.isPerspectiveMesh) && !target.isNavMarker) {
+                if (target.is3DModel || target.isPerspectiveMesh) {
                     modelDragging = target;
                     modelDragging.isBeingDragged = false; // Don't start yet
                     lastPointerX = e.clientX;
@@ -1466,12 +1467,14 @@
                 }
 
                 if (modelDragging.isBeingDragged) {
-                    if (modelDragging.is3DModel && modelDragging.modelObj) {
-                        modelDragging.modelObj.rotation.y += deltaX * 0.01;
-                        modelDragging.modelObj.rotation.x += deltaY * 0.01;
-                    } else {
-                        modelDragging.rotation.y += deltaX * 0.01;
-                        modelDragging.rotation.x += deltaY * 0.01;
+                    if (!modelDragging.isNavMarker) {
+                        if (modelDragging.is3DModel && modelDragging.modelObj) {
+                            modelDragging.modelObj.rotation.y += deltaX * 0.01;
+                            modelDragging.modelObj.rotation.x += deltaY * 0.01;
+                        } else {
+                            modelDragging.rotation.y += deltaX * 0.01;
+                            modelDragging.rotation.x += deltaY * 0.01;
+                        }
                     }
                     lastPointerX = e.clientX;
                     lastPointerY = e.clientY;
@@ -1499,6 +1502,12 @@
 
         window.addEventListener('pointerup', (e) => {
             if (modelDragging) {
+                // If it was just a click (not a drag)
+                if (!modelDragging.isBeingDragged && totalDragDistance < dragThreshold) {
+                    if (modelDragging.spotData) {
+                        handleSpotClick(modelDragging.spotData);
+                    }
+                }
                 modelDragging.isBeingDragged = false;
                 modelDragging = null;
                 viewer.getControl().enabled = true;
