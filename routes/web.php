@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\SitePlanController as AdminSitePlanController;
 use App\Http\Controllers\Admin\InfospotController as AdminInfospotController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\ProductAssetController as AdminProductAssetController;
+use App\Http\Controllers\Admin\GeneralSettingController as AdminSettingController;
 use App\Http\Controllers\Auth\LoginController;
 
 
@@ -30,6 +31,16 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
     });
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // General Settings
+    Route::get('/settings', [AdminSettingController::class, 'index'])->name('settings.index');
+    Route::post('/settings', [AdminSettingController::class, 'update'])->name('settings.update');
+
+    // Preview Bypass
+    Route::get('/preview-tour', function () {
+        session(['preview_bypass' => true]);
+        return redirect()->route('tour.show');
+    })->name('preview');
 
     // Site Plans
     Route::resource('site-plans', AdminSitePlanController::class);

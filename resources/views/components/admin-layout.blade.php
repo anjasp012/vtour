@@ -64,7 +64,10 @@
                 <a href="{{ route('admin.scenes.index') }}" class="nav-link {{ request()->routeIs('admin.scenes.*') && !request()->routeIs('admin.scenes.show') ? 'active' : '' }}">
                     Scene Collections
                 </a>
-                <a href="{{ url('/') }}" target="_blank" class="nav-link">
+                <a href="{{ route('admin.settings.index') }}" class="nav-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
+                    Settings
+                </a>
+                <a href="{{ route('admin.preview') }}" target="_blank" class="nav-link">
                     Preview
                 </a>
             </div>
