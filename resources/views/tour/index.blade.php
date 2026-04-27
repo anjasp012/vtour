@@ -1345,7 +1345,7 @@
 
                         // Smart Hover Logic
                         ispot.addEventListener('hoverenter', () => {
-                            if (ispot.is3DModel) {
+                            if (ispot.is3DModel && ispot.modelObj) {
                                 const s = 300 * 1.2;
                                 new TWEEN.Tween(ispot.modelObj.scale).to({
                                     x: (ispotData.scale_x || 0.1) * s,
@@ -1364,7 +1364,7 @@
                         });
 
                         ispot.addEventListener('hoverleave', () => {
-                            if (ispot.is3DModel) {
+                            if (ispot.is3DModel && ispot.modelObj) {
                                 const s = 300;
                                 new TWEEN.Tween(ispot.modelObj.scale).to({
                                     x: (ispotData.scale_x || 0.1) * s,
