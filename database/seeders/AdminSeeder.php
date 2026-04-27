@@ -14,10 +14,10 @@ class AdminSeeder extends Seeder
     public function run(): void
     {
         User::updateOrCreate(
-            ['email' => 'admin@360studio.com'],
+            ['email' => 'admin@virtual.brin.go.id'],
             [
                 'name' => 'Admin Studio',
-                'password' => Hash::make('password'),
+                'password' => Hash::make('brin@2026!'),
             ]
         );
     }

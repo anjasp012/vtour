@@ -68,7 +68,7 @@
                         Address</label>
                     <div class="relative">
                         <input type="email" name="email" value="{{ old('email') }}" required
-                            class="input-field pl-11" placeholder="admin@360studio.com">
+                            class="input-field pl-11">
                     </div>
                     @error('email')
                         <p class="text-rose-500 text-[10px] font-bold mt-2 ml-1 uppercase tracking-wider">
@@ -80,8 +80,7 @@
                     <label
                         class="block text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-2 ml-1">Password</label>
                     <div class="relative">
-                        <input type="password" name="password" required class="input-field pl-11"
-                            placeholder="••••••••">
+                        <input type="password" name="password" required class="input-field pl-11">
                     </div>
                 </div>
 
