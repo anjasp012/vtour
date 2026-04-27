@@ -1571,8 +1571,10 @@
                         const markersBtn = document.getElementById('toggle-markers');
                         const isMarkersEnabled = markersBtn ? markersBtn.classList.contains('btn-active') : true;
                         pano.children.forEach(c => {
-                            if (c instanceof PANOLENS.Infospot || c.isPerspectiveMesh) c.visible =
-                                isMarkersEnabled;
+                            if (c instanceof PANOLENS.Infospot || c.isPerspectiveMesh || c.is3DModel || c.isGLBModel) {
+                                c.visible = isMarkersEnabled;
+                                if (c.modelObj) c.modelObj.visible = isMarkersEnabled;
+                            }
                         });
 
                         document.getElementById('scene-title').innerText = title;
