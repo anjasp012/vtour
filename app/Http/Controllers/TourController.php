@@ -13,8 +13,11 @@ class TourController extends Controller
         // Coming Soon Logic
         $isComingSoon = \App\Models\Setting::where('key', 'coming_soon')->value('value') === 'true';
 
-        // Bypass if authenticated or has preview session
-        if ($isComingSoon && !auth()->check() && !$request->session()->has('preview_bypass')) {
+        // One-time bypass check
+        $hasBypass = $request->session()->pull('preview_bypass');
+
+        // Bypass if authenticated or has one-time bypass token
+        if ($isComingSoon && !auth()->check() && !$hasBypass) {
             return view('coming_soon');
         }
 
