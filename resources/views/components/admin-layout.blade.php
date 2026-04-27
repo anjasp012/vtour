@@ -76,11 +76,20 @@
                 <span class="text-[8px] font-bold text-slate-500 uppercase tracking-widest">Live</span>
             </div>
             
-            <div class="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
-                <div class="w-5 h-5 rounded bg-white/5 flex items-center justify-center text-slate-500 border border-white/10">
-                    <i class="fas fa-user text-[8px]"></i>
+            <div class="flex items-center gap-4 h-full">
+                <div class="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
+                    <div class="w-5 h-5 rounded bg-white/5 flex items-center justify-center text-slate-500 border border-white/10">
+                        <i class="fas fa-user text-[8px]"></i>
+                    </div>
+                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest hidden sm:block">{{ Auth::user()->name }}</span>
                 </div>
-                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest hidden sm:block">Admin</span>
+
+                <form action="{{ route('logout') }}" method="POST" class="h-full">
+                    @csrf
+                    <button type="submit" class="nav-link text-rose-500 hover:bg-rose-500/10 hover:text-rose-500 border-l border-white/10">
+                        <i class="fas fa-sign-out-alt mr-2"></i> Exit
+                    </button>
+                </form>
             </div>
         </div>
     </nav>

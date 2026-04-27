@@ -8,12 +8,23 @@ use App\Http\Controllers\Admin\SitePlanController as AdminSitePlanController;
 use App\Http\Controllers\Admin\InfospotController as AdminInfospotController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\ProductAssetController as AdminProductAssetController;
+use App\Http\Controllers\Auth\LoginController;
+
 
 // Frontend route for Virtual Tour
 Route::get('/', [TourController::class, 'index'])->name('tour.show');
 
+// Auth Routes
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [LoginController::class, 'login']);
+});
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+
 // Admin CMS group
-Route::prefix('admin')->name('admin.')->group(function () {
+Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
+
     Route::get('/', function () {
         return redirect()->route('admin.dashboard');
     });
