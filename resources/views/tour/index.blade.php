@@ -943,6 +943,7 @@
                         }
                     }
                     // If it's a 2D Perspective mesh...
+                    else if (child.isPerspectiveMesh) {
                         if (!child.isBeingDragged) {
                             if (!child.baseY) child.baseY = child.position.y;
                             child.position.y = child.baseY + Math.sin(time) * 50;
@@ -1239,43 +1240,50 @@
                             pano.add(ispot);
 
                             // Load GLB in background (non-blocking)
-                            loadGLB(modelUrl, ispotData).then(model => {
-                                ispot.isLoading = false;
-                                ispot.modelObj = model;
-                                ispot.rotation.z = 0; // Reset rotation
+                            (async () => {
+                                try {
+                                    const model = await loadGLB(modelUrl, ispotData);
+                                    ispot.isLoading = false;
+                                    ispot.modelObj = model;
+                                    ispot.rotation.z = 0; // Reset sprite rotation
 
-                                model.position.copy(pos);
-                                model.scale.set(0, 0, 0); // Start from zero for animation
-                                pano.add(model);
+                                    model.position.copy(pos);
+                                    model.scale.set(0, 0, 0); // Start from zero for animation
+                                    pano.add(model);
 
-                                // Scale up animation
-                                const s = 300;
-                                new TWEEN.Tween(model.scale).to({
-                                    x: (ispotData.scale_x || 0.1) * s,
-                                    y: (ispotData.scale_y || 0.1) * s,
-                                    z: (ispotData.scale_z || ispotData.scale_x || 0.1) * s
-                                }, 1000).easing(TWEEN.Easing.Elastic.Out).start();
+                                    // Scale up animation
+                                    const s = 300;
+                                    new TWEEN.Tween(model.scale).to({
+                                        x: (ispotData.scale_x || 0.1) * s,
+                                        y: (ispotData.scale_y || 0.1) * s,
+                                        z: (ispotData.scale_z || ispotData.scale_x || 0.1) * s
+                                    }, 1000).easing(TWEEN.Easing.Elastic.Out).start();
 
-                                // Switch icon to transparent
-                                const transparentPixel =
-                                    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
-                                new THREE.TextureLoader().load(transparentPixel, (tex) => {
-                                    ispot.material.map = tex;
-                                    ispot.material.rotation = 0; // Reset
-                                    ispot.material.needsUpdate = true;
-                                });
+                                    // Switch icon to transparent
+                                    const transparentPixel =
+                                        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+                                    new THREE.TextureLoader().load(transparentPixel, (tex) => {
+                                        if (ispot.material) {
+                                            ispot.material.map = tex;
+                                            ispot.material.rotation = 0;
+                                            ispot.material.needsUpdate = true;
+                                        }
+                                    });
 
-                                addBounce(ispot);
-                                ispot.syncPosition = true;
-                            }).catch(e => {
-                                ispot.isLoading = false;
-                                console.error(`[3D-Error] Spot: ${ispotData.id}:`, e);
-                                // Fallback to threedUrl icon
-                                new THREE.TextureLoader().load(threedUrl, (tex) => {
-                                    ispot.material.map = tex;
-                                    ispot.material.needsUpdate = true;
-                                });
-                            });
+                                    addBounce(ispot);
+                                    ispot.syncPosition = true;
+                                } catch (e) {
+                                    ispot.isLoading = false;
+                                    console.error(`[3D-Error] Spot: ${ispotData.id}:`, e);
+                                    // Fallback to threedUrl icon
+                                    new THREE.TextureLoader().load(threedUrl, (tex) => {
+                                        if (ispot.material) {
+                                            ispot.material.map = tex;
+                                            ispot.material.needsUpdate = true;
+                                        }
+                                    });
+                                }
+                            })();
                         }
 
                         if (!ispot) {
