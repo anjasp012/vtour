@@ -17,14 +17,14 @@ Route::get('/', [TourController::class, 'index'])->name('tour.show');
 
 // Auth Routes
 Route::middleware('guest')->group(function () {
-    Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [LoginController::class, 'login']);
+    Route::get('/masuk', [LoginController::class, 'showLoginForm'])->name('login');
+    Route::post('/masuk', [LoginController::class, 'login']);
 });
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 
 // Admin CMS group
-Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
+Route::prefix('panel')->name('admin.')->middleware('auth')->group(function () {
 
     Route::get('/', function () {
         return redirect()->route('admin.dashboard');

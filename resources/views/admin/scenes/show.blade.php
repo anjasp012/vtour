@@ -1791,7 +1791,7 @@
             } else if (action === 'delete') {
                 if (lastRightClickSpot && confirm('Hapus point ini?')) {
                     const f = document.getElementById('form-delete');
-                    f.action = `{{ url('admin/infospots') }}/${lastRightClickSpot.id}`;
+                    f.action = `{{ url('panel/infospots') }}/${lastRightClickSpot.id}`;
                     f.submit();
                 }
             }
@@ -1845,8 +1845,8 @@
 
             try {
                 const url = id ?
-                    `{{ url('admin/products') }}/${id}` :
-                    `{{ url('admin/infospots') }}/${currentUploadInfospotId}/products`;
+                    `{{ url('panel/products') }}/${id}` :
+                    `{{ url('panel/infospots') }}/${currentUploadInfospotId}/products`;
                 const method = id ? 'PATCH' : 'POST';
 
                 const researcher = document.getElementById('product-researcher-multi').value;
@@ -1920,7 +1920,7 @@
             list.innerHTML = '<p class="text-[7px] text-slate-500 italic text-center py-1">Loading...</p>';
 
             try {
-                const res = await fetch(`{{ url('admin/infospots') }}/${infospotId}/products`);
+                const res = await fetch(`{{ url('panel/infospots') }}/${infospotId}/products`);
                 const data = await res.json();
                 infospotProducts = data.products || [];
 
@@ -2017,7 +2017,7 @@
         window.deleteProduct = async function(id) {
             if (!confirm('Hapus produk ini? Assets di dalamnya akan ikut terhapus.')) return;
             try {
-                await fetch(`{{ url('admin/products') }}/${id}`, {
+                await fetch(`{{ url('panel/products') }}/${id}`, {
                     method: 'DELETE',
                     headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
@@ -2115,7 +2115,7 @@
                         '<p class="text-[8px] text-slate-600 italic text-center py-1">Select a product to view assets.</p>';
                     return;
                 }
-                let url = `{{ url('admin/products') }}/${productId}/assets`;
+                let url = `{{ url('panel/products') }}/${productId}/assets`;
 
                 const res = await fetch(url, {
                     headers: {
@@ -2225,7 +2225,7 @@
             if (ids.length === 0) return;
 
             try {
-                await fetch('{{ url('admin/product-assets/reorder') }}', {
+                await fetch('{{ url('panel/product-assets/reorder') }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -2246,7 +2246,7 @@
         window.deleteAsset = async function(assetId, productId = null) {
             if (!confirm('Hapus asset ini?')) return;
             try {
-                const res = await fetch(`{{ url('admin/product-assets') }}/${assetId}`, {
+                const res = await fetch(`{{ url('panel/product-assets') }}/${assetId}`, {
                     method: 'DELETE',
                     headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -2310,7 +2310,7 @@
             loading.style.display = 'flex';
 
             try {
-                const res = await fetch(`{{ url('admin/products') }}/${productId}/assets`, {
+                const res = await fetch(`{{ url('panel/products') }}/${productId}/assets`, {
                     method: 'POST',
                     body: formData,
                     headers: {
@@ -2450,8 +2450,8 @@
 
                 currentUploadInfospotId = spot.id;
                 methodPut.innerHTML = '<input type="hidden" name="_method" value="PUT">';
-                formEl.action = `{{ url('admin/infospots') }}/${spot.id}`;
-                formDelete.action = `{{ url('admin/infospots') }}/${spot.id}`;
+                formEl.action = `{{ url('panel/infospots') }}/${spot.id}`;
+                formDelete.action = `{{ url('panel/infospots') }}/${spot.id}`;
                 formDelete.classList.remove('hidden');
             }
         }
